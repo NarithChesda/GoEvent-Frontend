@@ -70,13 +70,13 @@
              card it draws on, then hosts, then the date, then the card
              under the date, then the schedule. A partner scrolling this
              panel is walking down the invitation. -->
-        <!-- The five design pickers, in one panel.
+        <!-- The design pickers, in one panel.
              Each was its own card carrying an uppercase eyebrow, a stack of
              full-width radio cards and a hint — three levels of chrome over
              one question, five times down the page, so scrolling this
              section read as five unrelated screens rather than as one walk
              down the invitation. They ask the same kind of question about
-             five consecutive blocks of one stage, so they are one panel
+             consecutive blocks of one stage, so they are one panel
              whose hairlines keep that order legible. The eyebrow becomes
              the picker's own label, the same way every other field in this
              editor is named. -->
@@ -235,6 +235,39 @@
             </div>
           </div>
 
+          <!-- Who the invitation is for: the invite text and the guest's
+               name, between the hosts above and the date below — which is
+               why it sits between their two pickers here. Off by default,
+               because it is additive: a cover that already greets the guest
+               by name does not want a second greeting under the hosts. -->
+          <div class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="guestInviteDesignModel"
+              :label="t('management.partnerTemplateForm.guestInviteDesign.sectionTitle')"
+              :options="guestInviteDesignOptions"
+              :columns="1"
+            />
+            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.guestInviteDesign.designHint') }}</p>
+
+            <!-- Suggested, never done for the partner: when the cover no
+                 longer names the guest and this is off, nothing on the
+                 template says who it was sent to. One tap turns it on. -->
+            <TemplateFormDisclosure :open="guestUnaddressed" content-class="pt-1">
+              <div class="flex items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-2.5">
+                <p class="flex-1 min-w-0 text-[0.6875rem] leading-snug text-slate-600">
+                  {{ t('management.partnerTemplateForm.guestInviteDesign.coverHidesGuest') }}
+                </p>
+                <button
+                  type="button"
+                  :class="BTN_SECONDARY_SM"
+                  @click="form.guest_invite_design_type = 'inscribed'"
+                >
+                  {{ t('management.partnerTemplateForm.guestInviteDesign.addHere') }}
+                </button>
+              </div>
+            </TemplateFormDisclosure>
+          </div>
+
           <div class="p-4 space-y-2">
             <TemplateFormChoice
               v-model="eventDetailsDesignModel"
@@ -243,6 +276,48 @@
               :columns="1"
             />
             <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+
+            <!-- Which calendar the calendar design draws. A sibling setting
+                 rather than more designs above: every one of these is still
+                 "the date as a calendar" — venue in the map card, the marker
+                 colour spent on the day — and only the calendar changes. -->
+            <TemplateFormDisclosure
+              :open="form.event_details_design_type === 'calendar'"
+              content-class="space-y-3 pt-2"
+            >
+              <TemplateFormChoice
+                v-model="calendarStyleModel"
+                :label="t('management.partnerTemplateForm.eventDetailsDesign.calendarStyleLabel')"
+                :options="calendarStyleOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.calendarStyleHint') }}</p>
+
+              <!-- The card is the one calendar with corners of its own, so it
+                   is the one that asks how round they are: square paper for an
+                   editorial template, a soft rounded card for a modern one. -->
+              <TemplateFormDisclosure
+                :open="form.event_details_calendar_style === 'card'"
+                content-class="space-y-2 pt-1"
+              >
+                <TemplateFormNumber
+                  v-model="form.event_details_calendar_card_radius"
+                  :label="t('management.partnerTemplateForm.eventDetailsDesign.cardRadius')"
+                  :min="0"
+                  :max="CALENDAR_CARD_RADIUS_MAX"
+                  :step="2"
+                  unit="px"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.cardRadiusHint') }}</p>
+                <TemplateFormColor
+                  v-model="form.event_details_calendar_card_color"
+                  :label="t('management.partnerTemplateForm.eventDetailsDesign.cardColor')"
+                  :name="t('management.partnerTemplateForm.colorField.names.calendarCard')"
+                  placeholder="#FFFFFF"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.cardColorHint') }}</p>
+              </TemplateFormDisclosure>
+            </TemplateFormDisclosure>
 
             <!-- Every design but panel spends this on exactly one accent mark:
                  the calendar's circled day, the flanked rules, the arch
@@ -276,13 +351,74 @@
                and the gift page below it are already made of — `glass` was
                drawn before those and is the heavier of the two glasses. -->
           <div class="p-4 space-y-2">
+            <!-- The card's material only exists while the card holds the
+                 countdown and the RSVP. With those in a section of their own
+                 the venue and its map sit on the page, so there is no card to
+                 design — say so instead of offering a choice that changes
+                 nothing. The value is kept, for switching back. -->
+            <TemplateFormDisclosure :open="form.countdown_rsvp_placement === 'card'" content-class="space-y-2">
+              <TemplateFormChoice
+                v-model="infoCardDesignModel"
+                :label="t('management.partnerTemplateForm.infoCardDesign.sectionTitle')"
+                :options="infoCardDesignOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+            </TemplateFormDisclosure>
+            <p v-if="form.countdown_rsvp_placement === 'section'" :class="FIELD_HINT">
+              {{ t('management.partnerTemplateForm.infoCardDesign.onPageHint') }}
+            </p>
+
+            <!-- The map's frame: inside the card while it holds the countdown
+                 and RSVP, on the page once they have a section of their own. A
+                 sibling setting rather than more card designs — the card stays
+                 glass, frosted or engraved, only the map changes. -->
+            <div class="pt-2 space-y-2">
+              <TemplateFormChoice
+                v-model="mapStyleModel"
+                :label="t('management.partnerTemplateForm.infoCardDesign.mapStyleLabel')"
+                :options="mapStyleOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.mapStyleHint') }}</p>
+            </div>
+          </div>
+
+          <!-- The countdown and the reply. In the card (the default, and what
+               every existing template draws) they sit at its foot under the
+               map; in a section of their own they follow the card, each in a
+               design of its own. They move as a pair: a count out here with
+               the reply left in the card would split one question in two. -->
+          <div class="p-4 space-y-2">
             <TemplateFormChoice
-              v-model="infoCardDesignModel"
-              :label="t('management.partnerTemplateForm.infoCardDesign.sectionTitle')"
-              :options="infoCardDesignOptions"
-              :columns="1"
+              v-model="countdownRsvpPlacementModel"
+              :label="t('management.partnerTemplateForm.countdownRsvpDesign.sectionTitle')"
+              :options="countdownRsvpPlacementOptions"
+              variant="segmented"
             />
-            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+            <p :class="FIELD_HINT">
+              {{ t(`management.partnerTemplateForm.countdownRsvpDesign.placementHint.${form.countdown_rsvp_placement}`) }}
+            </p>
+
+            <TemplateFormDisclosure
+              :open="form.countdown_rsvp_placement === 'section'"
+              content-class="space-y-3 pt-2"
+            >
+              <TemplateFormChoice
+                v-model="countdownDesignModel"
+                :label="t('management.partnerTemplateForm.countdownRsvpDesign.countdownLabel')"
+                :options="countdownDesignOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.countdownRsvpDesign.countdownHint') }}</p>
+              <TemplateFormChoice
+                v-model="rsvpDesignModel"
+                :label="t('management.partnerTemplateForm.countdownRsvpDesign.rsvpLabel')"
+                :options="rsvpDesignOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.countdownRsvpDesign.rsvpHint') }}</p>
+            </TemplateFormDisclosure>
           </div>
 
           <!-- The schedule under the invitation. Until this existed the
@@ -318,6 +454,23 @@
             />
             <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.dressCodeDesign.designHint') }}</p>
           </div>
+
+          <!-- The event's photographs. Until this existed every gallery was one
+               column of full-width photos, which is a long scroll at thirty
+               and draws a birthday the way it draws a memorial. Each design is
+               also an arrival — the photos are handed over one at a time as the
+               guest reaches them — and four of the five borrow their material
+               from the photo-stack transition, so a template can carry one look
+               from its transition into its gallery. -->
+          <div class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="galleryDesignModel"
+              :label="t('management.partnerTemplateForm.galleryDesign.sectionTitle')"
+              :options="galleryDesignOptions"
+              :columns="1"
+            />
+            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.galleryDesign.designHint') }}</p>
+          </div>
         </section>
 </template>
 
@@ -330,27 +483,44 @@ import {
   Ban,
   Bookmark,
   CalendarDays,
+  CalendarRange,
   Church,
   CircleDashed,
+  CircleDot,
+  Camera,
   Clapperboard,
   Columns2,
+  Columns3,
+  Compass,
   Crown,
   Diamond,
   Droplets,
+  Feather,
+  Film,
   Flower2,
   Frame,
+  GalleryHorizontalEnd,
+  GalleryVertical,
+  Gauge,
   GitCommitVertical,
+  Grid3x3,
   Heart,
   IdCard,
+  Images,
   Infinity as InfinityIcon,
+  LayoutDashboard,
   LayoutList,
   LayoutPanelTop,
+  MailOpen,
+  Map as MapIcon,
   Maximize2,
   Milestone,
   Minimize2,
   Minus,
   PanelLeft,
   Palette,
+  Paperclip,
+  RectangleVertical,
   PenLine,
   RectangleHorizontal,
   Rows3,
@@ -358,7 +528,11 @@ import {
   Sparkles,
   Spline,
   Square,
+  Tag,
+  Tent,
   Ticket,
+  Timer,
+  Type,
   UserRound,
   Users,
   Waypoints,
@@ -374,6 +548,7 @@ import FileUploadField from '../PartnerTemplateFileField.vue'
 import PlanRequiredNotice from '../TemplateFormPlanNotice.vue'
 import { BTN_SECONDARY_SM, FIELD_HINT, PANEL, SECTION_HEADING } from '../templateUi'
 import { enumModel } from '../formModels'
+import { CALENDAR_CARD_RADIUS_MAX } from '@/components/showcase/calendar-designs/calendarModel'
 import { useTemplateEditor } from '../templateEditorContext'
 
 /**
@@ -409,6 +584,21 @@ const eventDetailsDesignOptions = computed(() => [
   { value: 'flanked', label: t('management.partnerTemplateForm.eventDetailsDesign.types.flanked'), icon: AlignVerticalJustifyCenter },
   { value: 'arch', label: t('management.partnerTemplateForm.eventDetailsDesign.types.arch'), icon: Church },
   { value: 'ticket', label: t('management.partnerTemplateForm.eventDetailsDesign.types.ticket'), icon: Ticket },
+])
+
+// `classic` leads: it is what every calendar template already draws, so the
+// picker opens on no change. Then from the most to the least of the month
+// shown — the full ruled page, the one week, the single day, the month as a
+// dial — which is also roughly from the most formal to the most playful. The
+// card closes the list: the one that is an object laid on the page rather than
+// drawn onto it.
+const calendarStyleOptions = computed(() => [
+  { value: 'classic', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.classic'), icon: Heart },
+  { value: 'wall', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.wall'), icon: Grid3x3 },
+  { value: 'week', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.week'), icon: CalendarRange },
+  { value: 'desk', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.desk'), icon: CalendarDays },
+  { value: 'dial', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.dial'), icon: CircleDot },
+  { value: 'card', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.card'), icon: Paperclip },
 ])
 
 const eventDetailsMarkerColorOptions = computed(() => [
@@ -487,6 +677,45 @@ const dressCodeDesignOptions = computed(() => [
   { value: 'ledger', label: t('management.partnerTemplateForm.dressCodeDesign.types.ledger'), icon: Rows3 },
 ])
 
+// The column leads, because it is what every existing template renders, so the
+// picker opens on no change; the reel follows as the one horizontal answer.
+// The other four carry the photo-stack transition's materials and run from the
+// widest-fitting to the most particular — prints for a wedding or a birthday,
+// the mosaic for anything solemn, the booth for a party, the contact sheet for
+// an anniversary. The event's category never picks one; a partner does.
+const galleryDesignOptions = computed(() => [
+  { value: 'column', label: t('management.partnerTemplateForm.galleryDesign.types.column'), icon: GalleryVertical },
+  { value: 'reel', label: t('management.partnerTemplateForm.galleryDesign.types.reel'), icon: GalleryHorizontalEnd },
+  { value: 'prints', label: t('management.partnerTemplateForm.galleryDesign.types.prints'), icon: Images },
+  { value: 'mosaic', label: t('management.partnerTemplateForm.galleryDesign.types.mosaic'), icon: LayoutDashboard },
+  { value: 'booth', label: t('management.partnerTemplateForm.galleryDesign.types.booth'), icon: Camera },
+  { value: 'film', label: t('management.partnerTemplateForm.galleryDesign.types.film'), icon: Film },
+])
+
+// Off leads, because it is the default and what every existing template is.
+// The four then run from the most traditional to the most playful — the dotted
+// line of a printed Khmer card, the tracked formal line, the reception's place
+// card, the party's gift tag — which is also the order a partner would reach
+// for them going from a wedding to a birthday.
+const guestInviteDesignOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.guestInviteDesign.types.none'), icon: Ban },
+  { value: 'inscribed', label: t('management.partnerTemplateForm.guestInviteDesign.types.inscribed'), icon: PenLine },
+  { value: 'formal', label: t('management.partnerTemplateForm.guestInviteDesign.types.formal'), icon: Feather },
+  { value: 'place_card', label: t('management.partnerTemplateForm.guestInviteDesign.types.place_card'), icon: Tent },
+  { value: 'tag', label: t('management.partnerTemplateForm.guestInviteDesign.types.tag'), icon: Tag },
+])
+
+/**
+ * The cover names nobody and neither does the invitation. Both of the cover's
+ * rows count: its invite text is only drawn beside a name, so with the name
+ * off the cover addresses no one even if that switch is on.
+ */
+const guestUnaddressed = computed(
+  () =>
+    form.guest_invite_design_type === 'none' &&
+    form.cover_stage_layout.showCoverGuestName === false,
+)
+
 // The engraved option is built to sit under the calendar / flanked / arch date
 // designs, which are drawn in the same hairline language. Under the panel or
 // ticket designs it still renders, it just has nothing above it to rhyme with.
@@ -494,6 +723,40 @@ const infoCardDesignOptions = computed(() => [
   { value: 'glass', label: t('management.partnerTemplateForm.infoCardDesign.types.glass'), icon: Droplets },
   { value: 'frosted', label: t('management.partnerTemplateForm.infoCardDesign.types.frosted'), icon: Snowflake },
   { value: 'engraved', label: t('management.partnerTemplateForm.infoCardDesign.types.engraved'), icon: PenLine },
+])
+
+// `window` leads: it is the frame every card has always drawn, so the picker
+// opens on no change. Every frame leaves the embed's bottom edge uncovered —
+// Google's logo and terms live there — which is why none of them is round.
+const mapStyleOptions = computed(() => [
+  { value: 'window', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.window'), icon: MapIcon },
+  { value: 'arch', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.arch'), icon: Church },
+  { value: 'atlas', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.atlas'), icon: Compass },
+  { value: 'polaroid', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.polaroid'), icon: Camera },
+])
+
+const countdownRsvpPlacementOptions = computed(() => [
+  { value: 'card', label: t('management.partnerTemplateForm.countdownRsvpDesign.placements.card') },
+  { value: 'section', label: t('management.partnerTemplateForm.countdownRsvpDesign.placements.section') },
+])
+
+// From the one that is a picture to the one that is only type: the event's own
+// photograph cut into strips, the split-flap board, the dial, the printed line.
+const countdownDesignOptions = computed(() => [
+  { value: 'strips', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.strips'), icon: Columns3 },
+  { value: 'flip', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.flip'), icon: Timer },
+  { value: 'orbit', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.orbit'), icon: Gauge },
+  { value: 'typeset', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.typeset'), icon: Type },
+])
+
+// The printed reply card leads — the one a wedding invitation has always come
+// with — then that card in its envelope, the glass panel the card used to draw
+// it on, and the form set straight onto the page.
+const rsvpDesignOptions = computed(() => [
+  { value: 'card', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.card'), icon: RectangleVertical },
+  { value: 'envelope', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.envelope'), icon: MailOpen },
+  { value: 'glass', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.glass'), icon: Droplets },
+  { value: 'inline', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.inline'), icon: PenLine },
 ])
 
 /**
@@ -537,6 +800,7 @@ const hostDesignHasWelcomeHeader = computed(() => form.host_info_design_type !==
 const contentWidthModel = enumModel(() => form.cover_stage_layout, 'contentWidth')
 const backgroundModeModel = enumModel(() => form, 'stage_mode_background')
 const eventDetailsDesignModel = enumModel(() => form, 'event_details_design_type')
+const calendarStyleModel = enumModel(() => form, 'event_details_calendar_style')
 const eventDetailsMarkerColorSourceModel = enumModel(
   () => form,
   'event_details_marker_color_source',
@@ -547,5 +811,11 @@ const hostCoupleOrnamentModel = enumModel(() => form, 'host_couple_ornament')
 const hostBreaklineStyleModel = enumModel(() => form, 'host_divider_style')
 const agendaDesignModel = enumModel(() => form, 'agenda_design_type')
 const dressCodeDesignModel = enumModel(() => form, 'dress_code_design_type')
+const galleryDesignModel = enumModel(() => form, 'gallery_design_type')
+const guestInviteDesignModel = enumModel(() => form, 'guest_invite_design_type')
 const infoCardDesignModel = enumModel(() => form, 'info_card_design_type')
+const mapStyleModel = enumModel(() => form, 'info_card_map_style')
+const countdownRsvpPlacementModel = enumModel(() => form, 'countdown_rsvp_placement')
+const countdownDesignModel = enumModel(() => form, 'countdown_design_type')
+const rsvpDesignModel = enumModel(() => form, 'rsvp_design_type')
 </script>

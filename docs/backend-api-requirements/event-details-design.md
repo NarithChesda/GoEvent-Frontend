@@ -13,6 +13,29 @@
 > |---|---|---|
 > | `type` | `panel`, `calendar` | `panel`, `calendar`, `flanked`, `arch`, `ticket` |
 > | marker keys apply to | `calendar` only | every type except `panel` |
+>
+> **Updated 2026-09-24: three new optional keys, `calendar_style`,
+> `calendar_card_radius` and `calendar_card_color`.** `calendar_style` says which calendar the `calendar`
+> design draws. The values are:
+> - `classic`: the month grid with a hand-drawn heart, which is what every
+>   calendar template shows today
+> - `wall`: a ruled wall-planner page with the day stamped
+> - `week`: only the event's week, with the day in a capsule
+> - `desk`: a desk flip calendar
+> - `dial`: the month around a ring
+> - `card`: a paper calendar card clipped to the page
+>
+> Absent means `classic`. `calendar_card_radius` is the `card` style's corner
+> radius, an integer 0–40 (px), and `calendar_card_color` is its paper colour, a
+> hex (`#RRGGBB`). Both are sent only with `calendar_style: "card"`. Absent
+> radius means 0, and absent colour means white.
+>
+> The frontend sends `calendar_style` **only** when the type is `calendar` and the style is not
+> `classic`, so no existing template's payload changes. If your validator
+> rejects unknown keys, add `calendar_style`, `calendar_card_radius` and `calendar_card_color` to the allowed set with the enum
+> above. Until you do, a partner who picks a non-classic calendar gets a `400`
+> on save, but nothing that already saves breaks. There is no storage change:
+> it rides inside the same JSON field.
 
 ## Overview
 
@@ -70,6 +93,9 @@ is fully backward compatible — existing templates need no migration.
 | `type`                | string         | yes      | `"panel"`, `"calendar"`, `"flanked"`, `"arch"`, `"ticket"` | Reject any other value (400).                                   |
 | `marker_color_source` | string         | no       | `"accent"`, `"primary"`, `"secondary"`, `"custom"`   | Every type except `panel`. Defaults to `accent` when absent.           |
 | `marker_custom_color` | string \| null | no       | Hex colour (`#RRGGBB`)                               | Only read when `marker_color_source` is `custom`.                      |
+| `calendar_style`      | string         | no       | `"classic"`, `"wall"`, `"week"`, `"desk"`, `"dial"`, `"card"` | Only read when `type` is `calendar`. Absent means `classic`; the frontend never sends `classic`. |
+| `calendar_card_radius` | integer       | no       | 0–40 (px)                                            | Only sent with `calendar_style: "card"`. Absent means 0. |
+| `calendar_card_color` | string        | no       | Hex colour (`#RRGGBB`)                               | Only sent with `calendar_style: "card"`. Absent means white. |
 
 The whole `event_details_design` field may also be `null` (meaning "use the
 default `panel`"). It is **not** a file and carries no images. Keep it an object

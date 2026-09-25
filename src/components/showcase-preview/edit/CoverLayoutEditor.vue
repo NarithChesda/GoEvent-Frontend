@@ -113,6 +113,7 @@ import type {
   CoverElementId,
 } from '@/services/api/types/template.types'
 import {
+  COVER_BLOCK_TEXT,
   COVER_ELEMENT_IDS,
   type CoverTextPalette,
   type ResolvedCoverElementBox,
@@ -126,7 +127,7 @@ interface Props {
   visible: Record<CoverElementId, boolean>
   /**
    * Blocks this layout mode lets a partner move (placeableCoverElementIds).
-   * In rows mode that is only the names-and-details blocks: the four row
+   * In rows mode that is only the photo frame and the names-and-details blocks: the four row
    * blocks still show as snap guides, since a detail block is aligned against
    * them, but they get no outline or handle because the row model places them.
    * Absent = every block.
@@ -166,6 +167,7 @@ const { t } = useAppLanguage()
 const labels = computed<Record<CoverElementId, string>>(() => ({
   header: t('management.coverLayoutEditor.blocks.header'),
   logo: t('management.coverLayoutEditor.blocks.logo'),
+  photo: t('management.coverLayoutEditor.blocks.photo'),
   invite: t('management.coverLayoutEditor.blocks.invite'),
   guest: t('management.coverLayoutEditor.blocks.guest'),
   hosts: t('management.coverLayoutEditor.blocks.hosts'),
@@ -480,10 +482,10 @@ const clearSelection = (): void => emit('select', null)
 // pane because judging type size is the thing you do by looking, not by typing
 // a number and waiting to see what happened.
 //
-// The logo block is excluded throughout: it has no text, and its size IS its
-// box. Same rule the editor pane's font-size field already follows.
+// The logo and the photo frame are excluded throughout: they have no text, and
+// their size IS their box. Same rule the editor pane's font-size field follows.
 // ---------------------------------------------------------------------------
-const hasText = (id: CoverElementId): boolean => id !== 'logo'
+const hasText = (id: CoverElementId): boolean => COVER_BLOCK_TEXT[id] !== null
 
 /** The block whose toolbar is showing: the selection, unless it's mid-drag. */
 const toolbarId = computed<CoverElementId | null>(() => {

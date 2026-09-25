@@ -3,6 +3,7 @@
  * These types ensure type safety across the refactored showcase system
  */
 
+import type { CoverPhotoFields, PhotoBandFields } from '@/services/api/types/event.types'
 import type {
   CoverStageLayout,
   FallingEffectConfig,
@@ -128,7 +129,7 @@ export interface TemplateAssets {
   stage_modes?: StageModesConfig | null
 }
 
-export interface EventPhoto {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields {
   id: number
   event: string
   image: string

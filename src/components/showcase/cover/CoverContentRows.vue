@@ -46,62 +46,35 @@
       :style="blockStyle('logo')"
     >
       <div v-if="showCoverLogo" class="flex items-center justify-center h-full w-full px-4 cover-logo-wrapper">
-        <!-- Merged logo row: stack with a three-tier base (event logo → sample_logo_1 →
-             recoloured temp SVG). sample_logo_2's opaque shape either overlays directly
-             or clips the first host's profile image into the shape. -->
+        <!-- The logo: the event's own, else the template's sample logo, else a
+             recoloured placeholder. With the header hidden the row is the
+             header's height as well as its own, and the logo may grow to fill it.
+             (The photo frame that used to be stacked here is a block of its
+             own now — CoverPhotoFrame.) -->
         <EditableRegion
-          :intent="logoEditIntent"
+          :intent="{ kind: 'eventLogo' }"
           class="h-full w-full flex items-center justify-center"
         >
         <div
-          v-if="useSampleLogos"
-          class="sample-logo-stack"
-          :style="sampleLogoStackStyle"
+          v-if="fillsRow"
+          class="logo-fill"
+          :style="logoFillStyle"
         >
           <img
             v-if="resolvedBaseLogoSrc"
             :src="resolvedBaseLogoSrc"
             :alt="eventTitle + ' logo'"
-            class="sample-logo sample-logo-base"
+            class="logo-fill__image"
             fetchpriority="high"
             v-bind="protectionAttrs"
           />
           <div
             v-else
-            class="sample-logo-base fallback-logo-container"
+            class="fallback-logo-container"
             :style="fallbackLogoStyle"
           >
             <div class="fallback-logo" v-html="processedFallbackLogo" />
           </div>
-          <!-- Host image clipped into sample_logo_2's shape. Bounds auto-detected
-               from the PNG's alpha channel so the host photo fills exactly the
-               opaque region of the shape, whatever its silhouette. -->
-          <div
-            v-if="showClippedHost"
-            class="sample-logo-shape-layer"
-            aria-hidden="false"
-          >
-            <div class="host-clip-box" :style="hostClipBoxStyle">
-              <img
-                :src="getMediaUrl(firstHostImage as string)"
-                :alt="firstHostName || eventTitle + ' host'"
-                class="clipped-host-image"
-                :style="clippedHostStyle"
-                fetchpriority="high"
-                v-bind="protectionAttrs"
-              />
-            </div>
-          </div>
-          <!-- Fallback: render sample_logo_2 as a plain overlay when there's no
-               host image or bounds detection failed (e.g. CORS-tainted canvas). -->
-          <img
-            v-else-if="sampleLogoTwo"
-            :src="getMediaUrl(sampleLogoTwo)"
-            :alt="eventTitle + ' logo overlay'"
-            class="sample-logo sample-logo-overlay"
-            fetchpriority="high"
-            v-bind="protectionAttrs"
-          />
         </div>
         <img
           v-else-if="resolvedBaseLogoSrc"
@@ -186,11 +159,9 @@
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
-import { useShapeMaskBounds } from '@/composables/showcase/useShapeMaskBounds'
 import GuestNameFrame from './GuestNameFrame.vue'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
-import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
 import type {
   CoverElementId,
   CoverFontSlot,
@@ -218,19 +189,12 @@ interface EventText {
 interface Props {
   eventTitle: string
   eventLogo?: string | null
-  /** Template-provided base logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  /**
+   * The template's sample logo, drawn while the event has no logo of its own.
+   * The caller passes null while the photo frame is using it as artwork.
+   */
   sampleLogoOne?: string | null
-  /** Template-provided overlay logo (transparency). Its opaque shape is used as a clip mask for the first host image. */
-  sampleLogoTwo?: string | null
-  /** First host profile image — clipped by the sample_logo_2 shape when provided. */
-  firstHostImage?: string | null
-  /** First host display name — alt text for the clipped host image. */
-  firstHostName?: string
-  /** First host id — lets the preview editor open the host drawer when the logo row is actually framing that host's photo. */
-  firstHostId?: number | null
-  /** CSS variables from cover_stage_layout that control the clipped host image's size + offset within the shape. */
-  hostClipStyle?: Record<string, string>
-  /** Render the cover text header row. When false, the event title row collapses and sample logos fill the merged logo row. */
+  /** Render the cover text header row. When false, the event title row collapses and the logo fills the merged row. */
   showCoverHeaderText?: boolean
   /** Draw the logo. When false the row keeps its space and renders empty, so no other block moves. */
   showCoverLogo?: boolean
@@ -307,42 +271,27 @@ const ROW_STYLE_KEYS: Record<CoverRowElementId, keyof RowStyles> = {
 const blockStyle = (id: CoverRowElementId): Record<string, string> =>
   isFree.value ? props.elementStyles![id] : props.rowStyles[ROW_STYLE_KEYS[id]]
 
-// Render the merged logo row as a stack whenever it can carry the
-// sample_logo_2 overlay (or always when the cover header row is hidden,
-// so the stack absorbs the title row's height). Previously this was
-// gated solely on !showCoverHeaderText, which meant templates that ship
-// sample_logo_2 + a host portrait still rendered as a plain logo on
-// cover when the header text was visible — diverging from
-// HostInfoBirthday, which always renders the stack and thus always shows
-// the overlay. Keying on sampleLogoTwo too closes that gap. The base
-// slot of the stack still resolves via the three-tier fallback (event
-// primary logo → template sample_logo_1 → recoloured temp SVG).
-const useSampleLogos = computed(
-  () => !props.showCoverHeaderText || !!props.sampleLogoTwo,
-)
+// With the header hidden, the logo row carries the header's height too, and the
+// logo is laid out in a box of its own shape that fills the row — the merged
+// row exists to give it that room.
+const fillsRow = computed(() => !props.showCoverHeaderText)
 
-// Resolved URL for the stack's base-image slot. Prefers the event's own
-// logo (event.logo_one at the call site, passed in as eventLogo), then the
-// template-provided sample_logo_1. Returns null when neither is available,
-// which triggers the inline recoloured SVG fallback in the template below.
+// The event's own logo (event.logo_one at the call site), else the template's
+// sample logo. Null means neither, which draws the recoloured placeholder SVG.
 const resolvedBaseLogoSrc = computed(() => {
   if (props.eventLogo) return props.getMediaUrl(props.eventLogo)
   if (props.sampleLogoOne) return props.getMediaUrl(props.sampleLogoOne)
   return null
 })
 
-// Detect the active base logo's natural aspect ratio so the stack container
-// can size to match its rendered footprint. Without this the stack fills the
-// row and the absolute-positioned sample_logo_2 overlay + host-clip box span
-// a box whose aspect diverges from the base image's — most visible on narrow
-// mobile rows, where the combined layer reads as vertically stretched. For
-// the inline SVG fallback we can't measure via Image(); aspect falls back to
-// 1 (square), which matches temp-showcase-logo.svg's viewBox.
+// The logo's natural aspect ratio, so the filling box takes the logo's shape
+// and grows until one side meets the row. The inline SVG placeholder can't be
+// measured via Image(); it falls back to 1, which matches its square viewBox.
 const baseLogoAspect = ref<number | null>(null)
 watch(
-  // A hidden logo is never laid out, so there is nothing to measure — and
-  // measuring it means downloading it.
-  () => (props.showCoverLogo ? resolvedBaseLogoSrc.value : null),
+  // A logo drawn at its natural size needs no measuring, and a hidden one is
+  // never laid out — measuring either would only mean downloading it early.
+  () => (props.showCoverLogo && fillsRow.value ? resolvedBaseLogoSrc.value : null),
   (url, _prev, onCleanup) => {
     baseLogoAspect.value = null
     if (!url || typeof window === 'undefined') return
@@ -363,72 +312,12 @@ watch(
   { immediate: true },
 )
 
-// --logo-aspect drives both aspect-ratio and the width formula on the stack.
-const sampleLogoStackStyle = computed<Record<string, string>>(() => ({
+// --logo-aspect drives both aspect-ratio and the width formula on the box.
+const logoFillStyle = computed<Record<string, string>>(() => ({
   '--logo-aspect': `${baseLogoAspect.value ?? 1}`,
 }))
 
 const { protectionAttrs } = useAssetProtection()
-
-// Auto-detect the opaque bounding box of sample_logo_2 so the host photo can
-// be scaled/positioned to fill exactly the shape silhouette (not the full
-// image footprint). Falls back to null on CORS/tainted-canvas errors.
-// Null while the logo is switched off, for the aspect watcher's reason: the
-// analysis downloads the image, and nothing would draw it.
-const sampleLogoTwoUrl = computed(() =>
-  props.showCoverLogo && props.sampleLogoTwo ? props.getMediaUrl(props.sampleLogoTwo) : null,
-)
-const { bounds: shapeBounds } = useShapeMaskBounds(sampleLogoTwoUrl)
-
-// Render the clipped host image only when every piece is available: the
-// shape, the host photo, and valid detected bounds. Otherwise fall through
-// to rendering sample_logo_2 as a plain overlay.
-const showClippedHost = computed(
-  () => !!props.sampleLogoTwo && !!props.firstHostImage && !!shapeBounds.value,
-)
-
-// In the preview editor, what a click on the logo row should open depends on
-// what the row is actually showing. When sample_logo_2 is acting as a frame
-// around the first host's photo, the visually dominant (and only host-owned)
-// element is that photo — so the click opens the host drawer instead of the
-// event-logo file picker. Every other case (plain logo, or the sample_logo_2
-// overlay rendered without a host photo) is still an event-logo edit.
-const logoEditIntent = computed<EditIntent>(() =>
-  showClippedHost.value && props.firstHostId
-    ? { kind: 'hostImage', hostId: props.firstHostId }
-    : { kind: 'eventLogo' },
-)
-
-// Style for the masked container: matches sample_logo_2's rendered footprint
-// via aspect-ratio + max-w/h (behaves like object-fit: contain in the flex
-// parent), with the PNG itself as the CSS mask so only the opaque shape is
-// visible. The --host-clip-offset-* vars flow through for object-position.
-const hostClipBoxStyle = computed<Record<string, string>>(() => {
-  const b = shapeBounds.value
-  const url = sampleLogoTwoUrl.value
-  if (!b || !url) return {} as Record<string, string>
-  const maskUrl = `url("${url}")`
-  return {
-    aspectRatio: `${b.aspectRatio}`,
-    maskImage: maskUrl,
-    WebkitMaskImage: maskUrl,
-    ...(props.hostClipStyle ?? {}),
-  }
-})
-
-// Position the host image at the detected shape bounds inside the masked
-// container so cover-scaling fills the silhouette tightly. object-position
-// (from --host-clip-offset-*) lets templates pan the face within cover-crop.
-const clippedHostStyle = computed<Record<string, string>>(() => {
-  const b = shapeBounds.value
-  if (!b) return {} as Record<string, string>
-  return {
-    left: `${b.x * 100}%`,
-    top: `${b.y * 100}%`,
-    width: `${b.width * 100}%`,
-    height: `${b.height * 100}%`,
-  }
-})
 
 // Refs for guest name sizing (pixel max-width derived from container width)
 const guestContainerRef = ref<HTMLElement | null>(null)
@@ -564,6 +453,25 @@ watch(() => [props.guestNameMaxWidthPercent, isFree.value], () => {
   display: block;
 }
 
+/* The rows lie over the photo frame (drawn beneath them so text laid across a
+   photograph stays legible), so they catch pointers only where they draw
+   something. Their empty stretches — a whole stage in free mode, a full-width
+   row in rows mode — would otherwise sit over the frame and swallow the tap
+   that opens its editor in the studio. A tap that reaches nothing here still
+   lands on the cover's own open-envelope handler, which is an ancestor. */
+.inner-container-rows {
+  pointer-events: none;
+}
+
+.scaled-header,
+.scaled-invite-text,
+.cover-logo-wrapper > *,
+.guest-content-container > *,
+.inner-container-rows :deep(.inline-edit-control),
+.inner-container-rows :deep(.edit-region-control) {
+  pointer-events: auto;
+}
+
 /* left/top already carry the centre-to-corner offset (see coverElementStyle) —
    deliberately NOT a translate, which the fade-in keyframes would overwrite. */
 .inner-container-rows.is-free .cover-free-block {
@@ -619,20 +527,19 @@ watch(() => [props.guestNameMaxWidthPercent, isFree.value], () => {
   margin: 0 auto;
 }
 
-/* The flex wrapper around the stack becomes a size container so the stack
+/* The flex wrapper around the logo becomes a size container so the filling box
    below can derive its width from the wrapper's actual dimensions (including
    px-4 padding already applied to the wrapper). */
 .cover-logo-wrapper {
   container-type: size;
 }
 
-/* Sample logo stack — sized to the active base logo's natural aspect so the
-   absolute-positioned sample_logo_2 overlay and host-clip box align with the
-   base image's visible footprint (no letterbox offset inside the stack).
-   Width is the larger size that fits inside both wrapper-width and
+/* The merged row's logo box — the logo's own shape, as large as the row
+   allows. Width is the larger size that fits inside both wrapper-width and
    wrapper-height × aspect; height: auto + aspect-ratio derives the matching
-   height so the box stays logo-shaped on portrait phones too. */
-.sample-logo-stack {
+   height so the box stays logo-shaped on portrait phones too. The image in it
+   is capped by the box, not stretched to it. */
+.logo-fill {
   position: relative;
   display: flex;
   align-items: center;
@@ -644,79 +551,13 @@ watch(() => [props.guestNameMaxWidthPercent, isFree.value], () => {
   max-height: 100%;
 }
 
-.sample-logo {
+.logo-fill__image {
   display: block;
   max-width: 100%;
   max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
-}
-
-.sample-logo-base {
-  position: relative;
-  z-index: 1;
-}
-
-.sample-logo-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* Flex wrapper that sizes the clip box like object-fit: contain — the inner
-   host-clip-box grows to fill the stack while aspect-ratio + max-w/h cap it
-   to sample_logo_2's natural footprint. */
-.sample-logo-shape-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Masked container: CSS mask from sample_logo_2 reveals only the shape's
-   opaque pixels, so anything absolutely positioned inside is silhouetted to
-   the shape. aspect-ratio comes from the image's natural dimensions.
-   IMPORTANT: width is intentionally NOT set — when both width and height are
-   explicit, aspect-ratio is ignored and the mask gets stretched to fill the
-   row (e.g. a circle becomes an oval). With height:100% + aspect-ratio, the
-   width auto-derives; max-width:100% clamps tall containers by reducing both
-   dimensions proportionally. */
-.host-clip-box {
-  position: relative;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  /* aspect-ratio is set inline from detected shape bounds */
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  overflow: hidden;
-}
-
-/* Host photo positioned at the detected opaque-pixel bounding box and
-   cover-scaled to fill it. object-position is driven by template vars so
-   face framing can be tweaked per template without breaking the clip. */
-.clipped-host-image {
-  position: absolute;
-  object-fit: cover;
-  object-position: var(--host-clip-offset-x, 50%) var(--host-clip-offset-y, 50%);
-  display: block;
 }
 
 </style>

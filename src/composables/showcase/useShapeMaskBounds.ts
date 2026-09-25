@@ -104,23 +104,33 @@ function analyze(url: string): Promise<ShapeMaskBounds | null> {
  */
 export function useShapeMaskBounds(url: Ref<string | null | undefined>) {
   const bounds = ref<ShapeMaskBounds | null>(null)
+  /**
+   * Whether the current URL's analysis has finished — so a caller can tell
+   * "still measuring" (draw nothing yet) from "could not measure" (fall back),
+   * which `bounds` alone reports identically as null.
+   */
+  const settled = ref(false)
 
   watch(
     url,
     async (next, _prev, onCleanup) => {
       if (!next) {
         bounds.value = null
+        settled.value = true
         return
       }
+      settled.value = false
       let cancelled = false
       onCleanup(() => {
         cancelled = true
       })
       const result = await analyze(next)
-      if (!cancelled) bounds.value = result
+      if (cancelled) return
+      bounds.value = result
+      settled.value = true
     },
     { immediate: true },
   )
 
-  return { bounds }
+  return { bounds, settled }
 }

@@ -20,9 +20,9 @@
  *
  *   1. a palette that shifts hue with light — pale yellow highlights, red-brown
  *      shadows — rather than one yellow at different brightnesses;
- *   2. a fill with a horizon: a hard line where the bright upper half of every
- *      glyph meets a dark reflection. A soft fade reads as a printed gradient;
- *      a hard one reads as a polished surface;
+ *   2. a fill lit from above that never crosses the glyph with a line. A hard
+ *      horizon (bright directly against dark) reads as chrome at 40px and as a
+ *      strike-through at 13px, and on Khmer it cuts every consonant in half;
  *   3. a drawn rim — a hairline of dark metal around every glyph, which is what
  *      separates pale gold from a pale card;
  *   4. a shadow that sits UNDER the letters rather than hugging them — a halo
@@ -54,8 +54,9 @@
    too dark: on an invitation the bright gold is the point, and the rim below is
    what keeps it legible.
 
-   `--tfx-spec` is the specular line just above the horizon; `--tfx-line` is the
-   rim drawn around each glyph and the contact edge under it. */
+   `--tfx-spec` and `--tfx-reflect` are relief's highlight and its reflected
+   rise; `--tfx-line` is the rim drawn around each glyph and the contact edge
+   under it. */
 
 .tfx--gold {
   --tfx-spec: #fff3c8;
@@ -120,25 +121,29 @@
      can't parse drops the whole image at computed-value time — and with the
      text fill already transparent, the names would render as nothing. */
 
-  /* Foil: a flat mirror. The glyph's upper half brightens toward a specular line
-     at 47%, meets the darkest tone at 51% — the horizon — and the reflected
-     light comes straight back up below it. Brightest directly against darkest
-     is what reads as polish; the earlier version put 8% of fade between them
-     and the lettering read as a gradient print. The dark band is kept thin so
-     that at 13px it tints the stroke rather than striping it. */
+  /* Foil: stamped leaf, lit from above. Light sits high on the body (the rim
+     tone at 42%) and eases through face and mid gold to amber at the baseline.
+     Nothing darker than `--tfx-low` lands on the glyph body; the deepest tone is
+     only in the padding, where it shades the tops of vowels and the feet of
+     subscripts.
+
+     This had a mirror's horizon — the specular tone at 47% directly against the
+     deepest at 51%. Because stops are a share of the ink box, that line fell
+     across the middle of every glyph at every size: chrome at 40px, a
+     strike-through at 13px, and on Khmer it cut through the consonant's loops
+     and counters, the part that is actually read. Rejected on a real card as
+     text "sliced in the middle". Metal is carried by the palette, the rim and
+     the light that crosses it, not by a line inside the letter. */
   .tfx--foil {
     --tfx-fill: linear-gradient(
       180deg,
       var(--tfx-low) 0%,
-      var(--tfx-mid) 20%,
-      var(--tfx-face) 32%,
+      var(--tfx-mid) 22%,
+      var(--tfx-face) 33%,
       var(--tfx-rim) 42%,
-      var(--tfx-spec) 47%,
-      var(--tfx-deep) 51%,
-      var(--tfx-mid) 55%,
-      var(--tfx-reflect) 61%,
-      var(--tfx-face) 66%,
-      var(--tfx-low) 78%,
+      var(--tfx-face) 52%,
+      var(--tfx-mid) 62%,
+      var(--tfx-low) 74%,
       var(--tfx-deep) 100%
     );
   }
@@ -179,12 +184,14 @@
          cream and one to a dark umber, each only where its noise peaks. The first
          version was single-pixel grey noise, which desaturated the metal and read
          as dirt on large script; larger or stronger patches than these lay a
-         visible pale wash across the first letters of a word.
+         visible pale wash across the first letters of a word. The dark field is
+         the weaker of the two: once foil lost its horizon, the umber patches
+         were the only dark marks on a smooth face and read as smudges at 40px.
 
          Drawn normally, NOT through a blend mode — whether a background blend
          mode survives `background-clip: text` differs between engines, and where
          it doesn't, a texture tuned for one renders as mottling. */
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><filter id='l' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.13' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.97  0 0 0 0 0.86  1.3 0 0 0 -0.76'/></filter><filter id='d' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.13' numOctaves='2' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  -1.2 0 0 0 0.5'/></filter><rect width='96' height='96' filter='url(%23l)'/><rect width='96' height='96' filter='url(%23d)'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><filter id='l' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.13' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.97  0 0 0 0 0.86  1.3 0 0 0 -0.76'/></filter><filter id='d' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.13' numOctaves='2' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  -0.9 0 0 0 0.3'/></filter><rect width='96' height='96' filter='url(%23l)'/><rect width='96' height='96' filter='url(%23d)'/></svg>"),
       var(--tfx-fill);
     background-size: 240% 100%, 96px 96px, 100% 100%;
     background-position: 100% 0, 0 0, 0 0;

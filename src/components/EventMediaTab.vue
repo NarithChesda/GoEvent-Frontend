@@ -211,6 +211,8 @@
                     :is-last="index === media.length - 1"
                     @delete="deleteMedia"
                     @set-featured="toggleFeatured"
+                    @set-cover="toggleMark($event, 'cover')"
+                    @set-countdown="toggleMark($event, 'countdown')"
                     @drag-start="handleDragStart"
                     @drag-end="handleDragEnd"
                     @move-up="handleMoveUp(mediaItem)"
@@ -312,6 +314,11 @@ import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { provideAccordionGroup } from '@/composables/useAccordionGroup'
 import { defineResilientAsyncComponent } from '@/utils/asyncComponent'
 import MediaCard from './MediaCard.vue'
+import { coverPhotoPayload, responseSupportsCoverPhoto } from '@/components/showcase/cover/coverPhoto'
+import {
+  countdownPhotoPayload,
+  responseSupportsCountdownPhoto,
+} from '@/components/showcase/countdown-rsvp/countdownRsvp'
 
 // ---------------------------------------------------------------------------
 // Section cards and overlays, code-split.
@@ -521,6 +528,78 @@ const toggleFeatured = async (mediaItem: EventPhoto) => {
   } catch (err) {
     console.error('Failed to update featured status:', err)
     showError(t('management.media.toast.featuredNetworkError'))
+  }
+}
+
+type MarkRole = 'cover' | 'countdown'
+
+/**
+ * The blocks drawn from one photo the organizer marks for each — the cover's
+ * photo frame and the countdown's strips. Same errand for both, as in the
+ * photos drawer; only the flag and the words differ.
+ */
+const MARKS = {
+  cover: {
+    flag: 'is_cover_photo',
+    payload: coverPhotoPayload,
+    supports: responseSupportsCoverPhoto,
+    set: 'management.media.toast.coverSet',
+    cleared: 'management.media.toast.coverCleared',
+    unsupported: 'management.media.uploadModal.gallery.coverUnsupported',
+    failed: 'management.media.uploadModal.gallery.coverFailed',
+  },
+  countdown: {
+    flag: 'is_countdown_photo',
+    payload: countdownPhotoPayload,
+    supports: responseSupportsCountdownPhoto,
+    set: 'management.media.toast.countdownSet',
+    cleared: 'management.media.toast.countdownCleared',
+    unsupported: 'management.media.uploadModal.gallery.countdownUnsupported',
+    failed: 'management.media.uploadModal.gallery.countdownFailed',
+  },
+} as const
+
+/**
+ * One photo per role per event, as in the photos drawer: marking a photo takes
+ * the mark off the one that had it, and tapping the marked photo clears it.
+ * The chosen photo is sent first, because a server that doesn't store the
+ * flag answers 200 without it — nothing else is touched until that is known.
+ */
+const toggleMark = async (mediaItem: EventPhoto, role: MarkRole) => {
+  if (!props.eventId) return
+  const eventId = props.eventId
+  const { flag, payload, supports, set, cleared, unsupported, failed } = MARKS[role]
+  const makeOn = mediaItem[flag] !== true
+
+  try {
+    const response = await mediaService.updateEventMedia(eventId, mediaItem.id, payload(makeOn))
+    if (!response.success || !response.data) {
+      showError(response.message || t(failed))
+      return
+    }
+    if (!supports(response.data)) {
+      showError(t(unsupported))
+      return
+    }
+    const saved = response.data
+    const previous = makeOn
+      ? media.value.filter((item) => item[flag] === true && item.id !== mediaItem.id)
+      : []
+    await Promise.all(
+      previous.map((item) => mediaService.updateEventMedia(eventId, item.id, payload(false))),
+    )
+    media.value = media.value.map((item) =>
+      item.id === mediaItem.id
+        ? saved
+        : previous.some((other) => other.id === item.id)
+          ? { ...item, [flag]: false }
+          : item,
+    )
+    emit('media-updated', media.value)
+    showSuccess(t(makeOn ? set : cleared))
+  } catch (err) {
+    console.error(`Failed to update the ${role} photo:`, err)
+    showError(t(failed))
   }
 }
 

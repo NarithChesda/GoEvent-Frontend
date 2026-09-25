@@ -76,6 +76,7 @@ const {
   updateLanguageContent,
   availableLanguages,
   applyEventFieldPatch,
+  applyPhotoFieldPatch,
   applyPreviewTemplateFallback,
   setStagedTemplatePreview,
   clearStagedTemplatePreview,
@@ -196,6 +197,7 @@ const onFrameMessage = (msg: MessageEvent) => {
     void updateLanguageContent(parsed.language).finally(publishLanguages)
   }
   if (parsed.type === 'patch-event') applyEventFieldPatch(parsed.fields)
+  if (parsed.type === 'patch-photos') applyPhotoFieldPatch(parsed.photos)
   if (parsed.type === 'preview-template') {
     setStagedTemplatePreview(parsed.templateData)
     // The push now carries whatever this frame last reported, so the local

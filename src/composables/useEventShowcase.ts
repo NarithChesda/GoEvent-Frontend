@@ -7,6 +7,9 @@ import { eventsService, type EventPaymentMethod } from '../services/api'
 import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
+  GuestInviteDesignConfig,
+  GalleryDesignConfig,
+  CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   FallingEffectConfig,
@@ -18,7 +21,12 @@ import type {
   StageModesConfig,
   TextEffectsConfig,
 } from '../services/api/types/template.types'
-import type { StoredMusicStartStage } from '../services/api/types/event.types'
+import type {
+  CountdownPhotoFields,
+  CoverPhotoFields,
+  PhotoBandFields,
+  StoredMusicStartStage,
+} from '../services/api/types/event.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -30,6 +38,9 @@ import { resolveStageModesForEvent } from './showcase/useStageModes'
 import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
 // Imports - Utilities
+import { galleryPhotosOf } from '../components/showcase/photo-band/photoBand'
+import { coverFramePhotoId } from '../components/showcase/cover/coverPhoto'
+import { countdownStripsPhotoId } from '../components/showcase/countdown-rsvp/countdownRsvp'
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
 import { translateRSVP, type SupportedLanguage } from '../utils/translations'
 
@@ -172,6 +183,14 @@ export interface TemplateAssets {
     cover_right_decoration?: string
     sample_logo_1?: string | null
     sample_logo_2?: string | null
+    /**
+     * The cover photo frame's artwork and shape. Together they replace the
+     * sample-logo pair, which served as both until they existed (see
+     * coverPhotoArt). Backend fields pending:
+     * docs/backend-api-requirements/cover-photo-frame.md.
+     */
+    cover_photo_frame_image?: string | null
+    cover_photo_shape_image?: string | null
     header_text_image?: string | null
     /**
      * Custom breakline art for the `crest` host design. When present it is
@@ -238,6 +257,23 @@ export interface TemplateAssets {
    */
   dress_code_design?: DressCodeDesignConfig | null
   /**
+   * Guest dedication on the invitation (inscribed | formal | place_card | tag).
+   * Absent means no block at all — it is additive, so nothing is backfilled.
+   */
+  guest_invite_design?: GuestInviteDesignConfig | null
+  /**
+   * Photo gallery composition (column | reel | prints | mosaic | booth | film).
+   * Absent / unknown renders `column`, which is what every gallery rendered
+   * before this field existed.
+   */
+  gallery_design?: GalleryDesignConfig | null
+  /**
+   * The countdown and the RSVP in a section of their own after the info card.
+   * Absent keeps both inside the card, as every template drew them — never
+   * backfilled.
+   */
+  countdown_rsvp_design?: CountdownRsvpDesignConfig | null
+  /**
    * Transition-stage Save the Date composition. Absent falls back per stage —
    * `script` on the decoration transition, `engraved` on the door — so every
    * already-published template renders unchanged.
@@ -261,7 +297,7 @@ export interface TemplateAssets {
   guest_title_frame_right?: string | null
 }
 
-export interface EventPhoto {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields, CountdownPhotoFields {
   id: number
   event: string
   image: string
@@ -684,6 +720,28 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     return [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
+  /**
+   * The photos the gallery shows, and so the ones its lightbox pages through:
+   * every photo not set to appear as a band, nor the one the cover's photo
+   * frame is drawing, nor the one the countdown's strips are cut from. Each is
+   * that photograph's place on the invitation, so it isn't repeated here.
+   */
+  const galleryPhotos = computed(() =>
+    galleryPhotosOf(
+      eventPhotos.value,
+      coverFramePhotoId(
+        eventPhotos.value,
+        event.value?.template_assets?.cover_stage_layout,
+        event.value?.template_assets?.assets,
+      ),
+      countdownStripsPhotoId(
+        eventPhotos.value,
+        event.value?.template_assets?.countdown_rsvp_design,
+        event.value?.countdown_enabled !== false,
+      ),
+    ),
+  )
+
   const paymentMethods = computed(() => {
     const methods = event.value?.payment_methods || []
     if (methods.length === 0) return []
@@ -1035,6 +1093,30 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     showcaseData.value = {
       ...showcaseData.value,
       event: { ...showcaseData.value.event, ...fields },
+    }
+  }
+
+  /**
+   * Merges fields into individual photos, matched by id — the same idea as
+   * `applyEventFieldPatch`, one level down. Preview-only (the bridge's
+   * `patch-photos`): it is how the studio draws a photo band's unsaved section,
+   * colour and framing, and how it puts the stored ones back on cancel. The
+   * showcase payload carries the list as `photos` or `event_photos`, so both
+   * are patched. A photo the frame doesn't have is ignored.
+   */
+  const applyPhotoFieldPatch = (patches: Array<{ id: number } & Record<string, unknown>>) => {
+    if (!showcaseData.value || patches.length === 0) return
+    const byId = new Map(patches.map((patch) => [patch.id, patch]))
+    const patchList = (list?: EventPhoto[]) =>
+      list?.map((photo) => (byId.has(photo.id) ? { ...photo, ...byId.get(photo.id) } : photo))
+    const current = showcaseData.value.event
+    showcaseData.value = {
+      ...showcaseData.value,
+      event: {
+        ...current,
+        ...(current.photos ? { photos: patchList(current.photos) } : {}),
+        ...(current.event_photos ? { event_photos: patchList(current.event_photos) } : {}),
+      },
     }
   }
 
@@ -1596,6 +1678,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     hosts,
     agendaItems,
     eventPhotos,
+    galleryPhotos,
     paymentMethods,
     dressCodes,
     primaryColor,
@@ -1624,6 +1707,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     loadShowcase,
     refreshShowcaseData,
     applyEventFieldPatch,
+    applyPhotoFieldPatch,
     applyPreviewTemplateFallback,
     setStagedTemplatePreview,
     clearStagedTemplatePreview,

@@ -189,6 +189,12 @@ export const rsvpTranslations: Record<
     countdown_header: string
     countdown_day: string
     countdown_hour: string
+    // The countdown + RSVP section's own designs: plural units (the card's count
+    // above names one day and one hour), and the reply card's mark.
+    countdown_days: string
+    countdown_hours: string
+    countdown_minutes: string
+    rsvp_mark: string
 
     // Dress code section
     dress_code_header: string
@@ -406,6 +412,10 @@ export const rsvpTranslations: Record<
     countdown_header: 'Countdown',
     countdown_day: 'Day',
     countdown_hour: 'Hour',
+    countdown_days: 'Days',
+    countdown_hours: 'Hours',
+    countdown_minutes: 'Minutes',
+    rsvp_mark: 'R.S.V.P.',
 
     // Dress code section
     dress_code_header: 'Dress Code Guide',
@@ -623,6 +633,10 @@ export const rsvpTranslations: Record<
     countdown_header: 'រាប់ថយក្រោយ',
     countdown_day: 'ថ្ងៃ',
     countdown_hour: 'ម៉ោង',
+    countdown_days: 'ថ្ងៃ',
+    countdown_hours: 'ម៉ោង',
+    countdown_minutes: 'នាទី',
+    rsvp_mark: 'សូមឆ្លើយតប',
 
     // Dress code section
     dress_code_header: 'សម្លៀកបំពាក់',
@@ -840,6 +854,10 @@ export const rsvpTranslations: Record<
     countdown_header: '倒计时',
     countdown_day: '天',
     countdown_hour: '小时',
+    countdown_days: '天',
+    countdown_hours: '小时',
+    countdown_minutes: '分钟',
+    rsvp_mark: '敬请回复',
 
     // Dress code section
     dress_code_header: '着装要求',

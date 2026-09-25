@@ -202,3 +202,51 @@ defaults to `glass` either way.
   both the public and private RSVP flows without either component needing to
   know about the setting. The map iframe is Google's and keeps its own colours;
   only its frame changes.
+
+---
+
+## Addendum (Sept 2026): `map_style`, the map's frame
+
+> **Status: PENDING**, and optional: one more key in the same blob. Absent means
+> `window`, the frame every card already draws.
+
+The card's map can now be set in a frame of the template's choosing. It is a
+**sibling key** of `type`, not more treatments, because every frame still sits
+in whichever card material (`glass` / `frosted` / `engraved`) the template chose:
+
+```json
+{
+  "type": "frosted",
+  "map_style": "polaroid"
+}
+```
+
+| Field       | Type   | Required | Allowed values                              | Notes |
+|-------------|--------|----------|---------------------------------------------|-------|
+| `map_style` | string | no       | `window`, `arch`, `atlas`, `polaroid`       | Absent / `null` / unknown = `window`. |
+
+| Value      | Description |
+|------------|-------------|
+| `window`   | The rounded 16:9 window every card draws today. |
+| `arch`     | An arched window (a true semicircle dome) with a hairline arch drawn round it. |
+| `atlas`    | An old map's checkered border round the map, a compass rose on its corner. |
+| `polaroid` | An instant print laid on the card, taped at the top, the venue written in its wide bottom margin. |
+
+- **The editor never sends `window`.** A template that keeps the window saves
+  exactly the `info_card_design` it always did, so if the validator refuses
+  unknown keys, only templates that pick another frame are affected. **It must
+  allow `map_style`.**
+- Validate it, when present, against the four values above; `null` is allowed.
+- No migration, no backfill, no new endpoint. It travels wherever
+  `info_card_design` already does.
+
+Every frame leaves the bottom edge of the Google embed square and uncovered,
+because Google's logo and terms sit in its corners and the Maps embed terms do
+not allow them to be hidden. That is why there is no circular frame.
+
+The countdown and the RSVP can also leave this card altogether; that is a
+separate config, [countdown-rsvp-design.md](countdown-rsvp-design.md). When
+they do, the frontend draws **no card**: the venue name and the map are set on
+the page, and `map_style` is the only part of this config that still applies
+(the `window` frame then being a 4:3 plate rather than the card's 16:9 window).
+`type` is kept and returned unchanged, for switching back. No backend change.

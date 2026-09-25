@@ -76,11 +76,7 @@
         :event-title="eventTitle"
         :event-logo="eventLogo"
         :sample-logo-one="sampleLogoOne"
-        :sample-logo-two="sampleLogoTwo"
-        :first-host-image="firstHostImage"
-        :first-host-name="firstHostName"
-        :first-host-id="firstHostId"
-        :host-clip-style="hostClipStyle"
+        :photo-frame="photoFrame"
         :show-cover-header-text="showCoverHeaderText"
         :show-cover-logo="showCoverLogo"
         :show-cover-invite-text="showCoverInviteText"
@@ -125,11 +121,7 @@
         :event-title="eventTitle"
         :event-logo="eventLogo"
         :sample-logo-one="sampleLogoOne"
-        :sample-logo-two="sampleLogoTwo"
-        :first-host-image="firstHostImage"
-        :first-host-name="firstHostName"
-        :first-host-id="firstHostId"
-        :host-clip-style="hostClipStyle"
+        :photo-frame="photoFrame"
         :show-cover-header-text="showCoverHeaderText"
         :show-cover-logo="showCoverLogo"
         :show-cover-invite-text="showCoverInviteText"
@@ -186,15 +178,14 @@
       :class="[animationClasses.mainContentClasses.value, cursorClasses]"
       style="z-index: 30; touch-action: none;"
     >
+      <!-- The photo frame, beneath the copy: text laid across a photograph
+           stays legible, and the rows catch pointers only where they draw. -->
+      <CoverPhotoFrame v-if="photoFrame" v-bind="photoFrame" :show-animations="true" />
+
       <CoverContentRows
         :event-title="eventTitle"
         :event-logo="eventLogo"
         :sample-logo-one="sampleLogoOne"
-        :sample-logo-two="sampleLogoTwo"
-        :first-host-image="firstHostImage"
-        :first-host-name="firstHostName"
-        :first-host-id="firstHostId"
-        :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
         :show-cover-logo="showCoverLogo"
         :show-cover-invite-text="showCoverInviteText"
@@ -225,7 +216,7 @@
 
       <!-- The hosts' names, the date and the venue, when the template draws
            them. Inside this layer rather than beside it, so they leave with the
-           rest of the cover copy on the tap. -->
+           rest of the cover copy on the tap — as the photo frame above does. -->
       <CoverDetailBlocks v-if="detailBlocks" v-bind="detailBlocks" :show-animations="true" />
 
       <!-- Swipe Up Arrow Indicator. Hidden by default when the envelope can't
@@ -253,10 +244,16 @@ import {
   CoverContentRows,
   CoverDetailBlocks,
   CoverGilding,
+  CoverPhotoFrame,
   DoorPanel,
   SwipeUpArrow,
 } from './cover'
 import type { CoverDetailBlocksBinding, CoverEventDetails } from './cover/coverDetails'
+import {
+  coverPhotoArt,
+  type CoverPhotoFrameBinding,
+  type CoverPhotoSource,
+} from './cover/coverPhoto'
 import AmbientEffect from './AmbientEffect.vue'
 
 // Local interface for template assets (component-specific subset)
@@ -269,6 +266,8 @@ interface CoverTemplateAssets {
   basic_decoration_photo?: string | null
   sample_logo_1?: string | null
   sample_logo_2?: string | null
+  cover_photo_frame_image?: string | null
+  cover_photo_shape_image?: string | null
   header_text_image?: string | null
   cover_host_separator_image?: string | null
 }
@@ -283,12 +282,8 @@ interface Props {
   isContentHidden: boolean
   eventTitle: string
   eventLogo?: string | null
-  /** First host profile image — clipped by sample_logo_2 in the merged logo row when the cover header is hidden. */
-  firstHostImage?: string | null
-  /** First host display name — used as the alt text for the clipped host image. */
-  firstHostName?: string
-  /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
-  firstHostId?: number | null
+  /** The photograph the photo frame shows (resolveCoverPhotoSource). */
+  coverPhoto?: CoverPhotoSource | null
   guestName?: string | null
   templateAssets?: CoverTemplateAssets | null
   primaryColor: string
@@ -382,7 +377,9 @@ const {
   layout,
 } = useCoverStageLayout(
   computed(() => props.coverStageLayout),
-  computed(() => props.contentTopPosition)
+  computed(() => props.contentTopPosition),
+  // The photo frame's switch is inferred from the template's artwork when absent.
+  computed(() => props.templateAssets),
 )
 
 /**
@@ -468,18 +465,41 @@ const detailBlocks = computed<CoverDetailBlocksBinding | null>(() => {
   }
 })
 
-// Sample logos from template_assets — used in place of the event logo when
-// the cover header row is hidden (sample_logo_1 as base, sample_logo_2 overlaid).
-const sampleLogoOne = computed(() => props.templateAssets?.sample_logo_1 ?? null)
-const sampleLogoTwo = computed(() => props.templateAssets?.sample_logo_2 ?? null)
+/** Which images the photo frame is made of — its own pair, else the sample logos. */
+const photoArt = computed(() => coverPhotoArt(props.templateAssets))
 
-// Panning of the host image within sample_logo_2's shape, exposed as CSS
-// variables so per-template overrides from cover_stage_layout flow straight
-// into CoverContentRows without extra props on every element.
-const hostClipStyle = computed<Record<string, string>>(() => ({
-  '--host-clip-offset-x': `${layout.value.hostClipOffsetX}%`,
-  '--host-clip-offset-y': `${layout.value.hostClipOffsetY}%`,
-}))
+/**
+ * The logo's placeholder while the event has none of its own — except while
+ * the photo frame is drawing that same image as its artwork. One image does one
+ * job on screen at a time.
+ */
+const sampleLogoOne = computed(() =>
+  layout.value.showCoverPhoto && photoArt.value.fromSampleLogos
+    ? null
+    : (props.templateAssets?.sample_logo_1 ?? null),
+)
+
+/**
+ * Everything the photo frame draws from, built once and bound to three places
+ * — this layer's copy and each door leaf's, as the detail blocks are. Null when
+ * the frame is off, which keeps the component (and its image measuring) off
+ * every cover that doesn't use it.
+ */
+const photoFrame = computed<CoverPhotoFrameBinding | null>(() => {
+  if (!layout.value.showCoverPhoto) return null
+  const art = photoArt.value
+  const photo = props.coverPhoto ?? null
+  return {
+    boxStyle: elementStyles.value.photo,
+    frameUrl: art.frame ? props.getMediaUrl(art.frame) : null,
+    shapeUrl: art.shape ? props.getMediaUrl(art.shape) : null,
+    frameLayer: layout.value.coverPhoto.frameLayer ?? 'under',
+    photo,
+    photoUrl: photo ? props.getMediaUrl(photo.image) : null,
+    hostOffset: { x: layout.value.hostClipOffsetX, y: layout.value.hostClipOffsetY },
+    eventTitle: props.eventTitle,
+  }
+})
 
 // Showcase animation configuration
 const animationClasses = useShowcaseAnimation({

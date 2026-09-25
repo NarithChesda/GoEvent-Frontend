@@ -45,6 +45,40 @@
           <Star class="w-3 h-3 fill-current" aria-hidden="true" />
         </span>
 
+        <!-- A band: this photo appears in its own section of the invitation
+             instead of the gallery. Information only, like the star; the
+             selection bar's Band action is where it is set. -->
+        <span
+          v-if="isPhotoBand(photo)"
+          class="pag-band"
+          :title="t('management.media.uploadModal.gallery.band')"
+        >
+          <GalleryHorizontal class="w-3 h-3" aria-hidden="true" />
+        </span>
+
+        <!-- The cover's photo frame shows this one. Information only, like the
+             star; the selection bar's Cover action is where it is set. -->
+        <span
+          v-if="photo.is_cover_photo === true"
+          class="pag-cover"
+          :title="t('management.media.uploadModal.gallery.coverPhoto')"
+        >
+          <Frame class="w-3 h-3" aria-hidden="true" />
+        </span>
+
+        <!-- The countdown's strips are cut from this one. Information only:
+             it is chosen and framed on the strips themselves, in the Design
+             Studio preview, where the cuts can be seen. Beside the cover's
+             badge when a photo is both, since every corner is taken. -->
+        <span
+          v-if="photo.is_countdown_photo === true"
+          class="pag-countdown"
+          :class="{ 'is-beside-cover': photo.is_cover_photo === true }"
+          :title="t('management.media.uploadModal.gallery.countdownPhoto')"
+        >
+          <Timer class="w-3 h-3" aria-hidden="true" />
+        </span>
+
         <!-- Selected: a check where the remove button sits, which the bar
              below takes over while this photo is selected. -->
         <span v-if="selectedId === photo.id" class="pag-check" aria-hidden="true">
@@ -99,10 +133,11 @@
  * `update:selectedId` — saving, undo and failure are the parent's.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Check, Star, X } from 'lucide-vue-next'
+import { Check, Frame, GalleryHorizontal, Star, Timer, X } from 'lucide-vue-next'
 import type { EventPhoto } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { imagekitUrl, resolveMediaUrl } from '@/utils/mediaUrl'
+import { isPhotoBand } from '@/components/showcase/photo-band/photoBand'
 
 interface Props {
   photos: EventPhoto[]
@@ -151,9 +186,17 @@ const photoLabel = (photo: EventPhoto, index: number) => {
     n: index + 1,
     total: items.value.length,
   })
-  return photo.is_featured
-    ? `${position}, ${t('management.media.uploadModal.gallery.featured')}`
-    : position
+  return [
+    position,
+    photo.is_featured ? t('management.media.uploadModal.gallery.featured') : null,
+    isPhotoBand(photo) ? t('management.media.uploadModal.gallery.band') : null,
+    photo.is_cover_photo === true ? t('management.media.uploadModal.gallery.coverPhoto') : null,
+    photo.is_countdown_photo === true
+      ? t('management.media.uploadModal.gallery.countdownPhoto')
+      : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
 }
 
 // ---------------------------------------------------------------------------
@@ -703,6 +746,62 @@ const onKeydown = (event: KeyboardEvent, photo: EventPhoto) => {
   background: linear-gradient(to bottom right, #facc15, #f97316);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
   pointer-events: none;
+}
+
+/* Bottom-left, clear of the star above it and the remove button on the right. */
+.pag-band {
+  position: absolute;
+  bottom: 0.375rem;
+  left: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: #1e90ff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  pointer-events: none;
+}
+
+/* Bottom-right: the one corner the star, the band and the remove button leave. */
+.pag-cover {
+  position: absolute;
+  bottom: 0.375rem;
+  right: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(16 185 129);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  pointer-events: none;
+}
+
+/* The countdown's photo: the same chip in indigo, stepping left of the cover's
+   when one photo is both. */
+.pag-countdown {
+  position: absolute;
+  bottom: 0.375rem;
+  right: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(99 102 241);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  pointer-events: none;
+}
+
+.pag-countdown.is-beside-cover {
+  right: 1.875rem;
 }
 
 .pag-check {

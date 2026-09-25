@@ -20,6 +20,12 @@ import type {
   GuestFrameCorners,
   CoverFontSlot,
 } from '@/services/api/types/template.types'
+import {
+  COVER_PHOTO_DEFAULTS,
+  resolveCoverPhotoConfig,
+  resolveCoverPhotoVisibility,
+  type CoverPhotoArtSources,
+} from '@/components/showcase/cover/coverPhoto'
 
 /** Corner positions in render order (also their DOM order). */
 export const GUEST_FRAME_CORNER_IDS: readonly GuestFrameCornerId[] = [
@@ -186,6 +192,10 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   showCoverHosts: false,
   showCoverDate: false,
   showCoverLocation: false,
+  // Absent is inferred from the template's assets (resolveCoverPhotoVisibility);
+  // this is only what a template with no sample-logo pair infers to.
+  showCoverPhoto: false,
+  coverPhoto: COVER_PHOTO_DEFAULTS,
   coverDetails: COVER_DETAILS_DEFAULTS,
   coverText: {},
   showHostNameUnderLogo: true,
@@ -212,27 +222,45 @@ export const COVER_ROW_ELEMENT_IDS: readonly CoverRowElementId[] = ['header', 'l
 /** The names-and-details composition, top to bottom as the reference card reads. */
 export const COVER_DETAIL_ELEMENT_IDS: readonly CoverDetailElementId[] = ['hosts', 'date', 'location']
 
-/** Render order, which is also z-order: later blocks sit above earlier ones. */
+/**
+ * Every block, top of a card down — the order the editor lists them in, and
+ * the order the drag overlay stacks its handles in (later on top). The photo
+ * frame follows the logo because it grew out of the logo row, and a card that
+ * carries one usually puts it where a logo would go.
+ */
 export const COVER_ELEMENT_IDS: readonly CoverElementId[] = [
-  ...COVER_ROW_ELEMENT_IDS,
+  'header',
+  'logo',
+  'photo',
+  'invite',
+  'guest',
   ...COVER_DETAIL_ELEMENT_IDS,
 ]
+
+/**
+ * The blocks placed by their own box in BOTH layout modes: the photo frame and
+ * the names-and-details composition. None of them stacked — the photo frame
+ * is sized by its box, which a row height cannot express — so there is no row
+ * geometry for them to follow.
+ */
+export const COVER_BOX_ELEMENT_IDS: readonly CoverElementId[] = ['photo', ...COVER_DETAIL_ELEMENT_IDS]
 
 export const isCoverDetailElement = (id: CoverElementId): id is CoverDetailElementId =>
   (COVER_DETAIL_ELEMENT_IDS as readonly CoverElementId[]).includes(id)
 
+export const isCoverBoxElement = (id: CoverElementId): boolean => COVER_BOX_ELEMENT_IDS.includes(id)
+
 /**
  * The blocks a partner can move in each layout mode.
  *
- * The detail blocks are placed by box in both modes — they never stacked, so
- * there is no row geometry for them to follow — while the original four only
+ * The box blocks are placed by box in both modes, while the original four only
  * leave their rows in `free` mode. The drag overlay and the editor pane both
  * read this, so neither can offer a handle the renderer would ignore.
  */
 export function placeableCoverElementIds(
   mode: CoverStageLayout['layoutMode'],
 ): readonly CoverElementId[] {
-  return mode === 'free' ? COVER_ELEMENT_IDS : COVER_DETAIL_ELEMENT_IDS
+  return mode === 'free' ? COVER_ELEMENT_IDS : COVER_BOX_ELEMENT_IDS
 }
 
 /**
@@ -304,8 +332,8 @@ export const COVER_FONT_SLOT_VARS: Record<CoverFontSlot, string> = {
 
 /**
  * The slot each block renders in when it hasn't picked one — the fallback
- * expression of its own `--cover-block-font`. `logo` draws no text; it is here
- * only so the record is total.
+ * expression of its own `--cover-block-font`. `logo` and `photo` draw no text;
+ * they are here only so the record is total.
  *
  * The names and the date are display type, so primary; the venue is the one
  * line of reading text in the composition, so secondary.
@@ -313,6 +341,7 @@ export const COVER_FONT_SLOT_VARS: Record<CoverFontSlot, string> = {
 export const COVER_ELEMENT_DEFAULT_FONT_SLOTS: Record<CoverElementId, CoverFontSlot> = {
   header: 'primary',
   logo: 'primary',
+  photo: 'primary',
   invite: 'secondary',
   guest: 'primary',
   hosts: 'primary',
@@ -348,6 +377,12 @@ const round = (value: number): number => Math.round(value * 10) / 10
  * The detail blocks never stacked, so theirs is the reference placement
  * (`COVER_DETAIL_ELEMENT_DEFAULTS`) — which is also what "reset this block"
  * puts them back to.
+ *
+ * The photo frame starts on the logo row: that is where the sample-logo pair
+ * drew it before it was a block, so a template inferred onto it (see
+ * resolveCoverPhotoVisibility) renders where it always did, and a new one
+ * starts where a card's centrepiece goes. Until it is moved it follows the row
+ * numbers, as the logo does.
  */
 export function rowsToCoverElements(layout: Required<CoverStageLayout>): ResolvedCoverElements {
   const containerHeight = layout.innerContainerHeight
@@ -394,6 +429,8 @@ export function rowsToCoverElements(layout: Required<CoverStageLayout>): Resolve
     }
     cursor += height
   }
+
+  boxes.photo = { ...boxes.logo }
 
   return boxes
 }
@@ -571,13 +608,14 @@ export const COVER_TEXT_BLOCK: Record<CoverTextId, CoverElementId> = {
 
 /**
  * The text a block's own font variables carry — the one its box's size handle
- * (the preview toolbar's A−/A+) reaches. `logo` has none. The small line under
+ * (the preview toolbar's A−/A+) reaches. `logo` and `photo` have none. The small line under
  * the host names is not a block's main text: it is styled on its own and read
  * by the names block directly.
  */
 export const COVER_BLOCK_TEXT: Record<CoverElementId, CoverTextId | null> = {
   header: 'header',
   logo: null,
+  photo: null,
   invite: 'invite',
   guest: 'guest',
   hosts: 'hostNames',
@@ -780,16 +818,24 @@ export function coverSlotVars(sources: CoverSlotSources): Record<string, string>
  *
  * @param layoutConfig - Computed ref to the cover_stage_layout from backend
  * @param legacyTopPosition - Optional computed ref to legacy cover_content_top_position for backward compatibility
+ * @param assets - The template's media, for the one switch that is inferred from
+ *   them when absent: the photo frame (resolveCoverPhotoVisibility). A caller
+ *   that draws no cover blocks can leave it out.
  */
 export function useCoverStageLayout(
   layoutConfig: ComputedRef<CoverStageLayout | undefined>,
-  legacyTopPosition?: ComputedRef<number | undefined>
+  legacyTopPosition?: ComputedRef<number | undefined>,
+  assets?: ComputedRef<CoverPhotoArtSources | null | undefined>,
 ) {
   /**
    * Resolved layout with all values populated (using defaults where needed)
    */
   const layout = computed<Required<CoverStageLayout>>(() => {
     const config = layoutConfig.value || {}
+    // The photo frame and the logo are resolved together: a template inferred
+    // onto the frame has its logo off, because the sample-logo pair it infers
+    // from was drawn in the logo's place.
+    const photoVisibility = resolveCoverPhotoVisibility(config, assets?.value)
 
     return {
       // Use new field, fallback to legacy prop, then default
@@ -810,7 +856,9 @@ export function useCoverStageLayout(
         config.showWelcomeHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showWelcomeHeaderText,
       showCoverHeaderText:
         config.showCoverHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverHeaderText,
-      showCoverLogo: config.showCoverLogo ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverLogo,
+      showCoverLogo: photoVisibility.showCoverLogo,
+      showCoverPhoto: photoVisibility.showCoverPhoto,
+      coverPhoto: resolveCoverPhotoConfig(config.coverPhoto),
       showCoverInviteText:
         config.showCoverInviteText ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverInviteText,
       showCoverGuestName:
@@ -920,8 +968,7 @@ export function useCoverStageLayout(
   /**
    * Pre-computed styles for content rows.
    * When showCoverHeaderText is false, the event title row collapses and its
-   * height is absorbed by the logo row so sample_logo_1 / sample_logo_2
-   * occupy the combined space.
+   * height is absorbed by the logo row, whose logo grows to fill it.
    *
    * showCoverLogo and showCoverInviteText deliberately change nothing here, nor
    * in rowsToCoverElements: those rows keep their height and render empty, so a

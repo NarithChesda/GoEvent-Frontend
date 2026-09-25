@@ -148,10 +148,21 @@ export interface EventTemplate {
   /** Standard mode's middle stage, used when the event has no `event_video` of its own. */
   standard_transition_video?: string
   standard_background_video?: string
-  /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  /**
+   * Primary sample logo (transparency): the logo drawn while the event has none
+   * of its own. With sample_logo_2 it is also the photo frame's legacy artwork.
+   */
   sample_logo_1?: string | null
-  /** Secondary sample logo (transparency). Overlaid on top of sample_logo_1 at the same position. */
+  /**
+   * Secondary sample logo (transparency). Never drawn on its own: with
+   * sample_logo_1 it is the photo frame's legacy shape, used only until the
+   * template uploads a frame or shape of its own (see coverPhotoArt).
+   */
   sample_logo_2?: string | null
+  /** The cover photo frame's artwork (transparency). */
+  cover_photo_frame_image?: string | null
+  /** The cover photo frame's shape: its opaque pixels are where the photograph shows. */
+  cover_photo_shape_image?: string | null
   /** Header text rendered as an image (transparency). */
   header_text_image?: string | null
   created_at?: string
@@ -166,10 +177,21 @@ export interface TemplateAssets {
   /** Standard mode's middle stage, used when the event has no `event_video` of its own. */
   standard_transition_video?: string
   standard_background_video?: string
-  /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  /**
+   * Primary sample logo (transparency): the logo drawn while the event has none
+   * of its own. With sample_logo_2 it is also the photo frame's legacy artwork.
+   */
   sample_logo_1?: string | null
-  /** Secondary sample logo (transparency). Overlaid on top of sample_logo_1 at the same position. */
+  /**
+   * Secondary sample logo (transparency). Never drawn on its own: with
+   * sample_logo_1 it is the photo frame's legacy shape, used only until the
+   * template uploads a frame or shape of its own (see coverPhotoArt).
+   */
   sample_logo_2?: string | null
+  /** The cover photo frame's artwork (transparency). */
+  cover_photo_frame_image?: string | null
+  /** The cover photo frame's shape: its opaque pixels are where the photograph shows. */
+  cover_photo_shape_image?: string | null
   /** Header text rendered as an image (transparency). */
   header_text_image?: string | null
   ambient_creatures?: AmbientCreaturesConfig | null
@@ -197,13 +219,45 @@ export type CoverRowElementId = 'header' | 'logo' | 'invite' | 'guest'
 export type CoverDetailElementId = 'hosts' | 'date' | 'location'
 
 /**
+ * The photo frame: one of the event's photographs, cut to the template's shape
+ * and set in its frame artwork (see CoverPhotoConfig). Placed by its own box in
+ * BOTH layout modes, like the detail blocks, because its size is the thing a
+ * partner adjusts — a row's height is not a size, it is a share of a stack.
+ */
+export type CoverPhotoElementId = 'photo'
+
+/**
  * Every cover-stage block a template can place.
  *
  * Deliberately NOT the swipe arrow: that one is navigation chrome with a fixed
  * pixel size and its own responsive rules, and `swipeArrowBottom` already
  * positions it in both layout modes.
  */
-export type CoverElementId = CoverRowElementId | CoverDetailElementId
+export type CoverElementId = CoverRowElementId | CoverPhotoElementId | CoverDetailElementId
+
+/**
+ * Whether the frame artwork is drawn behind the photograph or in front of it.
+ *
+ * - `under` — the photograph lies on the artwork, cut to the shape. What the
+ *   sample-logo pair always drew, so it is what an absent value means.
+ * - `over`  — the artwork is drawn on top: a frame with a transparent window,
+ *   whose rim hides the photograph's cut edge. The forgiving choice, because
+ *   the shape only has to be a little larger than the window rather than match
+ *   it exactly.
+ */
+export type CoverPhotoFrameLayer = 'under' | 'over'
+
+/**
+ * How the cover's photo frame draws. The artwork and the shape are template
+ * assets (`cover_photo_frame_image`, `cover_photo_shape_image`); where it sits
+ * and how big it is are its box (`coverElements.photo`); which photograph fills
+ * it, and how that photograph is framed, belong to the event (the photo marked
+ * `is_cover_photo`, and that photo's own `crop_*`).
+ */
+export interface CoverPhotoConfig {
+  /** Default `under`. */
+  frameLayer?: CoverPhotoFrameLayer
+}
 
 /**
  * Where one cover block's text takes its colour from.
@@ -618,8 +672,8 @@ export interface CoverStageLayout {
   showHostNameUnderLogo?: boolean   // default: false
 
   // Render the cover header text row on the cover stage. When false, the event
-  // title row is hidden and its height is absorbed by the logo row so
-  // sample_logo_1 / sample_logo_2 render in the merged space.
+  // title row is hidden and its height is absorbed by the logo row, whose logo
+  // then grows to fill the merged space.
   showCoverHeaderText?: boolean     // default: true
 
   // Render the logo on the cover stage. When false the logo row keeps its height
@@ -652,11 +706,21 @@ export interface CoverStageLayout {
   // resolveCoverTextStyles), so no published template changes.
   coverText?: CoverTextStyles
 
-  // Host image clipped into sample_logo_2's shape (merged logo row).
-  // hostClipScale sets image size as % of the clip square (0–100).
-  // hostClipOffsetX/Y pan the host photo within the clip square via CSS
-  // object-position — use this to keep the face inside a head-region shape.
-  // 0 = left/top edge, 50 = center, 100 = right/bottom edge.
+  // The photo frame (see CoverPhotoElementId). Absent means infer: on for a
+  // template carrying the sample-logo pair (sample_logo_2), which drew the host's
+  // photo in the logo row before this block existed — and then the logo is off,
+  // because that pair WAS the logo row. Never backfilled; the partner form seeds
+  // it from the same inference and saves it explicitly.
+  showCoverPhoto?: boolean          // default: inferred, see above
+
+  // How the photo frame draws. Omitted = the artwork under the photograph.
+  coverPhoto?: CoverPhotoConfig
+
+  // Where the first host's photo sits in the photo frame's shape, used only
+  // while the event has no photo marked as its cover photo (a chosen photo is
+  // framed by its own crop_* instead). CSS object-position: 0 = left/top edge,
+  // 50 = center, 100 = right/bottom edge. hostClipScale is read by nothing and
+  // is kept only so a stored value survives a save.
   hostClipScale?: number            // default: 60
   hostClipOffsetX?: number          // default: 50
   hostClipOffsetY?: number          // default: 50
@@ -742,6 +806,36 @@ export type EventDetailsDesignType = 'panel' | 'calendar' | 'flanked' | 'arch' |
 export type EventDetailsMarkerColorSource = 'accent' | 'primary' | 'secondary' | 'custom'
 
 /**
+ * Which calendar the `calendar` date design draws. Read only on that design,
+ * and a sibling key of `event_details_design` rather than a new `type`: every
+ * one of these is still "the date shown as a calendar", which hands the venue
+ * to the map card and spends the marker colour on the event day — they differ
+ * only in which calendar is drawn.
+ *
+ * - `classic` — the month grid with a hand-drawn heart circling the day. What
+ *               every calendar template rendered before this key existed.
+ * - `wall`    — a ruled wall-planner page: every day in its own box, number in
+ *               the corner, the event day pressed with a solid stamp.
+ * - `week`    — only the event's week, one row of seven, the day standing in a
+ *               tall filled capsule. The compact, modern one.
+ * - `desk`    — a desk flip calendar on binder rings: month on a coloured band,
+ *               the day set huge. The page before it flips over the rings as
+ *               it arrives.
+ * - `dial`    — the month's days set round a ring like a clock face, with a
+ *               hand that sweeps round to the day; the date sits in the centre.
+ * - `card`    — a paper calendar card floating on the page, clipped at the top
+ *               with a paperclip: the year circled by hand, the month set huge,
+ *               a plain grid of numbers with the day circled in the same hand.
+ *               The only style with a corner radius of its own
+ *               (`calendar_card_radius`).
+ *
+ * Absent means `classic`, and the editor only ever sends a value other than
+ * `classic`, so no existing template's payload changes. An unrecognised value
+ * renders `classic`.
+ */
+export type EventDetailsCalendarStyle = 'classic' | 'wall' | 'week' | 'desk' | 'dial' | 'card'
+
+/**
  * Configuration for the event date + location block on the showcase.
  *
  * Mirrors the `FallingEffectConfig` pattern: a small JSON object sent inside
@@ -758,6 +852,19 @@ export interface EventDetailsDesignConfig {
   marker_color_source?: EventDetailsMarkerColorSource
   /** Hex colour, read only when `marker_color_source` is `custom`. */
   marker_custom_color?: string | null
+  /** Which calendar the `calendar` design draws. Absent = `classic`. */
+  calendar_style?: EventDetailsCalendarStyle
+  /**
+   * Corner radius of the `card` calendar, in px (0–40). Read only by that
+   * style; absent = 0, the square-cornered paper card.
+   */
+  calendar_card_radius?: number
+  /**
+   * Paper colour of the `card` calendar, as a hex. Read only by that style;
+   * absent = white. The card prints in the template's ink unless that would
+   * be unreadable on this paper, when it switches to near-black or white.
+   */
+  calendar_card_color?: string | null
 }
 
 /**
@@ -958,6 +1065,81 @@ export type InfoCardDesignType = 'glass' | 'engraved' | 'frosted'
 export interface InfoCardDesignConfig {
   /** Which info card treatment to render. Defaults to `glass`. */
   type: InfoCardDesignType
+  /**
+   * How the Google Map inside the card is framed. Absent / unknown = `window`,
+   * the rounded rectangle every card drew before this existed, and the editor
+   * never sends `window` — so a template that keeps it saves the same payload
+   * it always did.
+   */
+  map_style?: InfoCardMapStyle | null
+}
+
+/**
+ * The frame the venue map is set in, inside the info card. A sibling key of the
+ * card's treatment rather than more treatments, because every one of these
+ * still sits in whichever card material (glass / engraved / frosted) the
+ * template chose; only the map's own shape changes.
+ *
+ * - `window`   — the default: the map as a 16:9 window, as it always was.
+ * - `arch`     — the map in an arched window, a hairline arch drawn around it.
+ *                The ceremonial one, rhyming with the `arch` date design.
+ * - `atlas`    — the map in an old map's checkered border (the neatline),
+ *                a compass rose settling onto its corner.
+ * - `polaroid` — the map as an instant print laid on the card, taped at the
+ *                top, the venue written in the wide bottom margin.
+ *
+ * Every frame keeps the embed's bottom edge square and uncovered: Google's
+ * logo and terms sit in its bottom corners, and the Maps embed terms do not
+ * allow them to be hidden. That is why there is no circular frame.
+ */
+export type InfoCardMapStyle = 'window' | 'arch' | 'atlas' | 'polaroid'
+
+/**
+ * The countdown's composition when it has a section of its own.
+ *
+ * - `strips`  — one of the event's photographs cut into three tall strips, with
+ *               the days, hours and minutes set at the foot of each.
+ * - `flip`    — a split-flap board: each digit on its own flap, which turns
+ *               over when the minute does.
+ * - `orbit`   — a dial: the days in the centre, the hours and minutes left as
+ *               two arcs round it, inside a watch-bezel of ticks.
+ * - `typeset` — the count as a line of print between two hairlines, the
+ *               figures in the display face and the units small beside them.
+ */
+export type CountdownDesignType = 'strips' | 'flip' | 'orbit' | 'typeset'
+
+/**
+ * The surface the RSVP form is set on when it has a section of its own.
+ *
+ * - `card`     — a printed reply card: paper, a double hairline border and an
+ *                R.S.V.P. mark, the form inked onto it.
+ * - `envelope` — that reply card rising out of an opened envelope.
+ * - `glass`    — the liquid-glass panel the info card has always drawn, white
+ *                type, now a card of its own.
+ * - `inline`   — no surface: the form inked straight onto the page under a
+ *                short hairline, like the engraved card.
+ */
+export type RsvpDesignType = 'card' | 'envelope' | 'glass' | 'inline'
+
+/**
+ * The countdown and the RSVP taken out of the info card into a section of
+ * their own, placed straight after it.
+ *
+ * One config for the pair, not one each, because they move together: a
+ * countdown out here with the RSVP left in the card (or the other way round)
+ * would split what the guest reads as one question — how long until, and will
+ * you come.
+ *
+ * **Absent / `null` keeps both inside the info card**, exactly as every
+ * template rendered before this existed. Never backfill it. An unknown value
+ * in either key (written by a newer frontend) renders that key's first design,
+ * because the partner did choose the section.
+ *
+ * Backend: docs/backend-api-requirements/countdown-rsvp-design.md
+ */
+export interface CountdownRsvpDesignConfig {
+  countdown: CountdownDesignType
+  rsvp: RsvpDesignType
 }
 
 /**
@@ -1093,6 +1275,114 @@ export type DressCodeDesignType = 'portrait' | 'atelier' | 'spread' | 'palette' 
 export interface DressCodeDesignConfig {
   /** Which dress code composition to render. Defaults to `portrait`. */
   type: DressCodeDesignType
+}
+
+/**
+ * Composition used for the **guest dedication** on the main content stage —
+ * the event's invite text and the name of the guest the link was sent to,
+ * drawn between the host block and the date & venue.
+ *
+ * The cover has always carried these two, as rows of its own. A template whose
+ * cover doesn't (a printed-card cover led by the couple, a filmed cover with no
+ * text over it) had nowhere left that said who the invitation was for. This is
+ * that place on the invitation itself, with compositions of its own rather than
+ * the cover's guest-name frame moved down a stage.
+ *
+ * It sits where a Khmer wedding card writes the guest: after the parents who
+ * are inviting and before what they are inviting to, so the block reads as the
+ * middle of one sentence rather than as a second greeting.
+ *
+ * - `inscribed`  — the printed card's own convention: the invite text, then the
+ *                  name written onto a dotted line the way a card leaves one
+ *                  blank to be filled in by hand. The rule draws out from the
+ *                  centre and the name settles onto it.
+ * - `formal`     — the invite text tracked small between two hairlines, the
+ *                  name large under it word by word. The quiet one: weddings,
+ *                  ceremonies, funerals.
+ * - `place_card` — the name on a folded place card, as it would be at the
+ *                  guest's seat, standing up off the table as it arrives. The
+ *                  one with a material of its own: receptions and dinners.
+ * - `tag`        — the name on a gift tag hung from a string, swinging in and
+ *                  coming to rest slightly askew. The playful one: birthdays,
+ *                  housewarmings, parties.
+ *
+ * **Absent / `null` means no block at all**, unlike every other section design
+ * here — this one is additive, so switching it off is the default and every
+ * template saved before it existed renders unchanged. Never backfill it. An
+ * unrecognised `type` (written by a newer frontend) renders `inscribed`: the
+ * partner switched the block on, so it degrades to a design, not to nothing.
+ *
+ * Only drawn when the showcase was opened for a named guest. A public link has
+ * nobody to address, and the invite text alone would be a greeting to no one.
+ */
+export type GuestInviteDesignType = 'inscribed' | 'formal' | 'place_card' | 'tag'
+
+/**
+ * Configuration for the guest dedication block. An object for the same reason
+ * `agenda_design` is one — a per-design option can be added as a sibling key.
+ */
+export interface GuestInviteDesignConfig {
+  /** Which composition to render. An unknown value renders `inscribed`. */
+  type: GuestInviteDesignType
+}
+
+/**
+ * Composition used for the **photo gallery** on the main content stage — the
+ * event's photographs near the foot of the invitation, 10 to 30 of them on a
+ * typical event.
+ *
+ * Until this existed the gallery was one composition: every photograph at the
+ * card's full width, one after another. That is the right answer for three
+ * photos and a long scroll for thirty, and it drew a wedding, a birthday and a
+ * memorial the same way. The photographs are the one part of an invitation a
+ * guest comes back to look at, so how they are laid down is worth a choice.
+ *
+ * Each design is a composition AND an arrival — the photographs are handed
+ * over one at a time as they scroll into view, in the gesture that design is
+ * named for. Four of the five borrow their material from the photo-stack
+ * transition (`cover_stage_layout.stackLayout`), so a template can carry one
+ * look from its transition into its gallery.
+ *
+ * - `column` — **the default, and what every gallery renders today.** One
+ *              photograph after another at the card's width, uncropped.
+ * - `reel`   — the one horizontal design: a strip of framed photographs bled
+ *              to the card's edges, bowed like a panorama, dealt in from the
+ *              right one by one and then drifting on its own. It takes a swipe
+ *              and a throw. The shortest design at any photo count.
+ * - `prints` — instant-film prints tossed down the page in a zig-zag, each
+ *              overlapping the last, dropped onto its resting tilt as it
+ *              scrolls in. A caption, if the photo has one, written on the
+ *              print's foot. Weddings and birthdays.
+ * - `mosaic` — rounded tiles in two staggered columns, surfacing out of the
+ *              dark as they arrive. No material of its own, so the quietest;
+ *              and the densest. Ceremonies and memorials.
+ * - `booth`  — photo-booth strips of three, side by side at a tilt, each
+ *              frame revealed by a flash. Birthdays and parties.
+ * - `film`   — a contact sheet: two strips of negative, frames numbered on
+ *              the edge, each developing from a warm cast into its own colours.
+ *              Anniversaries, and anything nostalgic.
+ *
+ * The four framed designs (everything but `column`) cut each photo to their
+ * frame through the photo's own `crop_*` region, the same one-region-per-photo
+ * rule the transition stage and the bands follow.
+ *
+ * When the field is absent / `null` the showcase renders `column`, and an
+ * unrecognised value falls back to it too, so every already-published
+ * template is unchanged and no migration is needed.
+ *
+ * Selected per template via `template_assets.gallery_design` and flows through
+ * the showcase exactly like `agenda_design`.
+ */
+export type GalleryDesignType = 'column' | 'reel' | 'prints' | 'mosaic' | 'booth' | 'film'
+
+/**
+ * Configuration for the photo gallery on the showcase. An object rather than a
+ * bare string, matching the other section designs, so a per-design option can
+ * be added as a sibling key without a breaking change.
+ */
+export interface GalleryDesignConfig {
+  /** Which gallery composition to render. Defaults to `column`. */
+  type: GalleryDesignType
 }
 
 /**
@@ -1507,6 +1797,24 @@ export interface PartnerTemplate {
   agenda_design: AgendaDesignConfig | null
   /** Dress code block design. Null = the `portrait` design every event renders today. */
   dress_code_design: DressCodeDesignConfig | null
+  /**
+   * Guest dedication on the invitation. Null / absent = no block. Optional
+   * because the backend field is pending
+   * (docs/backend-api-requirements/guest-invite-design.md).
+   */
+  guest_invite_design?: GuestInviteDesignConfig | null
+  /**
+   * Photo gallery design. Null / absent = the `column` every gallery renders
+   * today. Optional because the backend field is pending
+   * (docs/backend-api-requirements/gallery-design.md).
+   */
+  gallery_design?: GalleryDesignConfig | null
+  /**
+   * The countdown and the RSVP in a section of their own. Null / absent =
+   * both stay inside the info card. Optional because the backend field is
+   * pending (docs/backend-api-requirements/countdown-rsvp-design.md).
+   */
+  countdown_rsvp_design?: CountdownRsvpDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = infer from assets + category. */
   stage_modes: StageModesConfig | null
@@ -1549,6 +1857,10 @@ export interface PartnerTemplate {
   standard_background_video: string | null
   sample_logo_1: string | null
   sample_logo_2: string | null
+  /** The cover photo frame's artwork. Backend field pending: cover-photo-frame.md. */
+  cover_photo_frame_image?: string | null
+  /** The cover photo frame's shape. Backend field pending: cover-photo-frame.md. */
+  cover_photo_shape_image?: string | null
   header_text_image: string | null
   created_at: string
   updated_at: string
@@ -1587,6 +1899,10 @@ export interface PartnerTemplateCreatePayload {
   standard_background_video?: TemplateFileUpload
   sample_logo_1?: TemplateFileUpload
   sample_logo_2?: TemplateFileUpload
+  /** The cover photo frame's artwork. */
+  cover_photo_frame_image?: TemplateFileUpload
+  /** The cover photo frame's shape. */
+  cover_photo_shape_image?: TemplateFileUpload
   header_text_image?: TemplateFileUpload
   /** The `crest` host design's horizontal breakline artwork. */
   host_divider_image?: TemplateFileUpload
@@ -1609,6 +1925,12 @@ export interface PartnerTemplateCreatePayload {
   agenda_design?: AgendaDesignConfig | null
   /** Dress code block design. Pass `null` to fall back to the `portrait` design. */
   dress_code_design?: DressCodeDesignConfig | null
+  /** Guest dedication on the invitation. Pass `null` to remove the block. */
+  guest_invite_design?: GuestInviteDesignConfig | null
+  /** Photo gallery design. Pass `null` to fall back to the `column` design. */
+  gallery_design?: GalleryDesignConfig | null
+  /** Countdown + RSVP section. Pass `null` to keep both inside the info card. */
+  countdown_rsvp_design?: CountdownRsvpDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
   save_the_date_design?: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */

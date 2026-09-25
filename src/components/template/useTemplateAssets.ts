@@ -31,6 +31,8 @@ const PREVIEWED_ASSET_FIELDS = [
   'spark_custom_image',
   'host_divider_image',
   'cover_host_separator_image',
+  'cover_photo_frame_image',
+  'cover_photo_shape_image',
 ] as const
 
 export type PreviewedAssetField = (typeof PREVIEWED_ASSET_FIELDS)[number]

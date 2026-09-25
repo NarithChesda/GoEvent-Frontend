@@ -2,6 +2,9 @@ import type { TemplateAssets, TemplateColor, TemplateFont } from '@/composables/
 import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
+  GalleryDesignConfig,
+  GuestInviteDesignConfig,
+  CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
@@ -44,6 +47,8 @@ export const PARTNER_TEMPLATE_ASSET_FIELDS = [
   'guest_title_frame_right',
   'sample_logo_1',
   'sample_logo_2',
+  'cover_photo_frame_image',
+  'cover_photo_shape_image',
   'header_text_image',
   'host_divider_image',
   'cover_host_separator_image',
@@ -68,6 +73,11 @@ export interface PartnerTemplateDraft {
   info_card_design: InfoCardDesignConfig
   agenda_design: AgendaDesignConfig
   dress_code_design: DressCodeDesignConfig
+  gallery_design: GalleryDesignConfig
+  /** Guest dedication on the invitation. Null = no block. */
+  guest_invite_design: GuestInviteDesignConfig | null
+  /** Countdown + RSVP section. Null = both stay in the info card. */
+  countdown_rsvp_design: CountdownRsvpDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = the legacy asset/category inference. */
   stage_modes: StageModesConfig | null
@@ -271,6 +281,9 @@ export function partnerTemplateToAssets(template: PartnerTemplate): TemplateAsse
     info_card_design: template.info_card_design,
     agenda_design: template.agenda_design,
     dress_code_design: template.dress_code_design,
+    gallery_design: template.gallery_design ?? null,
+    guest_invite_design: template.guest_invite_design ?? null,
+    countdown_rsvp_design: template.countdown_rsvp_design ?? null,
     save_the_date_design: template.save_the_date_design,
     stage_modes: template.stage_modes,
     text_effects: template.text_effects ?? null,
@@ -311,6 +324,9 @@ export function partnerTemplateDraftToAssets(
     info_card_design: draft.info_card_design,
     agenda_design: draft.agenda_design,
     dress_code_design: draft.dress_code_design,
+    gallery_design: draft.gallery_design,
+    guest_invite_design: draft.guest_invite_design,
+    countdown_rsvp_design: draft.countdown_rsvp_design,
     save_the_date_design: draft.save_the_date_design,
     stage_modes: draft.stage_modes,
     text_effects: draft.text_effects,

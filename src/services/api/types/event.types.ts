@@ -62,6 +62,67 @@ export type MusicStartStage = 'transition' | 'main_content'
  */
 export type StoredMusicStartStage = MusicStartStage | 'cover'
 
+/**
+ * Which section of the invitation a photo band follows. `top` is above the
+ * hosts, before any section. The bands' positions are fixed in the section
+ * order, so a band after a section the event doesn't have (no dress code, say)
+ * still draws, in that same spot between its neighbours.
+ */
+export type PhotoBandPlacement =
+  | 'top'
+  | 'after_hosts'
+  | 'after_event_info'
+  | 'after_dress_code'
+  | 'after_agenda'
+  | 'after_host_message'
+  | 'after_video'
+  | 'after_gallery'
+  | 'after_payment'
+  | 'after_comments'
+
+/**
+ * A photo's photo-band settings, carried on the photo itself beside
+ * `is_featured` and the `crop_*` framing. A photo with a `band_placement` is
+ * drawn as a band after that section — full width on the main content card,
+ * its top and bottom dissolving into the page (see PhotoBand.vue) — and leaves
+ * the gallery. Any number of photos can be bands, several in one section too,
+ * in gallery order. Framed by the photo's own `crop_*`.
+ *
+ * Pending backend fields — see docs/backend-api-requirements/photo-band.md
+ */
+/**
+ * The photograph the cover's photo frame shows: a setting on the photo, beside
+ * `is_featured`, and framed by the same `crop_*` region. At most one photo per
+ * event carries it; absent/false on every photo falls back to the first host's
+ * profile photo. Backend field pending:
+ * docs/backend-api-requirements/cover-photo-frame.md
+ */
+export interface CoverPhotoFields {
+  is_cover_photo?: boolean | null
+}
+
+/**
+ * The photograph the countdown's `strips` design is cut from: a setting on the
+ * photo, beside `is_cover_photo`, framed by the same `crop_*` region. At most
+ * one photo per event carries it; with none, the strips fall back to the
+ * featured photo, then the first. Backend field pending:
+ * docs/backend-api-requirements/countdown-rsvp-design.md
+ */
+export interface CountdownPhotoFields {
+  is_countdown_photo?: boolean | null
+}
+
+export interface PhotoBandFields {
+  /** Which section it follows. `null`/absent/empty = an ordinary gallery photo. */
+  band_placement?: PhotoBandPlacement | null
+  /**
+   * `#rrggbb` the band's edges wash into on their way out, chosen to match
+   * whatever is behind the card so the photo has no visible boundary.
+   * `null`/absent is blur only: the edges dissolve straight into the page.
+   */
+  band_blend_color?: string | null
+}
+
 export interface Event {
   id: string
   title: string
@@ -285,7 +346,7 @@ export interface BulkReorderRequest {
   updates: { id: number; order: number; date?: string | null }[]
 }
 
-export interface EventPhoto {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields, CountdownPhotoFields {
   id: number
   event: string
   image: string

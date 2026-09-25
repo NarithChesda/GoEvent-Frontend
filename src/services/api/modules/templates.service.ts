@@ -104,6 +104,7 @@ const TEMPLATE_FILE_FIELDS: Array<keyof PartnerTemplateCreatePayload> = [
   'standard_cover_video', 'standard_transition_video', 'standard_background_video',
   'sample_logo_1', 'sample_logo_2', 'header_text_image',
   'open_envelope_button', 'host_divider_image', 'cover_host_separator_image',
+  'cover_photo_frame_image', 'cover_photo_shape_image',
 ]
 
 /**
@@ -128,6 +129,9 @@ const TEMPLATE_JSON_CONFIG_FIELDS = [
   'info_card_design',
   'agenda_design',
   'dress_code_design',
+  'guest_invite_design',
+  'gallery_design',
+  'countdown_rsvp_design',
   'save_the_date_design',
   'text_effects',
   'stage_modes',

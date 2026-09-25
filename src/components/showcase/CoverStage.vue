@@ -37,9 +37,7 @@
       :is-content-hidden="videoState.isContentHidden.value"
       :event-title="eventTitle"
       :event-logo="eventLogo"
-      :first-host-image="firstHostImage"
-      :first-host-name="firstHostName"
-      :first-host-id="firstHostId"
+      :cover-photo="coverPhoto"
       :guest-name="guestName || null"
       :template-assets="templateAssets"
       :primary-color="primaryColor"
@@ -149,6 +147,7 @@ import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAn
 import { resolveStageModes, type ResolvedStageModes } from '@/composables/showcase/useStageModes'
 import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
 import type { CoverEventDetails } from './cover/coverDetails'
+import type { CoverPhotoSource } from './cover/coverPhoto'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 import FallingEffect from './FallingEffect.vue'
@@ -181,12 +180,11 @@ interface Props {
   guestName: string
   eventTitle: string
   eventLogo?: string | null
-  /** First host profile image — clipped by sample_logo_2 in the merged logo row when the cover header is hidden. */
-  firstHostImage?: string | null
-  /** First host display name — used as the alt text for the clipped host image. */
-  firstHostName?: string
-  /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
-  firstHostId?: number | null
+  /**
+   * The photograph the cover's photo frame shows — the photo marked as the
+   * cover photo, else the first host's (resolveCoverPhotoSource).
+   */
+  coverPhoto?: CoverPhotoSource | null
   /** The hosts, date and venue — for the cover's names-and-details blocks. */
   eventDetails?: CoverEventDetails | null
   eventVideoUrl?: string | null

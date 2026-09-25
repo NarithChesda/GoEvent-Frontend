@@ -419,6 +419,8 @@
       v-if="canEdit && eventData?.id"
       :event-id="eventId"
       :event-data="eventData"
+      :blend-swatches="blendSwatches"
+      @preview="onEditorPreview"
       @saved="onEditorSaved"
       @media-updated="onMediaUpdated"
     />
@@ -471,6 +473,8 @@ import PreviewFrame from './PreviewFrame.vue'
 import InertIframe from './InertIframe.vue'
 import MobilePreviewSheet from './MobilePreviewSheet.vue'
 import PreviewEditorHost from './editors/PreviewEditorHost.vue'
+import { templateBlendSwatches } from '@/components/showcase/photo-band/photoBand'
+import type { PhotoFieldPatch } from './bridge/previewBridge'
 import BrowseTemplateModal from '../BrowseTemplateModal.vue'
 import EventMediaTab from '../EventMediaTab.vue'
 import PopulateFromTemplateCard from '../PopulateFromTemplateCard.vue'
@@ -616,6 +620,9 @@ const templateAssets = ref<{
  *  from a half-known template (which would flash a Transition frame in or out). */
 const templateResolved = ref(false)
 
+/** The applied template's palette — offered as the photo band's blend colours. */
+const templateColors = ref<NonNullable<TemplateAssets['colors']>>([])
+
 const error = ref<string | null>(null)
 
 const toStageAssets = (templateData: TemplateAssets) => ({
@@ -646,9 +653,11 @@ const loadTemplateAssets = async (templateId?: number | string | null) => {
     const templateData = (response.data as unknown as { template_data?: TemplateAssets } | null)
       ?.template_data
     templateAssets.value = response.success && templateData ? toStageAssets(templateData) : null
+    templateColors.value = response.success && templateData ? (templateData.colors ?? []) : []
   } catch {
     // Non-fatal — the frame list just falls back to the always-present stages.
     templateAssets.value = null
+    templateColors.value = []
   } finally {
     templateResolved.value = true
   }
@@ -1369,6 +1378,20 @@ const handleTemplateAppliedFromModal = async (template: EventTemplate) => {
   // unpaid state — re-read the payment rows so the pill stops advertising the
   // previous template's activation status.
   refreshActivationPayments()
+}
+
+// A template being tried on is what the frames are drawing, so its palette is
+// the one a blend colour has to match.
+const blendSwatches = computed(() =>
+  templateBlendSwatches(stagedTemplateData.value?.colors ?? templateColors.value),
+)
+
+// An editor's unsaved draft (a photo band's section, colour and framing, as it
+// is chosen), merged into the frames' own photos by id — and, on cancel, the
+// stored values put back the same way. A free postMessage, so hidden frames get
+// it too.
+const onEditorPreview = (photos: PhotoFieldPatch[]) => {
+  for (const frame of frameRefs.values()) frame.postPhotoPatch(photos)
 }
 
 const onMediaUpdated = (media: EventPhoto[]) => {

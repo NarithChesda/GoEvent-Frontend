@@ -31,6 +31,28 @@
         </span>
       </div>
 
+      <!-- The cover's photo frame shows this one. -->
+      <div v-if="media.is_cover_photo === true" class="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2">
+        <span
+          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-500 text-white shadow-lg"
+          :title="t('management.media.uploadModal.gallery.coverPhoto')"
+        >
+          <Frame class="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+          <span class="hidden sm:inline">{{ t('management.media.uploadModal.gallery.cover') }}</span>
+        </span>
+      </div>
+
+      <!-- The countdown's strips are cut from this one. -->
+      <div v-if="media.is_countdown_photo === true" class="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2">
+        <span
+          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-500 text-white shadow-lg"
+          :title="t('management.media.uploadModal.gallery.countdownPhoto')"
+        >
+          <Timer class="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+          <span class="hidden sm:inline">{{ t('management.media.uploadModal.gallery.countdown') }}</span>
+        </span>
+      </div>
+
       <!-- Drag Handle (only visible if can edit and draggable) -->
       <div
         v-if="canEdit && draggable"
@@ -53,7 +75,7 @@
         class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none"
         :class="imageError ? 'bg-black/30' : 'bg-black/40'"
       >
-        <div class="flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto">
+        <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 pointer-events-auto">
           <!-- Move Up Button (mobile only) -->
           <button
             v-if="draggable"
@@ -90,6 +112,46 @@
             :title="media.is_featured ? 'Remove from featured' : 'Mark as featured'"
           >
             <Star class="w-3.5 h-3.5 sm:w-4 sm:h-4" :class="media.is_featured ? 'fill-current' : ''" />
+          </button>
+
+          <!-- Cover photo toggle: one per event, like the featured photo -->
+          <button
+            @click="$emit('set-cover', media)"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
+            :class="
+              media.is_cover_photo === true
+                ? 'text-emerald-600 hover:text-emerald-700'
+                : 'text-slate-400 hover:text-emerald-600'
+            "
+            :title="
+              media.is_cover_photo === true
+                ? t('management.media.card.clearCover')
+                : t('management.media.card.setCover')
+            "
+            :aria-pressed="media.is_cover_photo === true"
+          >
+            <Frame class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          <!-- Countdown photo toggle: the photo the countdown's strips are cut
+               from, one per event like the cover photo. Framed on the strips
+               themselves, in the Design Studio preview. -->
+          <button
+            @click="$emit('set-countdown', media)"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
+            :class="
+              media.is_countdown_photo === true
+                ? 'text-indigo-600 hover:text-indigo-700'
+                : 'text-slate-400 hover:text-indigo-600'
+            "
+            :title="
+              media.is_countdown_photo === true
+                ? t('management.media.card.clearCountdown')
+                : t('management.media.card.setCountdown')
+            "
+            :aria-pressed="media.is_countdown_photo === true"
+          >
+            <Timer class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           <!-- Delete Button -->
@@ -137,8 +199,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Trash2, Star, Calendar, ImageIcon, GripVertical, ChevronUp, ChevronDown } from 'lucide-vue-next'
+import {
+  Trash2,
+  Star,
+  Calendar,
+  ImageIcon,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Frame,
+  Timer,
+} from 'lucide-vue-next'
 import type { EventPhoto } from '../services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   media: EventPhoto
@@ -151,6 +224,8 @@ interface Props {
 interface Emits {
   delete: [media: EventPhoto]
   'set-featured': [media: EventPhoto]
+  'set-cover': [media: EventPhoto]
+  'set-countdown': [media: EventPhoto]
   'drag-start': [media: EventPhoto]
   'drag-end': [media: EventPhoto]
   'move-up': []
@@ -159,6 +234,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
 
 // State
 const imageError = ref(false)

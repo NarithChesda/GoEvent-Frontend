@@ -99,6 +99,21 @@ export const TEXT_EFFECT_MARK_INK: Record<TextEffectMetal, string> = {
   silver: '#939aa5', // --tfx-low
 }
 
+/**
+ * The same, for a mark on a DARK ground — a photograph under a dark veil, where
+ * the countdown's strips set their unit labels beside gilded figures.
+ *
+ * The reasoning above inverts there. `--tfx-low` is the tone that holds up on
+ * cream, and on a dark ground it is the one that sinks (about 3:1 over a
+ * scrimmed mid-tone photo, where the pale side is past 8:1). What the lettering
+ * reads as on dark is its body, so a mark takes `--tfx-face`.
+ */
+export const TEXT_EFFECT_MARK_INK_ON_DARK: Record<TextEffectMetal, string> = {
+  gold: '#efc762', // --tfx-face
+  rose_gold: '#eebca6', // --tfx-face
+  silver: '#d9dde3', // --tfx-face
+}
+
 /** A slot's finish with every default applied. */
 export interface ResolvedTextEffect {
   finish: TextEffectFinish
@@ -430,12 +445,18 @@ export function useTextEffect(): (slot: TextEffectSlot | null | undefined) => st
  * no finish returns `null`, which every caller reads as "use the ink you
  * already used", so nothing needs a second branch for the ungilded case.
  *
- * See TEXT_EFFECT_MARK_INK for why it is not the tone the letters read as.
+ * See TEXT_EFFECT_MARK_INK for why it is not the tone the letters read as —
+ * on a pale ground. `ground: 'dark'` is for a mark on a photograph or a dark
+ * surface, where it is (TEXT_EFFECT_MARK_INK_ON_DARK).
  */
-export function useTextEffectMarkInk(): (slot: TextEffectSlot | null | undefined) => string | null {
+export function useTextEffectMarkInk(): (
+  slot: TextEffectSlot | null | undefined,
+  ground?: 'light' | 'dark',
+) => string | null {
   const effects = inject(TextEffectsKey, null)
-  return (slot) => {
+  return (slot, ground = 'light') => {
     const effect = effects && slot ? effects.value[slot] : null
-    return effect ? TEXT_EFFECT_MARK_INK[effect.metal] : null
+    if (!effect) return null
+    return (ground === 'dark' ? TEXT_EFFECT_MARK_INK_ON_DARK : TEXT_EFFECT_MARK_INK)[effect.metal]
   }
 }

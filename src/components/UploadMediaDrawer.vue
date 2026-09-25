@@ -431,6 +431,74 @@
             </div>
           </Transition>
 
+          <!-- What else the photo is used for, opened from the bar's Use for
+               button. Each row is a switch of its own — a photo may be both —
+               and saves at once, like featuring does. -->
+          <Transition name="undo-bar">
+            <div
+              v-if="selectedPhoto && useMenuOpen"
+              class="pointer-events-auto rounded-2xl bg-slate-900/95 p-1 text-white shadow-lg"
+            >
+              <div role="group" :aria-label="t('management.media.uploadModal.gallery.useFor')">
+                <button
+                  v-for="role in USE_ROLES"
+                  :key="role"
+                  type="button"
+                  class="band-option"
+                  :aria-pressed="isMarked(selectedPhoto, role)"
+                  :disabled="markingId !== null"
+                  @click="toggleMark(selectedPhoto, role)"
+                >
+                  <component :is="MARKS[role].icon" class="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
+                  <span class="flex-1 min-w-0 truncate text-left">{{ t(MARKS[role].label) }}</span>
+                  <Check
+                    v-if="isMarked(selectedPhoto, role)"
+                    class="w-4 h-4 flex-shrink-0 text-sky-300"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <p class="px-3 pt-1.5 pb-2 text-[11px] leading-snug text-slate-400 border-t border-white/10 mt-1">
+                {{ t('management.media.uploadModal.gallery.useForHint') }}
+              </p>
+            </div>
+          </Transition>
+
+          <!-- The band's sections, opened from the bar below and in its
+               material. Choosing one saves at once, like featuring does. -->
+          <Transition name="undo-bar">
+            <div
+              v-if="selectedPhoto && bandMenuOpen"
+              class="pointer-events-auto rounded-2xl bg-slate-900/95 p-1 text-white shadow-lg"
+            >
+              <div
+                class="max-h-[min(22rem,45dvh)] overflow-y-auto overscroll-contain"
+                role="radiogroup"
+                :aria-label="t('management.showcasePreview.editors.photoBandPlacement')"
+              >
+                <button
+                  v-for="option in bandOptions"
+                  :key="option.value ?? 'gallery'"
+                  type="button"
+                  role="radio"
+                  class="band-option"
+                  :aria-checked="photoBandPlacement(selectedPhoto) === option.value"
+                  @click="setBandPlacement(selectedPhoto, option.value)"
+                >
+                  <span class="flex-1 min-w-0 truncate text-left">{{ option.label }}</span>
+                  <Check
+                    v-if="photoBandPlacement(selectedPhoto) === option.value"
+                    class="w-4 h-4 flex-shrink-0 text-sky-300"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <p class="px-3 pt-1.5 pb-2 text-[11px] leading-snug text-slate-400 border-t border-white/10 mt-1">
+                {{ t('management.media.uploadModal.gallery.bandHint') }}
+              </p>
+            </div>
+          </Transition>
+
           <!-- What can be done to the selected photo, in words — the same bar
                the Photos app raises for a selection. Feature and the two moves
                are what the gallery had no visible way to do; the press-and-hold
@@ -470,6 +538,40 @@
                       : t('management.media.uploadModal.gallery.feature')
                   }}
                 </span>
+              </button>
+              <!-- The blocks drawn from one photo each — the cover's photo
+                   frame, the countdown's strips — behind one button that opens
+                   a menu, as Band does. One button each would be eight in this
+                   bar, and at phone width every label would be cut short. -->
+              <button
+                type="button"
+                class="sel-action"
+                :class="useForClass(selectedPhoto)"
+                :aria-expanded="useMenuOpen"
+                :aria-pressed="USE_ROLES.some((role) => isMarked(selectedPhoto!, role))"
+                :title="t('management.media.uploadModal.gallery.useForTitle')"
+                :disabled="markingId !== null"
+                @click="toggleUseMenu"
+              >
+                <Loader2 v-if="markingId === selectedPhoto.id" class="w-[1.125rem] h-[1.125rem] animate-spin" aria-hidden="true" />
+                <Frame v-else class="w-[1.125rem] h-[1.125rem]" aria-hidden="true" />
+                <span>{{ t('management.media.uploadModal.gallery.useFor') }}</span>
+              </button>
+              <!-- Where in the invitation this photo appears as a band — or
+                   in the gallery, like any other photo. -->
+              <button
+                type="button"
+                class="sel-action"
+                :class="{ 'is-on is-on--band': isPhotoBand(selectedPhoto) }"
+                :aria-expanded="bandMenuOpen"
+                :aria-pressed="isPhotoBand(selectedPhoto)"
+                :title="t('management.showcasePreview.editors.photoBandDescription')"
+                :disabled="placingId !== null"
+                @click="toggleBandMenu"
+              >
+                <Loader2 v-if="placingId === selectedPhoto.id" class="w-[1.125rem] h-[1.125rem] animate-spin" aria-hidden="true" />
+                <GalleryHorizontal v-else class="w-[1.125rem] h-[1.125rem]" aria-hidden="true" />
+                <span>{{ t('management.media.uploadModal.gallery.band') }}</span>
               </button>
               <button
                 type="button"
@@ -570,6 +672,8 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Frame,
+  GalleryHorizontal,
   Upload,
   X,
   ImageIcon,
@@ -580,10 +684,24 @@ import {
   Minimize2,
   Plus,
   Star,
+  Timer,
   Trash2,
   TriangleAlert,
 } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
+import type { PhotoBandPlacement } from '@/services/api/types/event.types'
+import {
+  PHOTO_BAND_PLACEMENTS,
+  isPhotoBand,
+  photoBandPayload,
+  photoBandPlacement,
+  responseSupportsPhotoBand,
+} from '@/components/showcase/photo-band/photoBand'
+import { coverPhotoPayload, responseSupportsCoverPhoto } from '@/components/showcase/cover/coverPhoto'
+import {
+  countdownPhotoPayload,
+  responseSupportsCountdownPhoto,
+} from '@/components/showcase/countdown-rsvp/countdownRsvp'
 import { compressImage } from '@/utils/imageCompression'
 import { FILE_SIZE_LIMITS } from '@/constants/media'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -904,6 +1022,182 @@ const toggleFeatured = async (photo: EventPhoto) => {
   }
 }
 
+// --- Photos a block is drawn from --------------------------------------------
+// The cover's photo frame and the countdown's strips are each drawn from one
+// photo the organizer marks for it, a flag on the photo beside its featured
+// one. Same errand for both; only the flag and the words differ.
+
+type MarkRole = 'cover' | 'countdown'
+type MarkFlag = 'is_cover_photo' | 'is_countdown_photo'
+
+const USE_ROLES: readonly MarkRole[] = ['cover', 'countdown']
+
+const MARKS: Record<
+  MarkRole,
+  {
+    flag: MarkFlag
+    payload: (on: boolean) => Partial<Record<MarkFlag, boolean | null>>
+    supports: (photo?: EventPhoto | null) => boolean
+    icon: typeof Frame
+    label: string
+    unsupported: string
+    failed: string
+  }
+> = {
+  cover: {
+    flag: 'is_cover_photo',
+    payload: coverPhotoPayload,
+    supports: responseSupportsCoverPhoto,
+    icon: Frame,
+    label: 'management.media.uploadModal.gallery.coverPhotoFrame',
+    unsupported: 'management.media.uploadModal.gallery.coverUnsupported',
+    failed: 'management.media.uploadModal.gallery.coverFailed',
+  },
+  countdown: {
+    flag: 'is_countdown_photo',
+    payload: countdownPhotoPayload,
+    supports: responseSupportsCountdownPhoto,
+    icon: Timer,
+    label: 'management.media.uploadModal.gallery.countdownStrips',
+    unsupported: 'management.media.uploadModal.gallery.countdownUnsupported',
+    failed: 'management.media.uploadModal.gallery.countdownFailed',
+  },
+}
+
+const isMarked = (photo: EventPhoto, role: MarkRole): boolean => photo[MARKS[role].flag] === true
+
+/** The button takes the colour of the badge it stands for: the cover's, else the countdown's. */
+const useForClass = (photo: EventPhoto) =>
+  isMarked(photo, 'cover')
+    ? 'is-on is-on--cover'
+    : isMarked(photo, 'countdown')
+      ? 'is-on is-on--countdown'
+      : ''
+
+const useMenuOpen = ref(false)
+const markingId = ref<number | null>(null)
+
+/**
+ * One photo per role, as there is one featured photo: marking a photo takes
+ * the mark off the one that had it; tapping a marked photo's row clears it
+ * (the block then falls back — the cover to the first host's photo, the
+ * strips to the featured photo). Shown at once and saved at once.
+ *
+ * The chosen photo is sent first, because a server that doesn't store the flag
+ * answers 200 without it — checked before anything else is touched, so nothing
+ * is changed that can't be. A later failure re-reads the gallery rather than
+ * guessing which of the requests went through.
+ */
+const toggleMark = async (photo: EventPhoto, role: MarkRole) => {
+  useMenuOpen.value = false
+  if (markingId.value !== null) return
+  const { flag, payload, supports, unsupported, failed } = MARKS[role]
+  const makeOn = photo[flag] !== true
+  const previous = makeOn
+    ? photos.value.filter((item) => item[flag] === true && item.id !== photo.id)
+    : []
+  const before = new Map(photos.value.map((item) => [item.id, item[flag] === true]))
+  const setFlag = (decide: (item: EventPhoto) => boolean) => {
+    photos.value = photos.value.map((item) => ({ ...item, [flag]: decide(item) }))
+  }
+  const revert = () => setFlag((item) => before.get(item.id) ?? item[flag] === true)
+
+  setFlag((item) =>
+    item.id === photo.id
+      ? makeOn
+      : previous.some((other) => other.id === item.id)
+        ? false
+        : item[flag] === true,
+  )
+  markingId.value = photo.id
+  try {
+    const response = await mediaService.updateEventMedia(props.eventId, photo.id, payload(makeOn))
+    if (!response.success || !response.data) throw new Error(response.message || `${role} failed`)
+    if (!supports(response.data)) {
+      revert()
+      flashGalleryError(t(unsupported))
+      return
+    }
+    for (const other of previous) {
+      const cleared = await mediaService.updateEventMedia(props.eventId, other.id, payload(false))
+      if (!cleared.success) throw new Error(cleared.message || `${role} failed`)
+    }
+    emit('photos-changed', committedPhotos())
+  } catch {
+    revert()
+    flashGalleryError(t(failed))
+    void loadPhotos()
+  } finally {
+    markingId.value = null
+  }
+}
+
+/** One menu over the bar at a time. */
+const toggleUseMenu = () => {
+  useMenuOpen.value = !useMenuOpen.value
+  if (useMenuOpen.value) bandMenuOpen.value = false
+}
+
+const toggleBandMenu = () => {
+  bandMenuOpen.value = !bandMenuOpen.value
+  if (bandMenuOpen.value) useMenuOpen.value = false
+}
+
+// --- Photo band -------------------------------------------------------------
+
+const bandMenuOpen = ref(false)
+const placingId = ref<number | null>(null)
+
+// The menus belong to the photo they were opened on.
+watch(selectedId, () => {
+  bandMenuOpen.value = false
+  useMenuOpen.value = false
+})
+
+/** "In the gallery" first — the photo as it is by default — then the sections in invitation order. */
+const bandOptions = computed(() => [
+  { value: null, label: t('management.media.uploadModal.gallery.bandNone') },
+  ...PHOTO_BAND_PLACEMENTS.map((placement) => ({
+    value: placement,
+    label: t(`management.showcasePreview.editors.photoBandPlacements.${placement}`),
+  })),
+])
+
+/**
+ * Makes the photo a band after `placement`, or — with null — a gallery photo
+ * again. Shown at once and saved at once, as featuring is. The blend colour is
+ * kept across a move: it matches the template behind the card, not the
+ * section. A server that doesn't store the fields answers 200 without them, so
+ * the echo is checked before this counts as saved.
+ */
+const setBandPlacement = async (photo: EventPhoto, placement: PhotoBandPlacement | null) => {
+  bandMenuOpen.value = false
+  if (placingId.value !== null || photoBandPlacement(photo) === placement) return
+  const before = { band_placement: photo.band_placement ?? null, band_blend_color: photo.band_blend_color ?? null }
+  const payload = photoBandPayload(placement, photo.band_blend_color ?? null)
+  const apply = (fields: typeof before) => {
+    photos.value = photos.value.map((item) => (item.id === photo.id ? { ...item, ...fields } : item))
+  }
+
+  apply(payload)
+  placingId.value = photo.id
+  try {
+    const response = await mediaService.updateEventMedia(props.eventId, photo.id, payload)
+    if (!response.success || !response.data) throw new Error(response.message || 'band failed')
+    if (!responseSupportsPhotoBand(response.data)) {
+      apply(before)
+      flashGalleryError(t('management.showcasePreview.editors.photoBandUnsupported'))
+      return
+    }
+    emit('photos-changed', committedPhotos())
+  } catch {
+    apply(before)
+    flashGalleryError(t('management.showcasePreview.editors.photoBandSaveFailed'))
+  } finally {
+    placingId.value = null
+  }
+}
+
 // Methods
 const closing = ref(false)
 
@@ -1164,7 +1458,7 @@ onUnmounted(() => {
 }
 
 /* The selection bar's actions: an icon over a short name, the way a toolbar
-   names its tools. Five share a phone's width at a 44px target; a name too long
+   names its tools. Seven share a 390px phone's width at a 44px target; a name too long
    for its column is cut rather than wrapped, so every button keeps one height. */
 .sel-action {
   flex: 1 1 0;
@@ -1223,6 +1517,65 @@ onUnmounted(() => {
 /* Featured: the star's own amber, as on the photo's badge. */
 .sel-action.is-on {
   color: rgb(251 191 36);
+}
+
+/* A band: the sky of the band badge on its thumbnail, not the star's amber. */
+.sel-action.is-on--band {
+  color: rgb(125 211 252);
+}
+
+/* The cover photo: the emerald of its badge on the thumbnail. */
+.sel-action.is-on--cover {
+  color: rgb(110 231 183);
+}
+
+/* The countdown's photo: the indigo of its badge. */
+.sel-action.is-on--countdown {
+  color: rgb(165 180 252);
+}
+
+/* The band menu's rows: the bar's own material, one section per row. */
+.band-option {
+  width: 100%;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  color: rgb(226 232 240);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease;
+}
+
+.band-option[aria-checked='true'],
+.band-option[aria-pressed='true'] {
+  color: #fff;
+  font-weight: 600;
+}
+
+.band-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .band-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.band-option:active {
+  background: rgba(255, 255, 255, 0.16);
+  transition: none;
+}
+
+.band-option:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(56 189 248);
 }
 
 .sel-action--danger {

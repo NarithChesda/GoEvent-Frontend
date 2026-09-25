@@ -92,7 +92,7 @@
       :is-music-playing="isMusicPlaying"
       :has-location="!!event.google_map_embed_link"
       :has-video="!!event.youtube_embed_link"
-      :has-gallery="eventPhotos.length > 0"
+      :has-gallery="galleryPhotos.length > 0"
       :has-payment="paymentMethods.length > 0"
       :has-rsvp="event.rsvp_enabled !== false"
       :has-comments="event.comments_enabled !== false"
@@ -116,7 +116,11 @@
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card" :class="[cardAnimationClass, cardWidthClass]">
             <!-- Glass Background Effects -->
-            <div v-if="showLiquidGlass" class="glass-background"></div>
+            <div
+              v-if="showLiquidGlass"
+              class="glass-background"
+              :class="{ 'glass-background--clear': glassTone === 'clear' }"
+            ></div>
 
             <!-- Content Container with Scroll.
                  `overscroll-contain` matters here: this scroller is nested
@@ -128,9 +132,25 @@
             <div
               ref="stageScrollRef"
               class="stage-scroll relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar"
-              :class="{ 'stage-scroll--playing': isAutoScrolling }"
+              :class="{
+                'stage-scroll--playing': isAutoScrolling,
+                'stage-scroll--ink-edge': showLiquidGlass && glassTone === 'clear',
+              }"
             >
               <div :class="contentPaddingClasses">
+                <!-- Photo bands sit in a PhotoBandSlot after every section, in
+                     the invitation's own order, rendered whether or not the
+                     section before it is — so a band placed after a section
+                     this event doesn't have still draws, between its
+                     neighbours. None has a divider after it: the fade already
+                     is that boundary, and a bow-tie under it would draw it
+                     twice. -->
+                <PhotoBandSlot
+                  :bands="bandsAt.top"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
@@ -166,6 +186,45 @@
                     :cover-host-names="coverHostNames"
                     :description-title="hostBlockOwnsDescription ? getDescriptionTitle() : undefined"
                     :description-text="hostBlockOwnsDescription ? getDescriptionText() : undefined"
+                  />
+                </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_hosts"
+                  :bleed-class="bleedMarginClasses"
+                  :class="['mt-6 sm:mt-8', BAND_SLOT_CLASS]"
+                />
+
+                <!-- Guest dedication: the invite text and the name of the
+                     guest this link was sent to. Here, between who is
+                     inviting and what they are inviting to, because that is
+                     where a Khmer wedding card writes the guest — the block
+                     reads as the middle of one sentence, not as a second
+                     greeting under the welcome header. After the hosts' band
+                     slot, so a band placed "after the hosts" stays directly
+                     under them.
+
+                     Only when the template chose a design (absent = none, the
+                     cover already greets the guest) and there is someone to
+                     address: a public link carries no guest, and previews
+                     fill in "Honored Guest". No divider after it — it is the
+                     hinge between two sections, and a bow-tie would cut the
+                     sentence in half. -->
+                <div
+                  v-if="guestInviteDesign && guestName"
+                  ref="guestInviteRef"
+                  class="mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10 animate-reveal"
+                >
+                  <GuestInviteSection
+                    :guest-name="guestName"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    :primary-color="primaryColor"
+                    :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :guest-invite-design="guestInviteDesign"
                   />
                 </div>
 
@@ -211,48 +270,21 @@
                     :details-design="eventDetailsDesign?.type"
                     :details-marker-color-source="eventDetailsDesign?.marker_color_source"
                     :details-marker-custom-color="eventDetailsDesign?.marker_custom_color"
+                    :details-calendar-style="eventDetailsDesign?.calendar_style"
+                    :details-calendar-card-radius="eventDetailsDesign?.calendar_card_radius"
+                    :details-calendar-card-color="eventDetailsDesign?.calendar_card_color"
+                    :countdown-rsvp-in-section="!!countdownRsvp"
+                    :map-style="infoCardDesign?.map_style"
+                    :stationery="stationery"
                     @open-map="$emit('openMap')"
                   >
-                    <template #rsvp>
+                    <!-- The form, in the card, while the card still holds it. Once the
+                         template gives the countdown and the reply a section of
+                         their own it is drawn there instead (below), and the
+                         card becomes the venue card. -->
+                    <template v-if="!countdownRsvp" #rsvp>
                       <div id="rsvp-section" ref="rsvpSectionRef">
-                        <!-- Private events: guest-shortcode based questionnaire -->
-                        <GuestRSVPSection
-                          v-if="event.privacy === 'private'"
-                          :event-id="event.id"
-                          :guest-shortcode="guestShortcode"
-                          :guest-name="guestName"
-                          :event-start-date="event.start_date"
-                          :event-end-date="event.end_date"
-                          :primary-color="primaryColor"
-                          :secondary-color="secondaryColor"
-                          :accent-color="accentColor"
-                          :background-color="backgroundColor"
-                          :event-texts="eventTexts"
-                          :current-language="currentLanguage"
-                          :event-type="eventType"
-                          :current-font="currentFont"
-                          :primary-font="primaryFont"
-                          :secondary-font="secondaryFont"
-                        />
-                        <!-- Public events: JWT / account-based RSVP -->
-                        <RSVPSection
-                          v-else
-                          :event-id="event.id"
-                          :event-start-date="event.start_date"
-                          :event-end-date="event.end_date"
-                          :primary-color="primaryColor"
-                          :secondary-color="secondaryColor"
-                          @show-auth-modal="$emit('showAuthModal')"
-                          :accent-color="accentColor"
-                          :background-color="backgroundColor"
-                          :is-event-past="isEventPast"
-                          :event-texts="eventTexts"
-                          :current-language="currentLanguage"
-                          :event-type="eventType"
-                          :current-font="currentFont"
-                          :primary-font="primaryFont"
-                          :secondary-font="secondaryFont"
-                        />
+                        <component :is="rsvpForm.component" v-bind="rsvpForm.props" v-on="rsvpForm.listeners" />
                       </div>
                     </template>
                   </EventInfo>
@@ -265,6 +297,67 @@
                     v-if="infoCardDesign?.type !== 'engraved'"
                     :primary-color="primaryColor"
                   />
+                </div>
+
+                <!-- The countdown and the reply in a section of their own, when
+                     the template chose one (countdown_rsvp_design; absent keeps
+                     both in the info card above, as every template drew them).
+                     Straight after the card and before its band slot, so a band
+                     placed "after the date & venue" still lands after the
+                     RSVP, which is where it was placed. Not drawn at all when
+                     there is nothing to count and nothing to answer. -->
+                <div
+                  v-if="countdownRsvp && countdownRsvpShown"
+                  ref="countdownRsvpRef"
+                  class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
+                >
+                  <CountdownRsvpSection
+                    :design="countdownRsvp"
+                    :event-start-date="event.start_date"
+                    :show-countdown="event.countdown_enabled !== false"
+                    :show-rsvp="event.rsvp_enabled !== false"
+                    :is-event-past="isEventPast"
+                    :photos="eventPhotos"
+                    :bleed-class="bleedMarginClasses"
+                    :primary-color="primaryColor"
+                    :accent-color="accentColor"
+                    :background-color="backgroundColor"
+                    :stationery="stationery"
+                    :marker-color="markerColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :current-language="currentLanguage"
+                  >
+                    <template #rsvp>
+                      <div id="rsvp-section" ref="rsvpSectionRef">
+                        <component :is="rsvpForm.component" v-bind="rsvpForm.props" v-on="rsvpForm.listeners" />
+                      </div>
+                    </template>
+                  </CountdownRsvpSection>
+
+                  <WeddingSectionDivider :primary-color="primaryColor" />
+                </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_event_info"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
+                <!-- The one place the studio offers a new band. Each band's
+                     editor then moves it to whichever section it belongs
+                     after, so an add row at every slot would only be ten
+                     dashed buttons down the invitation. Never on the public
+                     showcase: editIntentCtx is only provided in the studio. -->
+                <div v-if="editIntentCtx" class="add-video-row">
+                  <button
+                    type="button"
+                    class="edit-region-control add-video-btn"
+                    @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'photoBand' })"
+                  >
+                    ＋ {{ tApp('management.showcasePreview.editors.addPhotoBand') }}
+                  </button>
                 </div>
 
                 <!-- Dress Code Section. Also rendered when empty inside any
@@ -298,6 +391,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_dress_code"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Agenda Section (also rendered when empty inside the
                      editable manage-page preview, so the first agenda item
                      can be added from there — editIntentCtx is never provided
@@ -327,6 +426,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_agenda"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Host Message Section (Thank You / Sorry Message) -->
                 <div
                   v-if="showHostMessage"
@@ -349,6 +454,12 @@
                   <!-- Host Message Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_host_message"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
 
                 <!-- YouTube Video Section (also rendered when empty inside
                      the editable manage-page preview, so a video link can be
@@ -392,9 +503,15 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_video"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Photo Gallery Section -->
                 <div
-                  v-if="eventPhotos.length > 0"
+                  v-if="galleryPhotos.length > 0"
                   id="gallery-section"
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -408,7 +525,7 @@
                        is not forwarded at all while editing. -->
                   <EditableRegion :intent="{ kind: 'photos' }">
                     <PhotoGallery
-                      :photos="eventPhotos"
+                      :photos="galleryPhotos"
                       :primary-color="primaryColor"
                       :secondary-color="secondaryColor"
                       :accent-color="accentColor"
@@ -418,6 +535,8 @@
                       :secondary-font="secondaryFont"
                       :event-texts="eventTexts"
                       :current-language="currentLanguage"
+                      :gallery-design="galleryDesign"
+                      :bleed-class="bleedMarginClasses"
                       @open-photo="!editIntentCtx && $emit('openPhoto', $event)"
                     />
                   </EditableRegion>
@@ -425,6 +544,12 @@
                   <!-- Gallery Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_gallery"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
 
                 <!-- Payment Section. Empty-but-rendered in a preview frame for
                      the same two reasons as the dress code above: somewhere to
@@ -458,6 +583,12 @@
                   <!-- Payment Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_payment"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
 
                 <!-- Comment Section (also rendered when disabled inside the
                      editable manage-page preview, so the toggle stays
@@ -501,6 +632,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_comments"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Registration Button -->
                 <div v-if="event.registration_required && !isEventPast" class="mb-6">
                   <button
@@ -536,7 +673,7 @@
                 <div
                   ref="footerPageRef"
                   class="footer-page min-h-[calc(85dvh-2rem)] flex flex-col items-center justify-center"
-                  :class="footerMarginClasses"
+                  :class="bleedMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
@@ -867,11 +1004,15 @@ import {
   useCoverStageLayout,
 } from '../../composables/showcase/useCoverStageLayout'
 import type { CoverHostNamesBinding } from './cover/coverDetails'
+import { resolveGlassTone } from './glassTone'
 import type {
   AgendaDesignConfig,
+  CountdownRsvpDesignConfig,
   DressCodeDesignConfig,
+  GalleryDesignConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
+  GuestInviteDesignConfig,
   HostInfoDesignConfig,
   InfoCardDesignConfig,
 } from '../../services/api/types/template.types'
@@ -881,7 +1022,12 @@ const { protectionAttrs } = useAssetProtection()
 
 // Component imports
 import HostInfo from './HostInfo.vue'
+import GuestInviteSection from './GuestInviteSection.vue'
 import EventInfo from './EventInfo.vue'
+import CountdownRsvpSection from './countdown-rsvp/CountdownRsvpSection.vue'
+import { countdownStripsPhotoId, resolveCountdownRsvpDesign } from './countdown-rsvp/countdownRsvp'
+import { resolveMarkerColor, stationeryPaper } from './stationery'
+import { resolveCalendarStyle } from './calendar-designs/calendarModel'
 import RSVPSection from './RSVPSection.vue'
 import GuestRSVPSection from './GuestRSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
@@ -889,6 +1035,15 @@ import HostMessageSection from './HostMessageSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
+import PhotoBandSlot from './photo-band/PhotoBandSlot.vue'
+import {
+  PHOTO_BAND_PLACEMENTS,
+  galleryPhotosOf,
+  resolvePhotoBands,
+  type ResolvedPhotoBand,
+} from './photo-band/photoBand'
+import { coverFramePhotoId } from './cover/coverPhoto'
+import type { PhotoBandPlacement } from '../../services/api/types/event.types'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -973,6 +1128,12 @@ interface Props {
   /** Agenda list design from template (rail | thread | milestone | ledger | stack) */
   agendaDesign?: AgendaDesignConfig | null
   dressCodeDesign?: DressCodeDesignConfig | null
+  /** Photo gallery composition. Absent/unknown renders `column`. */
+  galleryDesign?: GalleryDesignConfig | null
+  /** Guest dedication design from template. Absent / null = no block. */
+  guestInviteDesign?: GuestInviteDesignConfig | null
+  /** Countdown + RSVP in a section of their own. Absent / null = both stay in the info card. */
+  countdownRsvpDesign?: CountdownRsvpDesignConfig | null
 }
 
 const props = defineProps<Props>()
@@ -1093,12 +1254,54 @@ const eventType = computed(() => {
   return props.event.category_details?.name || props.event.category_name || 'default'
 })
 
+// A photo set to appear as a band leaves the gallery, and so do the one in the
+// cover's photo frame and the one the countdown's strips are cut from, while the
+// design draws them: the invitation never shows the same photograph twice.
+const galleryPhotos = computed(() =>
+  galleryPhotosOf(
+    props.eventPhotos,
+    coverFramePhotoId(props.eventPhotos, props.mainStageLayout, props.templateAssets),
+    countdownStripsPhotoId(
+      props.eventPhotos,
+      props.countdownRsvpDesign,
+      props.event.countdown_enabled !== false,
+    ),
+  ),
+)
+
+// Which photo is a band where. Moving a band between sections changes no count
+// the reveal watcher below could see, and each move mounts a new slot element.
+const bandSignature = computed(() =>
+  (props.eventPhotos ?? []).map((p) => `${p.id}:${p.band_placement ?? ''}`).join(','),
+)
+
+// The photo bands, grouped by the section each follows, in gallery order.
+const bandsAt = computed(() => {
+  const groups = Object.fromEntries(PHOTO_BAND_PLACEMENTS.map((p) => [p, []])) as unknown as Record<
+    PhotoBandPlacement,
+    ResolvedPhotoBand<EventPhoto>[]
+  >
+  for (const band of resolvePhotoBands(props.eventPhotos)) {
+    groups[band.placement].push(band)
+  }
+  return groups
+})
+
+// Every slot's spacing and reveal — the same bottom rhythm as the sections.
+const BAND_SLOT_CLASS =
+  'mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal'
+
 // Computed property to control liquid glass background visibility
 const showLiquidGlass = computed(() => {
   const value = props.templateAssets?.display_liquid_glass_background
   // Show liquid glass by default (true or undefined), hide only when explicitly false
   return value !== false
 })
+
+// Which way the glass moves the ground — chosen against the ink, because a white
+// film can't make gold legible. `clear` also turns on the text edge below. See
+// glassTone.ts for the measurements behind it.
+const glassTone = computed(() => resolveGlassTone(props.primaryColor))
 
 // "Wide content" mode: backed by template_assets.cover_stage_layout.contentWidth.
 // Falls back to the VITE_SHOWCASE_CONTENT_WIDTH env var for local visual testing
@@ -1115,13 +1318,14 @@ const isWideContent = computed(() => {
 const cardWidthClass = computed(() => (isWideContent.value ? 'liquid-glass-card--wide' : ''))
 
 // Horizontal padding shrinks in wide mode to hand more of the card's width to the content;
-// vertical rhythm is unchanged. Footer uses the negative-margin counterpart to stay flush.
+// vertical rhythm is unchanged. Whatever runs edge to edge — the footer, the photo
+// band — takes the negative-margin counterpart, so the two must move together.
 const contentPaddingClasses = computed(() =>
   isWideContent.value
     ? 'py-6 sm:py-6 md:py-4 laptop-sm:py-5 laptop-md:py-5 laptop-lg:py-6 desktop:py-5 px-3 sm:px-3 md:px-2 laptop-sm:px-3 laptop-md:px-3 laptop-lg:px-4 desktop:px-3'
     : 'p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5',
 )
-const footerMarginClasses = computed(() =>
+const bleedMarginClasses = computed(() =>
   isWideContent.value
     ? '-mx-3 sm:-mx-3 md:-mx-2 laptop-sm:-mx-3 laptop-md:-mx-3 laptop-lg:-mx-4 desktop:-mx-3'
     : '-mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5',
@@ -1281,7 +1485,9 @@ const REVEAL_STAGGER_MS = 60
 const sectionRefs = {
   welcomeHeader: ref<HTMLElement>(),
   hostInfo: ref<HTMLElement>(),
+  guestInvite: ref<HTMLElement>(),
   eventInfo: ref<HTMLElement>(),
+  countdownRsvp: ref<HTMLElement>(),
   rsvpSection: ref<HTMLElement>(),
   dressCodeSection: ref<HTMLElement>(),
   agendaSection: ref<HTMLElement>(),
@@ -1298,7 +1504,9 @@ const sectionRefs = {
 const {
   welcomeHeader: welcomeHeaderRef,
   hostInfo: hostInfoRef,
+  guestInvite: guestInviteRef,
   eventInfo: eventInfoRef,
+  countdownRsvp: countdownRsvpRef,
   rsvpSection: rsvpSectionRef,
   dressCodeSection: dressCodeSectionRef,
   agendaSection: agendaSectionRef,
@@ -1394,7 +1602,9 @@ const initializeRevealAnimations = () => {
   const animationConfig: Array<[SectionRef, string]> = [
     [welcomeHeaderRef, 'welcome-header'],
     [hostInfoRef, 'host-info'],
+    [guestInviteRef, 'guest-invite'],
     [eventInfoRef, 'event-info'],
+    [countdownRsvpRef, 'countdown-rsvp'],
     [rsvpSectionRef, 'rsvp-section'],
     [dressCodeSectionRef, 'dress-code-section'],
     [agendaSectionRef, 'agenda-section'],
@@ -1406,7 +1616,14 @@ const initializeRevealAnimations = () => {
     [footerLockupRef, 'footer-lockup'],
   ]
 
-  animationConfig.forEach(([elementRef, elementId]) => {
+  // Photo band slots are as many as the organizer placed, each mounting and
+  // unmounting as bands move between sections, so they are found rather than
+  // held by ref. A slot that reappears is a new element, and is observed anew.
+  const bandSlots = Array.from(
+    stageScrollRef.value?.querySelectorAll<HTMLElement>('.photo-band-slot') ?? [],
+  ).map((el): [SectionRef, string] => [{ value: el }, 'photo-band'])
+
+  ;[...animationConfig, ...bandSlots].forEach(([elementRef, elementId]) => {
     const el = elementRef.value
     if (!el || !revealObserver.value) return
     if (observedElements.value.has(el) || el.classList.contains('is-visible')) return
@@ -1429,9 +1646,18 @@ watch(
     props.dressCodes?.length,
     props.agendaItems?.length,
     props.eventPhotos?.length,
+    bandSignature.value,
     props.paymentMethods?.length,
     props.eventTexts?.length,
     props.currentLanguage,
+    // The guest dedication mounts on a template design and a guest name, and
+    // either can arrive after the stage does (a studio design change, a
+    // template's assets landing late).
+    props.guestInviteDesign?.type,
+    // The countdown + RSVP section mounts on a template design, which can
+    // arrive after the stage does (a studio design change).
+    !!props.countdownRsvpDesign,
+    !!props.guestName,
   ],
   async () => {
     await nextTick()
@@ -1477,6 +1703,98 @@ const getDescriptionTitle = (): string | undefined => findEventText('description
  * their parent can see both.
  */
 const hostBlockOwnsDescription = computed(() => props.hostInfoDesign?.type === 'crest')
+
+/**
+ * The invitation's stationery (stationery.ts), resolved once here and handed
+ * to both EventInfo and the countdown + RSVP section, so the date, the venue,
+ * the count and the reply are one set: the date design's marker colour as
+ * every block's one accent, and one paper — the calendar card's stock and
+ * corner when the date is that card — for every paper object.
+ */
+const markerColor = computed(() =>
+  resolveMarkerColor({
+    source: props.eventDetailsDesign?.marker_color_source,
+    custom: props.eventDetailsDesign?.marker_custom_color,
+    primary: props.primaryColor,
+    secondary: props.secondaryColor,
+    accent: props.accentColor,
+  }),
+)
+
+const stationery = computed(() => {
+  const details = props.eventDetailsDesign
+  const isCardCalendar =
+    details?.type === 'calendar' && resolveCalendarStyle(details.calendar_style) === 'card'
+  return stationeryPaper({
+    tone: props.backgroundColor || props.primaryColor,
+    calendarCard: isCardCalendar
+      ? { color: details?.calendar_card_color, radius: details?.calendar_card_radius }
+      : null,
+  })
+})
+
+/**
+ * The countdown + RSVP section's two designs, or null to leave both in the info
+ * card — which is what every template saved before the section existed has.
+ */
+const countdownRsvp = computed(() => resolveCountdownRsvpDesign(props.countdownRsvpDesign))
+
+/**
+ * Whether the section has anything to draw: a count still running, or a reply
+ * that can still be given. Both forms hide themselves once the event has ended,
+ * and the count once it has started, so with neither left the section (and its
+ * divider) is not drawn rather than leaving an empty gap. The studio keeps both
+ * on screen when switched off, for their on/off chips.
+ *
+ * Read against the clock once per render, not ticking: a page left open across
+ * the start keeps its section until the next render, where the count inside it
+ * has already hidden itself.
+ */
+const countdownRsvpShown = computed(() => {
+  const editing = !!editIntentCtx
+  const rsvp = (props.event.rsvp_enabled !== false || editing) && !props.isEventPast
+  const start = Date.parse(props.event.start_date ?? '')
+  const counting =
+    (props.event.countdown_enabled !== false || editing) &&
+    Number.isFinite(start) &&
+    start > Date.now()
+  return rsvp || counting
+})
+
+/**
+ * The RSVP form, declared once for both places it can be drawn — in the info
+ * card, or in the countdown + RSVP section. Private events answer a guest's own
+ * questionnaire by shortcode; public ones RSVP through an account.
+ */
+const rsvpForm = computed(() => {
+  const shared = {
+    eventId: props.event.id,
+    eventStartDate: props.event.start_date,
+    eventEndDate: props.event.end_date,
+    primaryColor: props.primaryColor,
+    secondaryColor: props.secondaryColor,
+    accentColor: props.accentColor,
+    backgroundColor: props.backgroundColor,
+    eventTexts: props.eventTexts,
+    currentLanguage: props.currentLanguage,
+    eventType: eventType.value,
+    currentFont: props.currentFont,
+    primaryFont: props.primaryFont,
+    secondaryFont: props.secondaryFont,
+  }
+  if (props.event.privacy === 'private') {
+    return {
+      component: GuestRSVPSection,
+      props: { ...shared, guestShortcode: props.guestShortcode, guestName: props.guestName },
+      listeners: {},
+    }
+  }
+  return {
+    component: RSVPSection,
+    props: { ...shared, isEventPast: props.isEventPast },
+    listeners: { showAuthModal: () => emit('showAuthModal') },
+  }
+})
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content
 
 // Computed property to check if host message section should be displayed
@@ -1908,6 +2226,17 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
+/* Clear glass — for an ink white can't make legible (glassTone.ts). The blur
+   stays, because it is what calms petals and filigree behind the glyphs; the
+   white film goes, because against gold it only washed the artwork out, and
+   over a dark backdrop it closed the gap to pale ink. The edge on `::after`
+   still draws the pane. Legibility comes from `.stage-scroll--ink-edge`. */
+.glass-background--clear::before {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px) saturate(0.85);
+  -webkit-backdrop-filter: blur(10px) saturate(0.85);
+}
+
 /* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(20px)) {
   .glass-background::before {
@@ -1917,6 +2246,62 @@ onUnmounted(() => {
       rgba(255, 255, 255, 0.8) 50%,
       rgba(255, 255, 255, 0.85) 100%
     );
+  }
+
+  /* An opaque white sheet is the frost at its worst for a light ink. */
+  .glass-background--clear::before {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* The text edge that clear glass relies on: a hairline in a deep shade of each
+   run's own colour, which is what separates pale gold from a pale ground
+   without covering the ground — the metallic finishes keep gold legible on a
+   cream card the same way. Nearly every run on this stage is the primary ink,
+   often at reduced alpha, so it is set once here and inherited rather than
+   opted into by twenty section components.
+
+   - Per element, not inherited from the root: `em` in the width resolves at
+     the declaring element, so a root-level width would give 12px names the
+     stroke of the root's size.
+   - Capped at 0.5px, lower than the finishes' rim. Legibility is a small-text
+     problem: display type is already large enough to read, and at 0.75px a
+     40px numeral read as outlined sticker lettering.
+   - The shade keeps the run's alpha, or a 58% note would carry a darker rim
+     than its own fill and read as outlined. Relative colour does that;
+     `color-mix` is the fallback for engines without it, and there a faded run's
+     rim is somewhat stronger than its fill.
+   - `paint-order: stroke fill` lays it under the glyph, so only the outer half
+     shows and small Khmer keeps its full weight and open counters.
+   - `.tfx-ink` is skipped: a metallic finish draws its own rim, and matching
+     it here would tie the two at equal specificity with bundle order choosing.
+     An inert ink span (no `.tfx` above it) inherits this one instead. */
+.stage-scroll--ink-edge,
+.stage-scroll--ink-edge :deep(:not(.tfx-ink)) {
+  -webkit-text-stroke-width: clamp(0.3px, 0.035em - 0.25px, 0.5px);
+  -webkit-text-stroke-color: color-mix(in srgb, currentColor 45%, #000);
+  -webkit-text-stroke-color: rgb(
+    from currentColor calc(r * 0.45) calc(g * 0.45) calc(b * 0.45) / alpha
+  );
+  paint-order: stroke fill;
+}
+
+/* Controls sit on fills of their own and keep the type they were designed
+   with; so does the footer bar, which carries white on its own tint. Each
+   selector outranks or follows the rule above, and none reaches `.tfx-ink`. */
+.stage-scroll--ink-edge
+  :deep(:is(button, a, input, textarea, select, [role='button'], [role='tab'])),
+.stage-scroll--ink-edge
+  :deep(:is(button, a, input, textarea, select, [role='button'], [role='tab']) :not(.tfx-ink)),
+.stage-scroll--ink-edge .footer-card-container,
+.stage-scroll--ink-edge .footer-card-container :deep(:not(.tfx-ink)) {
+  -webkit-text-stroke-width: 0;
+}
+
+@media (forced-colors: active) {
+  .stage-scroll--ink-edge,
+  .stage-scroll--ink-edge :deep(:not(.tfx-ink)) {
+    -webkit-text-stroke-width: 0;
   }
 }
 

@@ -38,6 +38,7 @@ function blankTemplate(overrides: Partial<PartnerTemplate> = {}): PartnerTemplat
     info_card_design: null,
     agenda_design: null,
     dress_code_design: null,
+    gallery_design: null,
     save_the_date_design: null,
     stage_modes: null,
     text_effects: null,
@@ -97,8 +98,12 @@ describe('partner template form config round trip', () => {
     expect(hydrated.host_info_design_type).toBe(fresh.host_info_design_type)
     expect(hydrated.agenda_design_type).toBe(fresh.agenda_design_type)
     expect(hydrated.dress_code_design_type).toBe(fresh.dress_code_design_type)
+    expect(hydrated.gallery_design_type).toBe('column')
     expect(hydrated.info_card_design_type).toBe(fresh.info_card_design_type)
     expect(hydrated.save_the_date_design_type).toBe('auto')
+    expect(hydrated.guest_invite_design_type).toBe('none')
+    expect(hydrated.countdown_rsvp_placement).toBe('card')
+    expect(hydrated.info_card_map_style).toBe('window')
     expect(hydrated.text_effects).toEqual(fresh.text_effects)
     expect(hydrated.falling_effect_enabled).toBe(false)
     expect(hydrated.ambient_creatures_enabled).toBe(false)
@@ -122,11 +127,18 @@ describe('partner template form config round trip', () => {
       host_sync_cover_names: true,
       agenda_design_type: 'thread',
       dress_code_design_type: 'atelier',
+      gallery_design_type: 'booth',
       info_card_design_type: 'engraved',
       save_the_date_design_type: 'engraved',
+      guest_invite_design_type: 'place_card',
+      info_card_map_style: 'atlas',
+      countdown_rsvp_placement: 'section',
+      countdown_design_type: 'orbit',
+      rsvp_design_type: 'envelope',
       event_details_design_type: 'calendar',
       event_details_marker_color_source: 'custom',
       event_details_marker_custom_color: '#123456',
+      event_details_calendar_style: 'week',
       stage_mode_cover: 'video',
       stage_mode_transition: 'none',
       stage_mode_background: 'video',
@@ -165,6 +177,97 @@ describe('partner template form config round trip', () => {
       expect(hydrateForm(savedAs(form)).save_the_date_design_type).toBe('auto')
     })
 
+    /**
+     * The guest dedication is additive: off draws no block, so it has to reach
+     * the server as an explicit null (absent would mean "leave it alone") and
+     * come back as off — never as a design nobody chose.
+     */
+    it('persists the guest dedication "none" as null, and reads it back as none', () => {
+      const form = { ...defaultForm(), guest_invite_design_type: 'none' as const }
+      expect(buildConfigPayload(form).guest_invite_design).toBeNull()
+      expect(hydrateForm(savedAs(form)).guest_invite_design_type).toBe('none')
+    })
+
+    it('reads a guest dedication design this build does not know as inscribed', () => {
+      const template = blankTemplate({
+        guest_invite_design: { type: 'envelope' } as unknown as PartnerTemplate['guest_invite_design'],
+      })
+      // Switched on by the partner, so it opens on the design the showcase
+      // draws for it rather than as "off", which a save would then persist.
+      expect(hydrateForm(template).guest_invite_design_type).toBe('inscribed')
+    })
+
+    it('reads a gallery design this build does not know as the column', () => {
+      const template = blankTemplate({
+        gallery_design: { type: 'carousel' } as unknown as PartnerTemplate['gallery_design'],
+      })
+      // The showcase draws the column for it, so the picker says so — and a
+      // save then writes the column rather than a value no build renders.
+      expect(hydrateForm(template).gallery_design_type).toBe('column')
+      expect(buildConfigPayload(hydrateForm(template)).gallery_design).toEqual({ type: 'column' })
+    })
+
+    /**
+     * Left in the card, the pair is no config at all — but it must reach the
+     * server as an explicit null, because absent means "leave it alone" and a
+     * partner moving it back into the card has to be heard.
+     */
+    it('persists the countdown + RSVP left in the card as null, and reads it back as the card', () => {
+      const form = {
+        ...defaultForm(),
+        countdown_rsvp_placement: 'card' as const,
+        countdown_design_type: 'flip' as const,
+      }
+      expect(buildConfigPayload(form).countdown_rsvp_design).toBeNull()
+      expect(hydrateForm(savedAs(form)).countdown_rsvp_placement).toBe('card')
+    })
+
+    it('saves both designs together once the pair has a section of its own', () => {
+      const form = {
+        ...defaultForm(),
+        countdown_rsvp_placement: 'section' as const,
+        countdown_design_type: 'typeset' as const,
+        rsvp_design_type: 'inline' as const,
+      }
+      expect(buildConfigPayload(form).countdown_rsvp_design).toEqual({
+        countdown: 'typeset',
+        rsvp: 'inline',
+      })
+    })
+
+    it('reads a countdown or RSVP design this build does not know as the first of its kind', () => {
+      const template = blankTemplate({
+        countdown_rsvp_design: {
+          countdown: 'hourglass',
+          rsvp: 'scroll',
+        } as unknown as PartnerTemplate['countdown_rsvp_design'],
+      })
+      const hydrated = hydrateForm(template)
+      // The partner chose the section, so it stays on — on designs that exist.
+      expect(hydrated.countdown_rsvp_placement).toBe('section')
+      expect(hydrated.countdown_design_type).toBe('strips')
+      expect(hydrated.rsvp_design_type).toBe('card')
+    })
+
+    /**
+     * The window is what every card drew, so a template that keeps it must send
+     * the same info_card_design it always did — the backend may refuse keys it
+     * does not know.
+     */
+    it('sends map_style only when the map is not the window', () => {
+      expect(buildConfigPayload(defaultForm()).info_card_design).toEqual({ type: 'glass' })
+      const arch = { ...defaultForm(), info_card_map_style: 'arch' as const }
+      expect(buildConfigPayload(arch).info_card_design).toEqual({ type: 'glass', map_style: 'arch' })
+      expect(hydrateForm(savedAs(arch)).info_card_map_style).toBe('arch')
+    })
+
+    it('reads a map style this build does not draw as the window', () => {
+      const template = blankTemplate({
+        info_card_design: { type: 'frosted', map_style: 'globe' } as unknown as PartnerTemplate['info_card_design'],
+      })
+      expect(hydrateForm(template).info_card_map_style).toBe('window')
+    })
+
     it('sends sparks off as an explicit enabled:false, never as null', () => {
       const payload = buildConfigPayload({ ...defaultForm(), sparks_enabled: false })
       // Null would be read as "no standalone config", which falls back to the
@@ -175,6 +278,59 @@ describe('partner template form config round trip', () => {
 
     it('sends no text_effects at all when no slot carries a finish', () => {
       expect(buildConfigPayload(defaultForm()).text_effects).toBeNull()
+    })
+
+    /**
+     * `calendar_style` is sent only when it says something: absent already
+     * means `classic`, so a classic calendar template's payload is byte for byte
+     * what it was before the key existed — which matters to a backend that
+     * refuses keys it doesn't know.
+     */
+    it('sends a calendar style only on the calendar design, and never for classic', () => {
+      const calendar = { ...defaultForm(), event_details_design_type: 'calendar' as const }
+      expect(buildConfigPayload(calendar).event_details_design).not.toHaveProperty('calendar_style')
+
+      const dial = { ...calendar, event_details_calendar_style: 'dial' as const }
+      expect(buildConfigPayload(dial).event_details_design).toHaveProperty('calendar_style', 'dial')
+      expect(hydrateForm(savedAs(dial)).event_details_calendar_style).toBe('dial')
+
+      const flanked = { ...dial, event_details_design_type: 'flanked' as const }
+      expect(buildConfigPayload(flanked).event_details_design).not.toHaveProperty('calendar_style')
+    })
+
+    it("sends the card's corner radius only with the card, clamped to the editor's range", () => {
+      const card = {
+        ...defaultForm(),
+        event_details_design_type: 'calendar' as const,
+        event_details_calendar_style: 'card' as const,
+        event_details_calendar_card_radius: 18,
+      }
+      expect(buildConfigPayload(card).event_details_design).toMatchObject({
+        calendar_style: 'card',
+        calendar_card_radius: 18,
+        calendar_card_color: '#FFFFFF',
+      })
+      expect(hydrateForm(savedAs(card)).event_details_calendar_card_radius).toBe(18)
+
+      const blush = { ...card, event_details_calendar_card_color: '#FDF2F4' }
+      expect(hydrateForm(savedAs(blush)).event_details_calendar_card_color).toBe('#FDF2F4')
+
+      const week = { ...card, event_details_calendar_style: 'week' as const }
+      expect(buildConfigPayload(week).event_details_design).not.toHaveProperty('calendar_card_radius')
+      expect(buildConfigPayload(week).event_details_design).not.toHaveProperty('calendar_card_color')
+
+      const tooRound = { ...card, event_details_calendar_card_radius: 400 }
+      expect(buildConfigPayload(tooRound).event_details_design).toHaveProperty('calendar_card_radius', 40)
+    })
+
+    it('reads a calendar style this build does not draw as classic', () => {
+      const template = blankTemplate({
+        event_details_design: {
+          type: 'calendar',
+          calendar_style: 'lunar',
+        } as unknown as PartnerTemplate['event_details_design'],
+      })
+      expect(hydrateForm(template).event_details_calendar_style).toBe('classic')
     })
 
     it('drops the calendar marker colour when the design is a panel', () => {
@@ -219,10 +375,13 @@ describe('partner template form config round trip', () => {
       [
         'agenda_design',
         'ambient_creatures',
+        'countdown_rsvp_design',
         'cover_stage_layout',
         'dress_code_design',
+        'gallery_design',
         'event_details_design',
         'falling_effect',
+        'guest_invite_design',
         'host_info_design',
         'info_card_design',
         'save_the_date_design',
@@ -275,5 +434,51 @@ describe('partner template form config round trip', () => {
       })
       expect(hydrateForm(template).cover_stage_layout.stackLayout).toBe('pile')
     }
+  })
+  /**
+   * The photo frame's switch is inferred when absent, from the sample-logo pair
+   * the birthday cover drew its photo with. The form opens on what the cover
+   * renders and a save pins it, so an unrelated edit to such a template never
+   * moves or drops its photo — and a template without the pair never gains one.
+   */
+  describe('cover photo frame', () => {
+    it('opens a sample-logo template on the photo frame, logo off, and saves it that way', () => {
+      for (const layout of [null, { logoHeight: 40 }]) {
+        const legacy = blankTemplate({
+          sample_logo_1: 'frame.png',
+          sample_logo_2: 'shape.png',
+          cover_stage_layout: layout as PartnerTemplate['cover_stage_layout'],
+        })
+        const hydrated = hydrateForm(legacy)
+        expect(hydrated.cover_stage_layout.showCoverPhoto).toBe(true)
+        expect(hydrated.cover_stage_layout.showCoverLogo).toBe(false)
+
+        const saved = buildConfigPayload(hydrated)
+        expect(saved.cover_stage_layout).toMatchObject({ showCoverPhoto: true, showCoverLogo: false })
+      }
+    })
+
+    it('never gives a frame to a template without the pair', () => {
+      const plain = hydrateForm(blankTemplate({ sample_logo_1: 'mark.png' }))
+      expect(plain.cover_stage_layout.showCoverPhoto).toBe(false)
+      expect(plain.cover_stage_layout.showCoverLogo).toBe(true)
+    })
+
+    it('keeps an explicit switch and the frame layer through save and reload', () => {
+      const template = blankTemplate({
+        sample_logo_2: 'shape.png',
+        cover_stage_layout: {
+          showCoverPhoto: false,
+          coverPhoto: { frameLayer: 'over' },
+        } as PartnerTemplate['cover_stage_layout'],
+      })
+      const hydrated = hydrateForm(template)
+      expect(hydrated.cover_stage_layout.showCoverPhoto).toBe(false)
+      expect(hydrated.cover_stage_layout.showCoverLogo).toBe(true)
+
+      const reloaded = hydrateForm(savedAs(hydrated, { sample_logo_2: 'shape.png' }))
+      expect(reloaded.cover_stage_layout.showCoverPhoto).toBe(false)
+      expect(reloaded.cover_stage_layout.coverPhoto).toEqual({ frameLayer: 'over' })
+    })
   })
 })

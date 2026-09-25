@@ -79,6 +79,7 @@ describe('cover element type slots', () => {
     expect(elementFontSlots.value).toEqual({
       header: 'decorative',
       logo: 'primary',
+      photo: 'primary',
       invite: 'secondary',
       guest: 'primary',
       hosts: 'primary',
@@ -243,8 +244,8 @@ describe('cover detail blocks', () => {
     expect(elementFontSlots.value.hosts).toBe('decorative')
   })
 
-  it('lets a partner move the details in rows mode and every block in free mode', () => {
-    expect(placeableCoverElementIds('rows')).toEqual(['hosts', 'date', 'location'])
+  it('lets a partner move the photo and the details in rows mode and every block in free mode', () => {
+    expect(placeableCoverElementIds('rows')).toEqual(['photo', 'hosts', 'date', 'location'])
     expect(placeableCoverElementIds('free')).toEqual(COVER_ELEMENT_IDS)
   })
 
@@ -271,5 +272,64 @@ describe('cover detail blocks', () => {
     expect(coverDetails.value.separator).toBe('rings')
     expect(coverDetails.value.hostCount).toBe(3)
     expect(coverDetails.value.hostSubline).toBe(COVER_DETAILS_DEFAULTS.hostSubline)
+  })
+})
+
+/**
+ * The photo frame grew out of the logo row, where the sample-logo pair drew the
+ * first host's photo. A template that carried that pair must render exactly as
+ * it did — frame on, logo off, in the logo row's place — and no other template
+ * may gain a frame it never asked for.
+ */
+describe('cover photo frame', () => {
+  const resolve = (config: CoverStageLayout, assets: Record<string, string | null> = {}) =>
+    useCoverStageLayout(
+      computed<CoverStageLayout | undefined>(() => config),
+      undefined,
+      computed(() => assets),
+    )
+
+  it('is off, and leaves the logo alone, on a template without the sample-logo pair', () => {
+    const { layout } = resolve({}, { sample_logo_1: 'mark.png' })
+    expect(layout.value.showCoverPhoto).toBe(false)
+    expect(layout.value.showCoverLogo).toBe(true)
+  })
+
+  it('takes the logo row over on a template that carried the sample-logo pair', () => {
+    const { layout, elements } = resolve({}, { sample_logo_1: 'frame.png', sample_logo_2: 'shape.png' })
+    expect(layout.value.showCoverPhoto).toBe(true)
+    expect(layout.value.showCoverLogo).toBe(false)
+    expect(elements.value.photo).toEqual(elements.value.logo)
+  })
+
+  it('infers nothing once the template says, or once the logo was already off', () => {
+    const pair = { sample_logo_2: 'shape.png' }
+    expect(resolve({ showCoverPhoto: false }, pair).layout.value).toMatchObject({
+      showCoverPhoto: false,
+      showCoverLogo: true,
+    })
+    expect(resolve({ showCoverPhoto: true, showCoverLogo: true }, pair).layout.value).toMatchObject({
+      showCoverPhoto: true,
+      showCoverLogo: true,
+    })
+    expect(resolve({ showCoverLogo: false }, pair).layout.value.showCoverPhoto).toBe(false)
+  })
+
+  it('follows the logo row until it is moved, then keeps its own box in rows mode', () => {
+    const tall = resolve({ showCoverPhoto: true, logoHeight: 60 })
+    expect(tall.elements.value.photo).toEqual(tall.elements.value.logo)
+
+    const moved = resolve({
+      showCoverPhoto: true,
+      layoutMode: 'rows',
+      coverElements: { photo: { x: 50, y: 40, width: 50, height: 30 } },
+    })
+    expect(moved.elements.value.photo).toMatchObject({ x: 50, y: 40, width: 50, height: 30 })
+    expect(moved.elementStyles.value.photo).toMatchObject({ left: '25%', top: '25%', width: '50%' })
+  })
+
+  it('reads an unknown frame layer as the artwork under the photo', () => {
+    const { layout } = resolve({ coverPhoto: { frameLayer: 'sideways' as never } })
+    expect(layout.value.coverPhoto).toEqual({ frameLayer: 'under' })
   })
 })

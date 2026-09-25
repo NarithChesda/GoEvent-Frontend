@@ -14,9 +14,7 @@
     :guest-name="guestName"
     :event-title="event.title"
     :event-logo="event.logo_one"
-    :first-host-image="hosts[0]?.profile_image || null"
-    :first-host-name="hosts[0]?.name || ''"
-    :first-host-id="hosts[0]?.id ?? null"
+    :cover-photo="coverPhoto"
     :event-details="coverEventDetails"
     :event-video-url="eventVideoUrl"
     :background-video-url="backgroundVideoUrl"
@@ -91,6 +89,9 @@
         :info-card-design="event.template_assets?.info_card_design"
         :agenda-design="event.template_assets?.agenda_design"
         :dress-code-design="event.template_assets?.dress_code_design"
+        :gallery-design="event.template_assets?.gallery_design"
+        :guest-invite-design="event.template_assets?.guest_invite_design"
+        :countdown-rsvp-design="event.template_assets?.countdown_rsvp_design"
         @open-map="openGoogleMap"
         @open-photo="openPhotoModal"
         @change-language="changeLanguage"
@@ -191,7 +192,7 @@
   <PhotoModal
     v-if="photoModalEverOpened"
     :is-open="isPhotoModalOpen"
-    :photos="eventPhotos"
+    :photos="galleryPhotos"
     :current-photo="currentModalPhoto"
     :get-media-url="getMediaUrl"
     @close="closePhotoModal"
@@ -206,7 +207,7 @@ import { resolveStageModesForEvent } from '@/composables/showcase/useStageModes'
 import { provideTextEffects } from '@/composables/showcase/useTextEffects'
 import {
   COVER_BLOCK_TEXT,
-  COVER_DETAIL_ELEMENT_IDS,
+  COVER_BOX_ELEMENT_IDS,
   COVER_ELEMENT_IDS,
   COVER_ROW_ELEMENT_IDS,
   placeableCoverElementIds,
@@ -216,6 +217,7 @@ import {
   type ResolvedCoverElements,
 } from '@/composables/showcase/useCoverStageLayout'
 import { coverEventDetailsOf } from '@/components/showcase/cover/coverDetails'
+import { resolveCoverPhotoSource } from '@/components/showcase/cover/coverPhoto'
 import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
 import {
   postCoverLayoutChangeToParent,
@@ -261,6 +263,7 @@ const {
   hosts,
   agendaItems,
   eventPhotos,
+  galleryPhotos,
   paymentMethods,
   dressCodes,
   guestName,
@@ -368,6 +371,13 @@ const coverStageLayout = computed<CoverStageLayout | undefined>(() => {
 /** The hosts, date and venue the cover's names-and-details blocks draw. */
 const coverEventDetails = computed(() => coverEventDetailsOf(event.value, hosts.value))
 
+/**
+ * The photograph the cover's photo frame shows. From the photos as the frame
+ * holds them, so the cover-photo editor's unsaved draft (patch-photos) shows
+ * here the moment it is made.
+ */
+const coverPhoto = computed(() => resolveCoverPhotoSource(eventPhotos.value, hosts.value))
+
 // The same resolution the cover itself runs, so the overlay's handles are drawn
 // from exactly the boxes the blocks rendered at — never a parallel calculation.
 const {
@@ -377,6 +387,9 @@ const {
 } = useCoverStageLayout(
   coverStageLayout,
   computed(() => event.value?.template_assets?.cover_content_top_position),
+  // Same artwork the cover infers its photo frame from, so the overlay offers a
+  // handle for exactly the frame the cover draws.
+  templateAssets,
 )
 
 /**
@@ -395,6 +408,7 @@ const coverTextPalette = computed<CoverTextPalette>(() => ({
 const coverElementVisibility = computed<Record<CoverElementId, boolean>>(() => ({
   header: resolvedCoverLayout.value.showCoverHeaderText,
   logo: resolvedCoverLayout.value.showCoverLogo,
+  photo: resolvedCoverLayout.value.showCoverPhoto,
   // Both are gated on a guest name in CoverContentRows, and the invite text on
   // its own switch as well. Preview frames always have a guest name
   // (useDefaultGuestName), but a frame opened without one shouldn't offer
@@ -407,7 +421,7 @@ const coverElementVisibility = computed<Record<CoverElementId, boolean>>(() => (
   location: resolvedCoverLayout.value.showCoverLocation,
 }))
 
-/** The blocks the overlay may move: every one in free mode, the details in rows. */
+/** The blocks the overlay may move: every one in free mode, the photo and the details in rows. */
 const coverPlaceable = computed(() => placeableCoverElementIds(resolvedCoverLayout.value.layoutMode))
 
 /**
@@ -415,12 +429,13 @@ const coverPlaceable = computed(() => placeableCoverElementIds(resolvedCoverLayo
  * where each block actually IS. In free mode that is the resolved map. In rows
  * mode the four row blocks sit on their rows whatever `coverElements` still
  * remembers from an earlier free session, so their guides come from the row
- * geometry; only the detail blocks read the map.
+ * geometry; only the blocks placed by box in both modes (the photo frame and
+ * the details) read the map.
  */
 const coverEditorElements = computed<ResolvedCoverElements>(() => {
   if (resolvedCoverLayout.value.layoutMode === 'free') return coverElements.value
   const rows = rowsToCoverElements(resolvedCoverLayout.value)
-  for (const id of COVER_DETAIL_ELEMENT_IDS) rows[id] = coverElements.value[id]
+  for (const id of COVER_BOX_ELEMENT_IDS) rows[id] = coverElements.value[id]
   return rows
 })
 

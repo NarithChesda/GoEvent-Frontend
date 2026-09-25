@@ -178,7 +178,7 @@ describe('PartnerTemplateForm — cover blocks', () => {
   it('lists every block once, in the order the cover draws them', async () => {
     const wrapper = await openCoverSection()
     const blocks = wrapper.findAll('[data-cover-block]').map((row) => row.attributes('data-cover-block'))
-    expect(blocks).toEqual(['header', 'logo', 'invite', 'guest', 'hosts', 'date', 'location'])
+    expect(blocks).toEqual(['header', 'logo', 'photo', 'invite', 'guest', 'hosts', 'date', 'location'])
   })
 
   it("keeps a block's type after its own settings, inside its switch", async () => {

@@ -3,17 +3,24 @@ import type {
   AgendaDesignType,
   DressCodeDesignConfig,
   DressCodeDesignType,
+  GalleryDesignConfig,
+  GalleryDesignType,
+  GuestInviteDesignConfig,
+  GuestInviteDesignType,
   InfoCardDesignConfig,
   InfoCardDesignType,
+  InfoCardMapStyle,
   PartnerTemplate,
   SaveTheDateDesignConfig,
   SaveTheDateDesignType,
 } from '@/services/api'
+import { resolveMapStyle } from '@/components/showcase/countdown-rsvp/countdownRsvp'
 
 /**
- * The four section designs that are a bare choice of composition: the info
- * card, the agenda, the dress code and the Save the Date. Each is one `{ type }`
- * config on the wire, with no sibling settings — so far.
+ * The section designs that are a bare choice of composition: the info card, the
+ * agenda, the dress code, the photo gallery, the Save the Date and the guest
+ * dedication. Each is one `{ type }` config on the wire, with no sibling
+ * settings — so far.
  *
  * Grouped rather than given a module each because they are the same shape and
  * the same decision asked four times, and because the builders below are the
@@ -27,8 +34,15 @@ import type {
 export interface SectionDesignsFormState {
   /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
   info_card_design_type: InfoCardDesignType
+  /**
+   * How the map inside the info card is framed. A sibling key of the card's
+   * treatment, the way `calendar_style` is of the date design's: the card's
+   * material stays whatever it is and only the map's own shape changes.
+   */
+  info_card_map_style: InfoCardMapStyle
   agenda_design_type: AgendaDesignType
   dress_code_design_type: DressCodeDesignType
+  gallery_design_type: GalleryDesignType
   /**
    * Save the Date composition on the transition stage. `auto` is not a design —
    * it stores nothing, which leaves each transition stage on the one it shipped
@@ -37,18 +51,31 @@ export interface SectionDesignsFormState {
    * can't silently pin it to a design its partner never chose.
    */
   save_the_date_design_type: SaveTheDateDesignType | 'auto'
+  /**
+   * The guest dedication on the invitation. `none` is not a design — it stores
+   * `null`, which draws no block, and it is what every template saved before
+   * the field existed loads as. Unlike the three designs above, off is the
+   * default: this block is additive, and a template whose cover already greets
+   * the guest by name does not want a second greeting under the hosts.
+   */
+  guest_invite_design_type: GuestInviteDesignType | 'none'
 }
 
 export const defaultSectionDesigns = (): SectionDesignsFormState => ({
   info_card_design_type: 'glass',
+  info_card_map_style: 'window',
   agenda_design_type: 'rail',
   dress_code_design_type: 'portrait',
+  gallery_design_type: 'column',
   save_the_date_design_type: 'auto',
+  guest_invite_design_type: 'none',
 })
 
 export function hydrateSectionDesigns(template: PartnerTemplate | null): SectionDesignsFormState {
   return {
     info_card_design_type: template?.info_card_design?.type ?? 'glass',
+    // Absent and unknown both mean the window every map was drawn in.
+    info_card_map_style: resolveMapStyle(template?.info_card_design?.map_style),
     // Absent means the template predates the field, which is exactly 'rail' —
     // the one composition every agenda rendered back when the look came from
     // the event category.
@@ -56,15 +83,25 @@ export function hydrateSectionDesigns(template: PartnerTemplate | null): Section
     // Absent means the template predates the field, which is exactly
     // 'portrait' — the one composition every dress code section rendered.
     dress_code_design_type: template?.dress_code_design?.type ?? 'portrait',
+    gallery_design_type: hydrateGalleryDesign(template?.gallery_design?.type),
     // No stored value means 'auto' — each transition stage keeps its own
     // default — which is what every template saved before this field existed has.
     save_the_date_design_type: template?.save_the_date_design?.type ?? 'auto',
+    guest_invite_design_type: hydrateGuestInviteDesign(template?.guest_invite_design?.type),
   }
 }
 
+/**
+ * `map_style` is sent only when it isn't the window, so a template that keeps the
+ * window saves exactly the payload it always did — which matters because the
+ * backend may validate this blob's keys (see info-card-design.md).
+ */
 export const buildInfoCardDesignPayload = (
   state: SectionDesignsFormState,
-): InfoCardDesignConfig => ({ type: state.info_card_design_type })
+): InfoCardDesignConfig =>
+  state.info_card_map_style === 'window'
+    ? { type: state.info_card_design_type }
+    : { type: state.info_card_design_type, map_style: state.info_card_map_style }
 
 export const buildAgendaDesignPayload = (state: SectionDesignsFormState): AgendaDesignConfig => ({
   type: state.agenda_design_type,
@@ -73,6 +110,33 @@ export const buildAgendaDesignPayload = (state: SectionDesignsFormState): Agenda
 export const buildDressCodeDesignPayload = (
   state: SectionDesignsFormState,
 ): DressCodeDesignConfig => ({ type: state.dress_code_design_type })
+
+/**
+ * The gallery designs this build ships. A stored value it has never heard of
+ * opens on `column`, which is what the showcase draws for it — so a partner
+ * sees the picker agree with the preview rather than a design selected that
+ * the frame beside it isn't showing.
+ */
+const GALLERY_DESIGN_TYPES: readonly GalleryDesignType[] = [
+  'column',
+  'reel',
+  'prints',
+  'mosaic',
+  'booth',
+  'film',
+]
+
+function hydrateGalleryDesign(type: string | null | undefined): GalleryDesignType {
+  // Absent means the template predates the field, which is exactly 'column' —
+  // the one composition every gallery rendered.
+  return type && (GALLERY_DESIGN_TYPES as readonly string[]).includes(type)
+    ? (type as GalleryDesignType)
+    : 'column'
+}
+
+export const buildGalleryDesignPayload = (state: SectionDesignsFormState): GalleryDesignConfig => ({
+  type: state.gallery_design_type,
+})
 
 /**
  * `auto` is the absence of a choice, so it persists as `null` rather than as a
@@ -85,3 +149,33 @@ export const buildSaveTheDateDesignPayload = (
   state.save_the_date_design_type === 'auto'
     ? null
     : { type: state.save_the_date_design_type }
+
+/**
+ * The designs this build ships, so a stored value it has never heard of opens
+ * on the one the showcase actually draws for it (`inscribed`) rather than on a
+ * picker with nothing selected — which a save would then write back unchanged.
+ */
+const GUEST_INVITE_DESIGN_TYPES: readonly GuestInviteDesignType[] = [
+  'inscribed',
+  'formal',
+  'place_card',
+  'tag',
+]
+
+function hydrateGuestInviteDesign(
+  type: string | null | undefined,
+): SectionDesignsFormState['guest_invite_design_type'] {
+  if (!type) return 'none'
+  return (GUEST_INVITE_DESIGN_TYPES as readonly string[]).includes(type)
+    ? (type as GuestInviteDesignType)
+    : 'inscribed'
+}
+
+/**
+ * `none` persists as `null`, never as an absent key: absent on the wire means
+ * "leave this alone", so switching the block off has to be said out loud.
+ */
+export const buildGuestInviteDesignPayload = (
+  state: SectionDesignsFormState,
+): GuestInviteDesignConfig | null =>
+  state.guest_invite_design_type === 'none' ? null : { type: state.guest_invite_design_type }

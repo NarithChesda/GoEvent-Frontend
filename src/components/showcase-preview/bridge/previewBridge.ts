@@ -24,6 +24,9 @@ import type {
  *                      already binds, e.g. a replaced logo; no refetch, so no
  *                      re-mount flicker. See previewRefreshScope.ts for which
  *                      fields qualify),
+ *                    patch-photos (the same, merged into individual photos
+ *                      by id — the photo band editor's live draft and its
+ *                      revert on cancel; see postPhotoPatchToFrame),
  *                    preview-template (live, non-destructive template try-on),
  *                    preview-event (swap which event the PUBLIC template
  *                      preview is drawn through — see
@@ -67,11 +70,15 @@ export type ParentToFrameType =
 /** Just-saved event fields, in the shape the event serializer returns them. */
 export type EventFieldPatch = Record<string, unknown>
 
+/** Fields for one photo, found by `id` — see postPhotoPatchToFrame. */
+export type PhotoFieldPatch = { id: number } & Record<string, unknown>
+
 export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: ParentToFrameType }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'edit-intent'; intent: EditIntent }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'preview-template'; templateData: TemplateAssets }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-event'; fields: EventFieldPatch }
+  | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-photos'; photos: PhotoFieldPatch[] }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-ready' }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-loaded' }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'set-language'; language: string }
@@ -324,6 +331,26 @@ export function postEventPatchToFrame(
       source: PREVIEW_BRIDGE_SOURCE,
       type: 'patch-event',
       fields: JSON.parse(JSON.stringify(fields)) as EventFieldPatch,
+    } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Parent side: merge fields into individual photos in one frame, matched by id
+ * — `patch-event` one level down. The photo band editor draws its unsaved
+ * section, colour and framing this way, and puts the stored ones back on
+ * cancel. Unwrapped for the same structured-clone reason as above.
+ */
+export function postPhotoPatchToFrame(
+  frameWindow: Window | null | undefined,
+  photos: PhotoFieldPatch[],
+): void {
+  frameWindow?.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'patch-photos',
+      photos: JSON.parse(JSON.stringify(photos)) as PhotoFieldPatch[],
     } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
