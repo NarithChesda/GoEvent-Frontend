@@ -197,19 +197,27 @@ watch(
 }
 
 /* A lighter card needs only a soft lift; a dark one needs more shadow to leave
-   the page at all. The hairline keeps a white card's edge on a white page. */
+   the page at all. The hairline keeps a white card's edge on a white page.
+   The lift is the invitation's paper lift (stationery.ts → PAPER_SHADOW),
+   which EventInfo passes down as --st-paper-shadow so the reply card and the
+   map's polaroid below sit on the page exactly as this card does; the values
+   here are the same numbers, for a caller that passes nothing. */
 .calp--light .calp__card {
-  box-shadow:
+  box-shadow: var(
+    --st-paper-shadow,
     inset 0 0 0 1px color-mix(in srgb, currentColor 8%, transparent),
     0 1px 2px rgb(0 0 0 / 0.06),
-    0 16px 36px -16px rgb(0 0 0 / 0.3);
+    0 16px 36px -16px rgb(0 0 0 / 0.3)
+  );
 }
 
 .calp--dark .calp__card {
-  box-shadow:
+  box-shadow: var(
+    --st-paper-shadow,
     inset 0 0 0 1px color-mix(in srgb, currentColor 16%, transparent),
     0 1px 2px rgb(0 0 0 / 0.2),
-    0 18px 40px -16px rgb(0 0 0 / 0.55);
+    0 18px 40px -16px rgb(0 0 0 / 0.55)
+  );
 }
 
 /* Clipped over the top edge, a few degrees off true. It is put on after the

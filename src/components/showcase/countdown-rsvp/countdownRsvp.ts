@@ -5,9 +5,10 @@
  * (`info_card_design.map_style`).
  *
  * Everything here is data, not markup — which design a stored value means, what
- * the count reads at a given moment, which photograph the strips are cut from
- * and which paper the reply card is printed on — so the components are only the
- * drawing and these rules can be tested without mounting anything.
+ * the count reads at a given moment, which photograph the strips are cut from —
+ * so the components are only the drawing and these rules can be tested without
+ * mounting anything. The paper, the ink and the accent every one of these
+ * blocks shares with the date and the venue live in ../stationery.ts.
  *
  * Backend contract: docs/backend-api-requirements/countdown-rsvp-design.md
  */
@@ -20,7 +21,6 @@ import type {
 import type { CountdownPhotoFields } from '@/services/api/types/event.types'
 import type { CoverPhotoShapeMask } from '@/components/showcase-preview/edit/editContext'
 import { toKhmerNumerals } from '@/utils/translations'
-import { parseHex, relativeLuminance } from '../glassTone'
 
 // --- Which design ------------------------------------------------------------
 
@@ -190,87 +190,4 @@ export function stripesShapeMask(gap: number, count = 3): CoverPhotoShapeMask {
     url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
     bounds: { x: 0, y: 0, width: 1, height: 1 },
   }
-}
-
-// --- Paper and ink -----------------------------------------------------------
-
-type Rgb = [number, number, number]
-
-/**
- * Warm off-white and a deep brown-black, rather than pure white and black:
- * pure white under a hairline border reads as a screen, not as card stock, and
- * pure black type on it is harsher than print. The same pair EventInfo prints
- * its filled controls in.
- */
-export const PAPER_LIGHT = '#fdfaf4'
-export const PAPER_DARK = '#2a2118'
-
-/** The form's smallest labels are ~0.72rem: small text, so AA is 4.5:1. */
-const SMALL_TEXT_CONTRAST = 4.5
-
-const contrast = (a: Rgb, b: Rgb): number => {
-  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x)
-  return (hi + 0.05) / (lo + 0.05)
-}
-
-const toHex = ([r, g, b]: Rgb): string =>
-  `#${[r, g, b].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('')}`
-
-const mix = (a: Rgb, b: Rgb, amount: number): Rgb =>
-  [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * amount) as Rgb
-
-/**
- * A colour readable *against* the template's ink — the label on the one filled
- * control an inked form has (the selected answer, the submit button).
- *
- * It cannot simply be the template's background: `useTemplateProcessor`
- * substitutes the primary colour for any template that declares no colour named
- * `background`, so `background` arrives as the ink itself more often than not,
- * and the submit button would paint primary type on a primary fill. The
- * declared background is kept only while it stays readable on the ink.
- */
-export function paperOnInk(ink: string | null | undefined, background: string | null | undefined): string {
-  const inkRgb = parseHex(ink)
-  if (!inkRgb) {
-    // An ink this can't measure (a named colour, an rgb() string). The declared
-    // background is only safe if it is demonstrably a different colour.
-    const bg = (background ?? '').trim()
-    return bg && bg.toLowerCase() !== (ink ?? '').trim().toLowerCase() ? bg : PAPER_LIGHT
-  }
-  const bgRgb = parseHex(background)
-  if (bgRgb && contrast(bgRgb, inkRgb) >= SMALL_TEXT_CONTRAST) return background!.trim()
-  return contrast(parseHex(PAPER_LIGHT)!, inkRgb) >= contrast(parseHex(PAPER_DARK)!, inkRgb)
-    ? PAPER_LIGHT
-    : PAPER_DARK
-}
-
-export interface ReplyCardColors {
-  /** The card stock. */
-  paper: string
-  /** Everything printed on it, and the fill of its one solid control. */
-  ink: string
-}
-
-/** How far the stock leans toward the template's own tone. */
-const PAPER_TINT = 0.06
-
-/**
- * The reply card's paper and ink.
- *
- * The stock is always light, because a reply card is: warm off-white, leaning a
- * few percent toward the template's tone so it belongs to the design rather
- * than to a stationery shop. It prints in the template's ink when that reads at
- * small-text contrast, and in deep brown-black when it doesn't — a gold-ink
- * template's gold measures about 2:1 on white, and the form's labels are small.
- */
-export function replyCardColors(
-  ink: string | null | undefined,
-  tone: string | null | undefined,
-): ReplyCardColors {
-  const base = parseHex(PAPER_LIGHT)!
-  const toneRgb = parseHex(tone)
-  const paperRgb = toneRgb ? mix(base, toneRgb, PAPER_TINT) : base
-  const inkRgb = parseHex(ink)
-  const printable = inkRgb && contrast(inkRgb, paperRgb) >= SMALL_TEXT_CONTRAST
-  return { paper: toHex(paperRgb), ink: printable ? toHex(inkRgb) : PAPER_DARK }
 }

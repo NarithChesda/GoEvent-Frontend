@@ -13,7 +13,7 @@ import RsvpEnvelope from './rsvp-designs/RsvpEnvelope.vue'
 import RsvpGlass from './rsvp-designs/RsvpGlass.vue'
 import RsvpInline from './rsvp-designs/RsvpInline.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
-import { PAPER_DARK } from './countdownRsvp'
+import { PAPER_DARK } from '../stationery'
 import type { CountdownRsvpDesignConfig } from '@/services/api/types/template.types'
 
 // The studio chips read the app's i18n; the showcase itself doesn't need it.
@@ -132,6 +132,22 @@ describe('CountdownRsvpSection', () => {
     const wrapper = mountSection({ primaryColor: '#dfa54b', backgroundColor: '#fff8ec' })
     const form = wrapper.find('.crs-form')
     expect(form.attributes('style')).toContain(`--crs-form-ink: ${PAPER_DARK}`)
+  })
+
+  /** One accent for the set: the date design's marker, not the template's accent. */
+  it('spends its marks in the date design’s marker colour', () => {
+    const wrapper = mountSection({ markerColor: '#7d8f73' })
+    expect(wrapper.find('.crs').attributes('style')).toContain('--crs-accent: #7d8f73')
+  })
+
+  it('prints the reply card on the invitation’s one paper, corner and lift', () => {
+    const wrapper = mountSection({
+      stationery: { paper: '#fdf2f4', radius: 14, tone: 'light', shadow: '0 1px 2px red' },
+    })
+    const style = wrapper.find('.crs').attributes('style')
+    expect(style).toContain('--crs-card-paper: #fdf2f4')
+    expect(style).toContain('--crs-radius: 14px')
+    expect(style).toContain('--crs-paper-shadow: 0 1px 2px red')
   })
 
   it('cuts the strips from the featured photograph', () => {

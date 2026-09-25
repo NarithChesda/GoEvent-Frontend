@@ -3407,7 +3407,8 @@
         "engraved": "Engraved (hairline rules, inked type)"
       },
       "mapStyleLabel": "Map frame",
-      "mapStyleHint": "How the venue map is framed inside the card. The card's own material above stays as it is.",
+      "mapStyleHint": "How the venue map is framed. Every frame is drawn in the invitation's own ink and accent, and the polaroid is printed on the same paper as the calendar card and the reply card.",
+      "onPageHint": "The countdown and RSVP have a section of their own, so the venue and its map sit on the page with no card around them. Only the map frame below applies.",
       "mapStyles": {
         "window": "Window (rounded rectangle)",
         "arch": "Arch (arched window, drawn outline)",

@@ -8,10 +8,6 @@ import {
   responseSupportsCountdownPhoto,
   stripesShapeMask,
   msToNextMinute,
-  paperOnInk,
-  PAPER_DARK,
-  PAPER_LIGHT,
-  replyCardColors,
   resolveCountdownRsvpDesign,
   resolveMapStyle,
 } from './countdownRsvp'
@@ -169,34 +165,5 @@ describe('stripesShapeMask', () => {
   it('keeps an absurd gap from eating the columns', () => {
     const [[, w]] = rectsOf(stripesShapeMask(5).url)
     expect(w).toBeGreaterThanOrEqual(200) // the gap is capped at a fifth of the frame
-  })
-})
-
-describe('paperOnInk', () => {
-  it('keeps a declared background that reads on the ink', () => {
-    expect(paperOnInk('#1f2a44', '#f5efe4')).toBe('#f5efe4')
-  })
-
-  /** The template processor fills a missing background with the primary itself. */
-  it('never returns the ink as its own paper', () => {
-    expect(paperOnInk('#1f2a44', '#1f2a44')).toBe(PAPER_LIGHT)
-    expect(paperOnInk('#f3e3b5', '#f3e3b5')).toBe(PAPER_DARK)
-  })
-})
-
-describe('replyCardColors', () => {
-  it('prints in the template ink when it reads on the stock', () => {
-    const colors = replyCardColors('#3b1f2b', '#3b1f2b')
-    expect(colors.ink).toBe('#3b1f2b')
-    expect(colors.paper).not.toBe(PAPER_LIGHT) // leaned toward the template's tone
-  })
-
-  /** Gold on white measures about 2:1 — not text at the form's sizes. */
-  it('falls back to deep brown-black for a pale ink', () => {
-    expect(replyCardColors('#dfa54b', '#fff8ec').ink).toBe(PAPER_DARK)
-  })
-
-  it('uses plain stock when the tone cannot be read', () => {
-    expect(replyCardColors('#222222', 'rgb(1, 2, 3)').paper).toBe(PAPER_LIGHT)
   })
 })

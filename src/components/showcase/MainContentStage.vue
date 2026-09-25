@@ -275,6 +275,7 @@
                     :details-calendar-card-color="eventDetailsDesign?.calendar_card_color"
                     :countdown-rsvp-in-section="!!countdownRsvp"
                     :map-style="infoCardDesign?.map_style"
+                    :stationery="stationery"
                     @open-map="$emit('openMap')"
                   >
                     <!-- The form, in the card, while the card still holds it. Once the
@@ -321,6 +322,8 @@
                     :primary-color="primaryColor"
                     :accent-color="accentColor"
                     :background-color="backgroundColor"
+                    :stationery="stationery"
+                    :marker-color="markerColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
@@ -1020,6 +1023,8 @@ import GuestInviteSection from './GuestInviteSection.vue'
 import EventInfo from './EventInfo.vue'
 import CountdownRsvpSection from './countdown-rsvp/CountdownRsvpSection.vue'
 import { countdownStripsPhotoId, resolveCountdownRsvpDesign } from './countdown-rsvp/countdownRsvp'
+import { resolveMarkerColor, stationeryPaper } from './stationery'
+import { resolveCalendarStyle } from './calendar-designs/calendarModel'
 import RSVPSection from './RSVPSection.vue'
 import GuestRSVPSection from './GuestRSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
@@ -1693,6 +1698,35 @@ const getDescriptionTitle = (): string | undefined => findEventText('description
  * their parent can see both.
  */
 const hostBlockOwnsDescription = computed(() => props.hostInfoDesign?.type === 'crest')
+
+/**
+ * The invitation's stationery (stationery.ts), resolved once here and handed
+ * to both EventInfo and the countdown + RSVP section, so the date, the venue,
+ * the count and the reply are one set: the date design's marker colour as
+ * every block's one accent, and one paper — the calendar card's stock and
+ * corner when the date is that card — for every paper object.
+ */
+const markerColor = computed(() =>
+  resolveMarkerColor({
+    source: props.eventDetailsDesign?.marker_color_source,
+    custom: props.eventDetailsDesign?.marker_custom_color,
+    primary: props.primaryColor,
+    secondary: props.secondaryColor,
+    accent: props.accentColor,
+  }),
+)
+
+const stationery = computed(() => {
+  const details = props.eventDetailsDesign
+  const isCardCalendar =
+    details?.type === 'calendar' && resolveCalendarStyle(details.calendar_style) === 'card'
+  return stationeryPaper({
+    tone: props.backgroundColor || props.primaryColor,
+    calendarCard: isCardCalendar
+      ? { color: details?.calendar_card_color, radius: details?.calendar_card_radius }
+      : null,
+  })
+})
 
 /**
  * The countdown + RSVP section's two designs, or null to leave both in the info

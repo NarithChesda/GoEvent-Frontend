@@ -442,6 +442,7 @@
         color: primaryColor,
         animationDelay: `${animationDelays.date}s`,
         '--details-marker-color': detailsMarkerColor,
+        '--st-paper-shadow': stock.shadow,
       }"
     >
       <EditableRegion :intent="{ kind: 'eventDate' }" class="calendar-region">
@@ -463,11 +464,74 @@
       </EditableRegion>
     </div>
 
-    <!-- Event Details Block. Always drawn while the countdown and the RSVP
-         live in it, exactly as it was; once they have a section of their own
-         (countdownRsvpInSection) it is only a venue card, and an empty one is
-         not drawn at all. -->
-    <div v-if="!countdownRsvpInSection || venueCardHasContent" class="space-y-3">
+    <!-- The venue on the page. Once the countdown and the RSVP have a section
+         of their own, the card that held all four has nothing left to hold but
+         a venue line and a map — and a pane of glass (or a frosted sheet, or
+         two engraved rules) round one map is a container for its own sake. So
+         the venue is set straight on the page, the way the date above it and
+         the countdown below it are: its name in ink, then the map in its
+         frame, the frame the only thing drawn round it. Every frame, the
+         window included, is MapFrame's, in the invitation's stationery. -->
+    <section
+      v-if="countdownRsvpInSection && venueCardHasContent"
+      class="venue-block"
+      :class="{ 'is-in': isVisible, 'is-khmer': currentLanguage === 'kh' }"
+      :style="{ color: primaryColor, '--venue-delay': `${animationDelays.map}s`, '--venue-radius': `${stock.radius}px` }"
+    >
+      <InlineEditableText
+        v-if="locationInMapCard && locationText && !venueOnPrint"
+        :value="locationText"
+        :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+        :multiline="true"
+        :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+      >
+        <p
+          class="venue-block__name"
+          :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+        >{{ locationText }}</p>
+      </InlineEditableText>
+
+      <MapFrame
+        v-if="hasMapEmbed"
+        :variant="resolvedMapStyle"
+        :revealed="isVisible"
+        :delay="animationDelays.map + 0.08"
+        :caption-font="primaryFont || currentFont"
+        :khmer="currentLanguage === 'kh'"
+        :ink="primaryColor"
+        :stationery="stock"
+        :accent="detailsMarkerColor"
+      >
+        <MapEmbed :src="googleMapEmbedLink!" :title="locationText || undefined" />
+        <template v-if="venueOnPrint" #caption>
+          <InlineEditableText
+            :value="locationText!"
+            :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+            :multiline="true"
+            :input-style="{ fontFamily: primaryFont || currentFont, color: stockInk }"
+          >
+            <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']">{{ locationText }}</span>
+          </InlineEditableText>
+        </template>
+      </MapFrame>
+
+      <!-- No map yet: the studio's add affordance, in the map's own place and
+           shape (editIntentCtx is never provided on the public showcase). -->
+      <button
+        v-else-if="editIntentCtx"
+        type="button"
+        class="edit-region-control venue-block__add"
+        @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'gmapEmbed' })"
+      >
+        {{ tApp('management.showcasePreview.editors.addMap') }}
+      </button>
+    </section>
+
+    <!-- Event Details Block: the card that holds the venue, the map, the
+         countdown and the RSVP together — every template without a section of
+         their own draws exactly this, unchanged. -->
+    <div v-if="!countdownRsvpInSection" class="space-y-3">
       <!-- Three treatments of the same content. `glass` is the original: a
            2px-white-bordered, tinted, blurred panel with white type throughout.
            `engraved` throws the panel away and sets the block as ink on the
@@ -527,25 +591,17 @@
               :delay="animationDelays.map"
               :caption-font="primaryFont || currentFont"
               :khmer="currentLanguage === 'kh'"
-              :style="{ '--mf-tape': detailsMarkerColor }"
+              :ink="primaryColor"
+              :stationery="stock"
+              :accent="detailsMarkerColor"
             >
-              <EditableRegion :intent="{ kind: 'gmapEmbed' }">
-                <iframe
-                  :src="googleMapEmbedLink"
-                  width="100%"
-                  height="100%"
-                  style="border: 0"
-                  :allowfullscreen="false"
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-                />
-              </EditableRegion>
+              <MapEmbed :src="googleMapEmbedLink!" :title="locationText || undefined" />
               <template v-if="venueOnPrint" #caption>
                 <InlineEditableText
                   :value="locationText!"
                   :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
                   :multiline="true"
-                  :input-style="{ fontFamily: primaryFont || currentFont, color: '#2a2118' }"
+                  :input-style="{ fontFamily: primaryFont || currentFont, color: stockInk }"
                 >
                   <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']">{{ locationText }}</span>
                 </InlineEditableText>
@@ -596,7 +652,7 @@
                content — editIntentCtx is never provided on the public
                showcase) -->
           <div
-            v-if="!countdownRsvpInSection && countdown && isCountdownActive && (showCountdown || editIntentCtx)"
+            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx)"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
             :class="{ 'has-display-toggle': editIntentCtx, 'engraved-band': isEngraved }"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
@@ -684,7 +740,7 @@
                the RSVP band itself (one rule for every boundary in the sheet,
                rather than a drawn line here and a hairline everywhere else). -->
           <div
-            v-if="!countdownRsvpInSection && isGlassCard && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
+            v-if="isGlassCard && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
@@ -697,7 +753,7 @@
                content — editIntentCtx is never provided on the public
                showcase) -->
           <div
-            v-if="!countdownRsvpInSection && (showRsvp || editIntentCtx)"
+            v-if="showRsvp || editIntentCtx"
             class="bounce-in-element rsvp-toggle-container"
             :class="{ 'has-display-toggle': editIntentCtx, 'engraved-band': isEngraved }"
             :style="{ animationDelay: `${animationDelays.rsvp}s` }"
@@ -729,7 +785,15 @@ import type {
   InfoCardMapStyle,
 } from '@/services/api/types/template.types'
 import MapFrame from './map-designs/MapFrame.vue'
-import { paperOnInk as paperOnInkFor, resolveMapStyle } from './countdown-rsvp/countdownRsvp'
+import MapEmbed from './map-designs/MapEmbed.vue'
+import { resolveMapStyle } from './countdown-rsvp/countdownRsvp'
+import {
+  inkOnPaper,
+  paperOnInk as paperOnInkFor,
+  resolveMarkerColor,
+  stationeryPaper,
+  type StationeryPaper,
+} from './stationery'
 import {
   buildCalendarDesignModel,
   inkOn,
@@ -816,6 +880,12 @@ interface Props {
   countdownRsvpInSection?: boolean
   /** How the map is framed (`info_card_design.map_style`). Absent = `window`. */
   mapStyle?: InfoCardMapStyle | null
+  /**
+   * The invitation's shared paper (stationery.ts), resolved once by the stage
+   * so the calendar card, the polaroid and the reply card below are one stock.
+   * Absent resolves it here from the same inputs.
+   */
+  stationery?: StationeryPaper | null
 }
 
 // Metallic lettering for the display type drawn in a finished slot: the
@@ -990,6 +1060,10 @@ const isGlassCard = computed(() => !isEngraved.value && !isFrosted.value)
 // top/bottom rules have one to give up.
 const engravedJoinsDateMark = computed(
   () =>
+    // Only when the sheet is drawn: with the countdown and the RSVP in their
+    // own section the venue is on the page, and a mark that gave up its closing
+    // rule would be left open onto nothing.
+    !props.countdownRsvpInSection &&
     isEngraved.value &&
     // Only the classic calendar closes on a rule; the other calendar styles
     // have no bottom rule to give up, so they keep their gap to the sheet.
@@ -1075,26 +1149,20 @@ const monthShort = computed<string>(() => {
   }
 })
 
-/** Used only when the chosen colour slot resolves to nothing (custom source
- *  with no hex yet). Matches the original hand-drawn-heart red. */
-const MARKER_FALLBACK = '#b3261e'
-
 // Colour of the calendar's event-day marker — the heart ring drawn around the
 // date and the matching tint applied to the day number once it finishes drawing.
 // Template-driven so it can sit on any background instead of always being red.
-const detailsMarkerColor = computed(() => {
-  switch (props.detailsMarkerColorSource) {
-    case 'custom':
-      return props.detailsMarkerCustomColor || MARKER_FALLBACK
-    case 'primary':
-      return props.primaryColor || MARKER_FALLBACK
-    case 'secondary':
-      return props.secondaryColor || props.primaryColor || MARKER_FALLBACK
-    case 'accent':
-    default:
-      return props.accentColor || props.primaryColor || MARKER_FALLBACK
-  }
-})
+// The stationery's accent (stationery.ts): the countdown and the RSVP below
+// spend their one mark in this same colour.
+const detailsMarkerColor = computed(() =>
+  resolveMarkerColor({
+    source: props.detailsMarkerColorSource,
+    custom: props.detailsMarkerCustomColor,
+    primary: props.primaryColor,
+    secondary: props.secondaryColor,
+    accent: props.accentColor,
+  }),
+)
 
 // Ink for type drawn ON the marker colour — the wall stamp's number, the week
 // capsule's day, the desk calendar's month band. The marker is a template
@@ -1103,6 +1171,26 @@ const calendarMarkerInk = computed(() => inkOn(detailsMarkerColor.value))
 
 // The `card` calendar's paper — the template's pick, white when it made none.
 const calendarCardColor = computed(() => resolveCalendarCardColor(props.detailsCalendarCardColor))
+
+/**
+ * The invitation's one paper: the calendar card's stock and corner when the
+ * date is drawn as that card, else the shared warm white. The stage passes the
+ * answer it gave the countdown + RSVP section; the fallback is the same rule.
+ */
+const stock = computed(
+  () =>
+    props.stationery ??
+    stationeryPaper({
+      tone: props.backgroundColor || props.primaryColor,
+      calendarCard:
+        isCalendarDesign.value && calendarStyle.value === 'card'
+          ? { color: props.detailsCalendarCardColor, radius: props.detailsCalendarCardRadius }
+          : null,
+    }),
+)
+
+/** Small text printed on that paper — the polaroid's caption. */
+const stockInk = computed(() => inkOnPaper(props.primaryColor, stock.value.paper))
 
 // Localized SUN–SAT weekday header labels for the calendar grid. Uses the
 // explicit Khmer short names for 'kh' and Intl 'short' weekday names otherwise,
@@ -1726,6 +1814,81 @@ const infoInnerStyle = computed(() => {
 @keyframes eventDayTint {
   to {
     color: var(--details-marker-color, #b3261e);
+  }
+}
+
+/* ============================================================
+   THE VENUE ON THE PAGE  (countdownRsvpInSection)
+
+   Ink on the page ground, like every block around it: the date
+   design above, the countdown and the reply below. No material
+   of its own — the frame MapFrame draws is the only line round
+   the map, and it is drawn in the invitation's stationery.
+
+   The name is content, not a label: sentence case at reading
+   size, a weight up from body so it holds its own over a map,
+   balanced so a two-line venue breaks where it should. It
+   arrives with the settle every block in the set uses — a
+   short rise out of nothing, no overshoot, since nothing threw
+   it — and the frame lands a beat after it.
+   ============================================================ */
+.venue-block {
+  --venue-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.95rem;
+  width: 100%;
+  max-width: 26rem;
+  margin-inline: auto;
+}
+
+.venue-block__name {
+  margin: 0;
+  max-width: 22rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 600ms var(--venue-ease) var(--venue-delay),
+    transform 700ms var(--venue-ease) var(--venue-delay);
+}
+
+.venue-block.is-khmer .venue-block__name {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.venue-block.is-in .venue-block__name {
+  opacity: 1;
+  transform: none;
+}
+
+/* Manage-preview only: the add-a-map affordance, in the map's own shape and
+   corner, drawn in the same ink as everything around it. */
+.venue-block__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1.5px dashed color-mix(in srgb, currentColor 32%, transparent);
+  border-radius: var(--venue-radius, 4px);
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .venue-block__name {
+    transform: none;
   }
 }
 

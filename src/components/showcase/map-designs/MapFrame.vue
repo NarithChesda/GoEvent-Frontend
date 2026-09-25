@@ -1,8 +1,13 @@
 <template>
-  <!-- The frame the venue map is set in (`info_card_design.map_style`), for
-       every style but `window`, which EventInfo still draws as it always has.
-       The map itself — the embed inside its edit region — arrives in the
-       default slot; this owns the frame and its arrival.
+  <!-- The frame the venue map is set in (`info_card_design.map_style`). The
+       map itself — the embed inside its edit region — arrives in the default
+       slot; this owns the frame and its arrival.
+
+       It is drawn in the invitation's stationery (stationery.ts): the same
+       hairline the calendar and the countdown rule with, the same accent the
+       date spends on its day, and — for the one frame that is an object, the
+       polaroid — the same paper, corner and lift as the calendar card and the
+       reply card. A frame never brings a material of its own.
 
        Every frame leaves the embed's bottom edge square and uncovered: Google's
        logo and terms sit in its bottom corners, and the Maps embed terms do not
@@ -10,12 +15,23 @@
   <div
     class="mf"
     :class="[`mf--${variant}`, { 'is-revealed': revealed, 'is-light': light }]"
-    :style="{ '--mf-delay': `${delay}s` }"
+    :style="frameStyle"
   >
+    <!-- A window onto the map, on the page: the paper's corner and one soft
+         hairline, nothing round it. Only drawn with the venue on the page —
+         inside the info card, the card's own window stands. -->
+    <template v-if="variant === 'window'">
+      <div class="mf__plate">
+        <div class="mf__window mf__window--plate">
+          <div class="mf__embed"><slot /></div>
+        </div>
+      </div>
+    </template>
+
     <!-- An arched window. The dome is a true semicircle (see .mf__window), with
          a hairline arch drawn around it a few pixels out, the way a window is
          set in its stone. -->
-    <template v-if="variant === 'arch'">
+    <template v-else-if="variant === 'arch'">
       <div class="mf__arch">
         <span class="mf__arch-line" aria-hidden="true" />
         <div class="mf__window mf__window--arch">
@@ -42,9 +58,10 @@
             <polygon points="0,-24 5,-5 0,0" transform="rotate(315)" />
           </g>
           <!-- Each cardinal point in two halves, one filled and one open: the
-               shading that makes a rose read as a star rather than a cross. -->
+               shading that makes a rose read as a star rather than a cross.
+               The north point takes the accent — the frame's one mark. -->
           <g v-for="angle in [0, 90, 180, 270]" :key="angle" :transform="`rotate(${angle})`">
-            <polygon class="mf__rose-fill" points="0,-40 6,-6 0,0" />
+            <polygon class="mf__rose-fill" :class="{ 'is-north': angle === 0 }" points="0,-40 6,-6 0,0" />
             <polygon class="mf__rose-open" points="0,-40 -6,-6 0,0" />
           </g>
           <circle class="mf__rose-hub" r="3" />
@@ -53,8 +70,9 @@
       </div>
     </template>
 
-    <!-- An instant print laid on the card: paper, a square window, the venue
-         written in the wide bottom margin, a strip of tape across the top. -->
+    <!-- An instant print laid on the page: the invitation's paper, a square
+         window, the venue written in the wide bottom margin, a strip of tape in
+         the accent across the top. -->
     <template v-else>
       <div class="mf__print">
         <span class="mf__tape" aria-hidden="true" />
@@ -70,39 +88,70 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { InfoCardMapStyle } from '@/services/api/types/template.types'
+import { inkOnPaper, stationeryPaper, type StationeryPaper } from '../stationery'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    variant: Exclude<InfoCardMapStyle, 'window'>
+    variant: InfoCardMapStyle
     /** On the glass card, whose type is white: lines are drawn in white. */
     light?: boolean
-    /** The card's own reveal flag; the frame arrives with the map. */
+    /** The block's own reveal flag; the frame arrives with the map. */
     revealed: boolean
-    /** Seconds — the map's slot in the card's reveal timeline. */
+    /** Seconds — the map's slot in the block's reveal timeline. */
     delay?: number
     /** The polaroid's caption face. */
     captionFont?: string
     khmer?: boolean
+    /** The template's ink, for the polaroid's caption to be measured against its paper. */
+    ink?: string
+    /** The invitation's shared paper. Absent = the default stock. */
+    stationery?: StationeryPaper | null
+    /** The date design's marker colour: the tape, the rose's north point. */
+    accent?: string | null
   }>(),
-  { light: false, delay: 0, captionFont: undefined, khmer: false },
+  {
+    light: false,
+    delay: 0,
+    captionFont: undefined,
+    khmer: false,
+    ink: undefined,
+    stationery: null,
+    accent: null,
+  },
 )
+
+const stock = computed(() => props.stationery ?? stationeryPaper({}))
+
+const frameStyle = computed(() => ({
+  '--mf-delay': `${props.delay}s`,
+  '--mf-paper': stock.value.paper,
+  '--mf-paper-ink': inkOnPaper(props.ink, stock.value.paper),
+  '--mf-radius': `${stock.value.radius}px`,
+  '--mf-paper-shadow': stock.value.shadow,
+  ...(props.accent ? { '--mf-accent': props.accent } : {}),
+}))
 </script>
 
 <style scoped>
-/* Line and ink follow the card: white on the glass card, whose type is white;
-   the card's own ink (currentColor, the template's primary) on engraved and
-   frosted. */
+/* Line and ink follow what the frame sits on: white on the glass card, whose
+   type is white; the ink (currentColor, the template's primary) everywhere
+   else. The hairline is the stationery's 32% — the weight the countdown's
+   rules and the calendar's cells are drawn at — with a softer 18% for a line
+   that sits against the map itself. */
 .mf {
   --mf-ease: cubic-bezier(0.23, 1, 0.32, 1);
   --mf-ink: currentColor;
-  --mf-line: color-mix(in srgb, currentColor 46%, transparent);
+  --mf-line: color-mix(in srgb, currentColor 32%, transparent);
+  --mf-line-soft: color-mix(in srgb, currentColor 18%, transparent);
   width: 100%;
 }
 
 .mf.is-light {
   --mf-ink: #fff;
   --mf-line: rgb(255 255 255 / 0.6);
+  --mf-line-soft: rgb(255 255 255 / 0.35);
 }
 
 .mf__window {
@@ -130,6 +179,29 @@ withDefaults(
   border: 0;
 }
 
+/* ---- window (on the page) ----------------------------------------------- */
+
+/* 4:3 rather than the card's 16:9: on the page there is no card height to
+   save, and a phone-width 16:9 map is a strip too short to find a street in. */
+.mf__plate {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 600ms var(--mf-ease) var(--mf-delay),
+    transform 700ms var(--mf-ease) var(--mf-delay);
+}
+
+.mf__window--plate {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--mf-radius);
+  box-shadow: 0 0 0 1px var(--mf-line-soft);
+}
+
+.is-revealed .mf__plate {
+  opacity: 1;
+  transform: none;
+}
+
 /* ---- arch --------------------------------------------------------------- */
 
 .mf__arch {
@@ -144,10 +216,10 @@ withDefaults(
 }
 
 /* 4:5, so the dome's vertical radius (40% of the height) is exactly half the
-   width: a true semicircle, not an ellipse. */
+   width: a true semicircle, not an ellipse. The sill takes the paper's corner. */
 .mf__window--arch {
   aspect-ratio: 4 / 5;
-  border-radius: 50% 50% 0.6rem 0.6rem / 40% 40% 0.6rem 0.6rem;
+  border-radius: 50% 50% var(--mf-radius) var(--mf-radius) / 40% 40% var(--mf-radius) var(--mf-radius);
 }
 
 /* The embed opens with a place card in its top-left corner, which the dome
@@ -164,7 +236,9 @@ withDefaults(
   position: absolute;
   inset: -7px;
   border: 1px solid var(--mf-line);
-  border-radius: 50% 50% 0.9rem 0.9rem / 40% 40% 0.9rem 0.9rem;
+  border-radius:
+    50% 50% calc(var(--mf-radius) + 7px) calc(var(--mf-radius) + 7px) /
+    40% 40% calc(var(--mf-radius) + 7px) calc(var(--mf-radius) + 7px);
   pointer-events: none;
   clip-path: inset(100% 0 0 0);
   transition: clip-path 1100ms var(--mf-ease) calc(var(--mf-delay) + 200ms);
@@ -183,8 +257,8 @@ withDefaults(
 
 /* ---- atlas -------------------------------------------------------------- */
 
-/* Centred and full width; the rose overhangs into the card's own padding
-   (every treatment has at least 0.875rem of it), never past the card. */
+/* Centred and full width; the rose overhangs into the column's own margin
+   (every treatment has at least 0.875rem of it), never past it. */
 .mf__atlas {
   position: relative;
   width: 100%;
@@ -251,9 +325,14 @@ withDefaults(
   fill: var(--mf-ink);
 }
 
-/* The open halves need a ground, or the map shows through the star. */
+.mf__rose-fill.is-north {
+  fill: var(--mf-accent, var(--mf-ink));
+}
+
+/* The open halves need a ground, or the map shows through the star: the
+   invitation's paper, so the rose is printed on the same stock as the rest. */
 .mf:not(.is-light) .mf__rose {
-  --rose-ground: color-mix(in srgb, currentColor 8%, white);
+  --rose-ground: var(--mf-paper);
 }
 
 .mf.is-light .mf__rose {
@@ -276,21 +355,22 @@ withDefaults(
 
 /* ---- polaroid ----------------------------------------------------------- */
 
-/* A print, so its paper is paper whatever the card is made of, and the
-   caption is printed in a near-black that reads on it. The tilt is 1.6deg:
-   placed by hand, and at 86% of the column its corners stay inside it (the
-   scroller is overflow-y: auto; a corner past the edge scrolls the page). */
+/* A print, so it is the invitation's paper whatever the card is made of —
+   the calendar card's stock and lift when the template has one — and its
+   caption is inked to read on that paper. Its corner is the paper's, capped:
+   a print with a round corner the size of a card's reads as a sticker. The
+   tilt is 1.6deg: placed by hand, and at 86% of the column its corners stay
+   inside it (the scroller is overflow-y: auto; a corner past the edge scrolls
+   the page). */
 .mf__print {
   position: relative;
   width: 86%;
   margin: 1rem auto 0.25rem;
   padding: 0.65rem 0.65rem 0;
-  border-radius: 2px;
-  background: #fbfaf6;
-  color: #2a2118;
-  box-shadow:
-    0 18px 36px -22px rgb(0 0 0 / 0.5),
-    0 2px 6px -2px rgb(0 0 0 / 0.18);
+  border-radius: min(var(--mf-radius), 6px);
+  background: var(--mf-paper);
+  color: var(--mf-paper-ink);
+  box-shadow: var(--mf-paper-shadow);
   opacity: 0;
   transform: translateY(-14px) rotate(-6deg);
   transition:
@@ -305,6 +385,7 @@ withDefaults(
 
 .mf__window--print {
   aspect-ratio: 1;
+  border-radius: max(0px, calc(min(var(--mf-radius), 6px) - 4px));
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
 }
 
@@ -322,8 +403,8 @@ withDefaults(
   line-height: 1.75;
 }
 
-/* Tape across the top edge, a little crooked the other way, in the template's
-   accent at a translucency tape has. */
+/* Tape across the top edge, a little crooked the other way, in the accent
+   at a translucency tape has. */
 .mf__tape {
   position: absolute;
   top: -0.7rem;
@@ -333,7 +414,7 @@ withDefaults(
   height: 1.45rem;
   margin-left: -2.75rem;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--mf-tape, #e8dcc4) 70%, transparent);
+  background: color-mix(in srgb, var(--mf-accent, #e8dcc4) 70%, transparent);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   opacity: 0;
   transform: rotate(3deg) scale(0.85);
@@ -348,6 +429,7 @@ withDefaults(
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mf__plate,
   .mf__arch,
   .mf__atlas,
   .mf__rose {

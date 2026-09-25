@@ -245,4 +245,8 @@ because Google's logo and terms sit in its corners and the Maps embed terms do
 not allow them to be hidden. That is why there is no circular frame.
 
 The countdown and the RSVP can also leave this card altogether; that is a
-separate config, [countdown-rsvp-design.md](countdown-rsvp-design.md).
+separate config, [countdown-rsvp-design.md](countdown-rsvp-design.md). When
+they do, the frontend draws **no card**: the venue name and the map are set on
+the page, and `map_style` is the only part of this config that still applies
+(the `window` frame then being a 4:3 plate rather than the card's 16:9 window).
+`type` is kept and returned unchanged, for switching back. No backend change.

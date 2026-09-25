@@ -72,12 +72,13 @@ import type {
   RsvpDesignType,
 } from '@/services/api/types/template.types'
 import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
+import { countdownPhoto, formatCount } from './countdownRsvp'
 import {
-  countdownPhoto,
-  formatCount,
+  inkOnPaper,
   paperOnInk,
-  replyCardColors,
-} from './countdownRsvp'
+  stationeryPaper,
+  type StationeryPaper,
+} from '../stationery'
 import { useCountdownClock } from './useCountdownClock'
 import type { CountdownUnit } from './types'
 
@@ -120,6 +121,18 @@ interface Props {
   primaryColor: string
   accentColor: string
   backgroundColor?: string
+  /**
+   * The invitation's shared paper (stationery.ts): the reply card and the
+   * envelope's card are printed on the same stock, with the same corner and
+   * lift, as the calendar card and the map's polaroid. Absent resolves the
+   * default stock from the tone.
+   */
+  stationery?: StationeryPaper | null
+  /**
+   * The date design's marker colour — the one accent every block spends its
+   * mark in. Absent falls back to the template's accent.
+   */
+  markerColor?: string | null
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -205,27 +218,39 @@ const textFont = computed(() => props.secondaryFont || props.currentFont)
 
 const tone = computed(() => props.backgroundColor || props.primaryColor)
 const paper = computed(() => paperOnInk(props.primaryColor, props.backgroundColor))
-const card = computed(() => replyCardColors(props.primaryColor, tone.value))
+
+/** The reply card's stock, and everything printed on it. */
+const stock = computed(() => props.stationery ?? stationeryPaper({ tone: tone.value }))
+const card = computed(() => ({
+  paper: stock.value.paper,
+  ink: inkOnPaper(props.primaryColor, stock.value.paper),
+}))
 
 /**
  * The contract. A design never reads a template colour directly:
  *
  *   --crs-ink          copy, rules, the flip board's tiles — the template's primary
- *   --crs-accent       the one mark a design spends it on (a lozenge, an arc)
+ *   --crs-accent       the one mark a design spends it on (a lozenge, an arc) —
+ *                      the date design's marker colour, so the day and every
+ *                      mark below it are one colour
  *   --crs-tone         surfaces and hairlines — the template's background
  *   --crs-paper        type set ON the ink (flip digits, strips with no photo)
- *   --crs-card-paper   the reply card's stock
+ *   --crs-card-paper   the reply card's stock — the invitation's one paper
  *   --crs-card-ink     everything printed on that stock
+ *   --crs-radius       that paper's corner
+ *   --crs-paper-shadow that paper's lift
  *   --crs-ease-out     the showcase's strong ease-out, declared here so a design
  *                      renders the same inside a preview frame
  */
 const contractStyle = computed(() => ({
   '--crs-ink': props.primaryColor,
-  '--crs-accent': props.accentColor || props.primaryColor,
+  '--crs-accent': props.markerColor || props.accentColor || props.primaryColor,
   '--crs-tone': tone.value,
   '--crs-paper': paper.value,
   '--crs-card-paper': card.value.paper,
   '--crs-card-ink': card.value.ink,
+  '--crs-radius': `${stock.value.radius}px`,
+  '--crs-paper-shadow': stock.value.shadow,
 }))
 
 /**

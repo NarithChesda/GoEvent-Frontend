@@ -351,17 +351,28 @@
                and the gift page below it are already made of — `glass` was
                drawn before those and is the heavier of the two glasses. -->
           <div class="p-4 space-y-2">
-            <TemplateFormChoice
-              v-model="infoCardDesignModel"
-              :label="t('management.partnerTemplateForm.infoCardDesign.sectionTitle')"
-              :options="infoCardDesignOptions"
-              :columns="1"
-            />
-            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+            <!-- The card's material only exists while the card holds the
+                 countdown and the RSVP. With those in a section of their own
+                 the venue and its map sit on the page, so there is no card to
+                 design — say so instead of offering a choice that changes
+                 nothing. The value is kept, for switching back. -->
+            <TemplateFormDisclosure :open="form.countdown_rsvp_placement === 'card'" content-class="space-y-2">
+              <TemplateFormChoice
+                v-model="infoCardDesignModel"
+                :label="t('management.partnerTemplateForm.infoCardDesign.sectionTitle')"
+                :options="infoCardDesignOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+            </TemplateFormDisclosure>
+            <p v-if="form.countdown_rsvp_placement === 'section'" :class="FIELD_HINT">
+              {{ t('management.partnerTemplateForm.infoCardDesign.onPageHint') }}
+            </p>
 
-            <!-- The map's frame, inside whichever card material is chosen
-                 above. A sibling setting rather than more card designs: the
-                 card stays glass, frosted or engraved, only the map changes. -->
+            <!-- The map's frame: inside the card while it holds the countdown
+                 and RSVP, on the page once they have a section of their own. A
+                 sibling setting rather than more card designs — the card stays
+                 glass, frosted or engraved, only the map changes. -->
             <div class="pt-2 space-y-2">
               <TemplateFormChoice
                 v-model="mapStyleModel"

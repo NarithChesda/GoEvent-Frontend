@@ -35,18 +35,16 @@ withDefaults(
 </script>
 
 <style scoped>
-/* Colours are the section's reply-card pair (countdownRsvp.ts →
-   replyCardColors): the stock leans a few percent toward the template's tone,
-   and the ink is the template's own unless that won't read on it. */
+/* The invitation's one paper (stationery.ts): the calendar card's stock,
+   corner and lift when the template draws one, else the shared warm white —
+   so a reply card under a calendar card is the same card stock, not a second
+   white beside it. The ink is the template's own unless it won't read on it. */
 .rcf {
   position: relative;
   padding: 1.6rem 1.25rem var(--rcf-pad-bottom, 1.5rem);
-  border-radius: 4px;
+  border-radius: var(--crs-radius, 4px);
   color: var(--crs-card-ink);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.35), transparent 40%),
-    var(--crs-card-paper);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--crs-card-ink) 10%, transparent);
+  background: var(--crs-card-paper);
 }
 
 /* The inset border — the detail that makes stock read as a printed card
@@ -56,22 +54,26 @@ withDefaults(
   position: absolute;
   inset: 7px;
   border: 1px solid color-mix(in srgb, var(--crs-card-ink) 20%, transparent);
-  border-radius: 2px;
+  /* Concentric with the card's own corner, 7px in. */
+  border-radius: max(1px, calc(var(--crs-radius, 4px) - 7px));
   pointer-events: none;
 }
 
 /* The lift is its own layer, so a shell that clips the card while it arrives
    can hold the shadow back until it has landed (--rcf-shadow) rather than
-   have it pop in. */
+   have it pop in. It is the shared paper's (its edge hairline included, which
+   is why it sits over the paper, not under it: it only paints shadows). */
 .rcf::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: -1;
   border-radius: inherit;
-  box-shadow:
-    0 22px 44px -26px rgb(0 0 0 / 0.42),
-    0 3px 10px -4px rgb(0 0 0 / 0.14);
+  box-shadow: var(
+    --crs-paper-shadow,
+    inset 0 0 0 1px color-mix(in srgb, currentColor 8%, transparent),
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 16px 36px -16px rgb(0 0 0 / 0.3)
+  );
   opacity: var(--rcf-shadow, 1);
   transition: opacity 400ms ease;
   pointer-events: none;
