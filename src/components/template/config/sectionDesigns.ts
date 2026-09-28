@@ -3,6 +3,8 @@ import type {
   AgendaDesignType,
   DressCodeDesignConfig,
   DressCodeDesignType,
+  FooterDesignConfig,
+  FooterDesignType,
   GalleryDesignConfig,
   GalleryDesignType,
   GuestInviteDesignConfig,
@@ -15,6 +17,7 @@ import type {
   SaveTheDateDesignType,
 } from '@/services/api'
 import { resolveMapStyle } from '@/components/showcase/countdown-rsvp/countdownRsvp'
+import { resolveFooterDesign } from '@/components/showcase/footer/footerDesign'
 
 /**
  * The section designs that are a bare choice of composition: the info card, the
@@ -44,6 +47,13 @@ export interface SectionDesignsFormState {
   dress_code_design_type: DressCodeDesignType
   gallery_design_type: GalleryDesignType
   /**
+   * The footer. Seeded from `resolveFooterDesign`, so a template saved before
+   * the field existed opens on whichever of `glass` / `plain` its Liquid Glass
+   * switch gives it, and a save pins exactly that: the footer is then its own
+   * choice and no longer moves when the switch does.
+   */
+  footer_design_type: FooterDesignType
+  /**
    * Save the Date composition on the transition stage. `auto` is not a design —
    * it stores nothing, which leaves each transition stage on the one it shipped
    * with (`script` for decoration, `engraved` for door). Every template saved
@@ -67,6 +77,8 @@ export const defaultSectionDesigns = (): SectionDesignsFormState => ({
   agenda_design_type: 'rail',
   dress_code_design_type: 'portrait',
   gallery_design_type: 'column',
+  // A new template's Liquid Glass switch starts on, so this is what it draws.
+  footer_design_type: resolveFooterDesign(null, true),
   save_the_date_design_type: 'auto',
   guest_invite_design_type: 'none',
 })
@@ -84,6 +96,10 @@ export function hydrateSectionDesigns(template: PartnerTemplate | null): Section
     // 'portrait' — the one composition every dress code section rendered.
     dress_code_design_type: template?.dress_code_design?.type ?? 'portrait',
     gallery_design_type: hydrateGalleryDesign(template?.gallery_design?.type),
+    footer_design_type: resolveFooterDesign(
+      template?.footer_design,
+      template?.display_liquid_glass_background,
+    ),
     // No stored value means 'auto' — each transition stage keeps its own
     // default — which is what every template saved before this field existed has.
     save_the_date_design_type: template?.save_the_date_design?.type ?? 'auto',
@@ -136,6 +152,11 @@ function hydrateGalleryDesign(type: string | null | undefined): GalleryDesignTyp
 
 export const buildGalleryDesignPayload = (state: SectionDesignsFormState): GalleryDesignConfig => ({
   type: state.gallery_design_type,
+})
+
+/** Always a type, never null: null would hand the footer back to the switch. */
+export const buildFooterDesignPayload = (state: SectionDesignsFormState): FooterDesignConfig => ({
+  type: state.footer_design_type,
 })
 
 /**

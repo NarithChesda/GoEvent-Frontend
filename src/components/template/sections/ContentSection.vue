@@ -55,11 +55,41 @@
               :options="contentWidthOptions"
             />
           </div>
+          <!-- What the text sits on (stageBackdrop.ts). The card glass is the
+               legacy pane, kept for the templates that use it; the other three
+               soften the whole backdrop, and only they have a strength. -->
+          <div class="border-t border-slate-100 p-4">
+            <TemplateFormChoice
+              v-model="contentBackdropModel"
+              :label="t('management.partnerTemplateForm.coverLayout.contentBackdrop')"
+              :options="contentBackdropOptions"
+            />
+            <TemplateFormDisclosure :open="screenBackdrop">
+              <TemplateFormNumber
+                v-model="form.cover_stage_layout.contentBackdropStrength"
+                :label="t('management.partnerTemplateForm.coverLayout.contentBackdropStrength')"
+                :min="0"
+                :max="100"
+                unit="%"
+              />
+              <p :class="FIELD_HINT">
+                {{ t('management.partnerTemplateForm.coverLayout.contentBackdropStrengthHint') }}
+              </p>
+            </TemplateFormDisclosure>
+          </div>
+          <!-- Still one switch for both stages, but a screen backdrop replaces
+               the card pane, so while one is chosen the switch reaches only the
+               cover's panels; its hint says so. (The footer has a design of
+               its own below, which this form always saves.) -->
           <div class="border-t border-slate-100">
             <TemplateFormSwitch
               v-model="form.display_liquid_glass_background"
               :label="t('management.partnerTemplateForm.fields.liquidGlass')"
-              :description="t('management.partnerTemplateForm.fields.liquidGlassHint')"
+              :description="
+                screenBackdrop
+                  ? t('management.partnerTemplateForm.fields.liquidGlassScreenHint')
+                  : t('management.partnerTemplateForm.fields.liquidGlassHint')
+              "
             />
           </div>
         </section>
@@ -471,6 +501,21 @@
             />
             <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.galleryDesign.designHint') }}</p>
           </div>
+
+          <!-- The foot of the invitation, last because it is last on the page.
+               It used to follow the Liquid Glass switch: on gave the glass
+               band, off gave the plain one. Those are two of the four designs
+               now, and the picker opens on whichever the switch gave this
+               template (footerDesign.ts), so saving changes nothing on
+               screen. -->
+          <div class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="footerDesignModel"
+              :label="t('management.partnerTemplateForm.footerDesign.sectionTitle')"
+              :options="footerDesignOptions"
+            />
+            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.footerDesign.designHint') }}</p>
+          </div>
         </section>
 </template>
 
@@ -478,7 +523,9 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
+  AlignCenter,
   AlignVerticalJustifyCenter,
+  Aperture,
   Award,
   Ban,
   Bookmark,
@@ -517,6 +564,8 @@ import {
   Milestone,
   Minimize2,
   Minus,
+  Moon,
+  PanelBottom,
   PanelLeft,
   Palette,
   Paperclip,
@@ -528,6 +577,8 @@ import {
   Sparkles,
   Spline,
   Square,
+  StickyNote,
+  Sun,
   Tag,
   Tent,
   Ticket,
@@ -572,6 +623,19 @@ const contentWidthOptions = computed(() => [
   { value: 'standard', label: t('management.partnerTemplateForm.coverLayout.contentWidthStandard'), icon: Minimize2 },
   { value: 'wide', label: t('management.partnerTemplateForm.coverLayout.contentWidthWide'), icon: Maximize2 },
 ])
+
+const contentBackdropOptions = computed(() => {
+  const key = 'management.partnerTemplateForm.coverLayout.contentBackdrop'
+  return [
+    { value: 'card', label: t(`${key}Card`), description: t(`${key}CardHint`), icon: RectangleVertical },
+    { value: 'blur', label: t(`${key}Blur`), description: t(`${key}BlurHint`), icon: Aperture },
+    { value: 'frost', label: t(`${key}Frost`), description: t(`${key}FrostHint`), icon: Sun },
+    { value: 'smoke', label: t(`${key}Smoke`), description: t(`${key}SmokeHint`), icon: Moon },
+  ]
+})
+
+/** A backdrop across the whole stage, rather than the legacy card pane. */
+const screenBackdrop = computed(() => form.cover_stage_layout.contentBackdrop !== 'card')
 
 const stageModeOptions = computed(() => [
   { value: 'animation', label: t('management.partnerTemplateForm.stageModes.animation'), icon: Sparkles },
@@ -692,6 +756,16 @@ const galleryDesignOptions = computed(() => [
   { value: 'film', label: t('management.partnerTemplateForm.galleryDesign.types.film'), icon: Film },
 ])
 
+const footerDesignOptions = computed(() => {
+  const key = 'management.partnerTemplateForm.footerDesign.types'
+  return [
+    { value: 'plain', label: t(`${key}.plain`), description: t(`${key}.plainHint`), icon: AlignCenter },
+    { value: 'glass', label: t(`${key}.glass`), description: t(`${key}.glassHint`), icon: PanelBottom },
+    { value: 'card', label: t(`${key}.card`), description: t(`${key}.cardHint`), icon: StickyNote },
+    { value: 'minimal', label: t(`${key}.minimal`), description: t(`${key}.minimalHint`), icon: Minus },
+  ]
+})
+
 // Off leads, because it is the default and what every existing template is.
 // The four then run from the most traditional to the most playful — the dotted
 // line of a printed Khmer card, the tracked formal line, the reception's place
@@ -798,6 +872,7 @@ const hostDesignHasLogo = computed(
 const hostDesignHasWelcomeHeader = computed(() => form.host_info_design_type !== 'crest')
 
 const contentWidthModel = enumModel(() => form.cover_stage_layout, 'contentWidth')
+const contentBackdropModel = enumModel(() => form.cover_stage_layout, 'contentBackdrop')
 const backgroundModeModel = enumModel(() => form, 'stage_mode_background')
 const eventDetailsDesignModel = enumModel(() => form, 'event_details_design_type')
 const calendarStyleModel = enumModel(() => form, 'event_details_calendar_style')
@@ -812,6 +887,7 @@ const hostBreaklineStyleModel = enumModel(() => form, 'host_divider_style')
 const agendaDesignModel = enumModel(() => form, 'agenda_design_type')
 const dressCodeDesignModel = enumModel(() => form, 'dress_code_design_type')
 const galleryDesignModel = enumModel(() => form, 'gallery_design_type')
+const footerDesignModel = enumModel(() => form, 'footer_design_type')
 const guestInviteDesignModel = enumModel(() => form, 'guest_invite_design_type')
 const infoCardDesignModel = enumModel(() => form, 'info_card_design_type')
 const mapStyleModel = enumModel(() => form, 'info_card_map_style')

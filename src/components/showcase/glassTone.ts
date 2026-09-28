@@ -2,6 +2,10 @@
  * Which way the main stage's liquid glass moves the ground behind the text —
  * `template_assets.display_liquid_glass_background`, drawn by MainContentStage.
  *
+ * This is the legacy card pane (`cover_stage_layout.contentBackdrop: 'card'`).
+ * The whole-stage backdrops that can replace it live in stageBackdrop.ts, which
+ * reuses this file's ink test to decide where the text needs its edge.
+ *
  * The switch exists for templates whose backdrop sits in the same tone as their
  * ink. What separates text from a ground is the gap in luminance between the
  * two, and the glass used to be one fixed white film: it can only ever raise

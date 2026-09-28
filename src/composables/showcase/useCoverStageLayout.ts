@@ -26,6 +26,10 @@ import {
   resolveCoverPhotoVisibility,
   type CoverPhotoArtSources,
 } from '@/components/showcase/cover/coverPhoto'
+import {
+  DEFAULT_CONTENT_BACKDROP_STRENGTH,
+  resolveContentBackdrop,
+} from '@/components/showcase/stageBackdrop'
 
 /** Corner positions in render order (also their DOM order). */
 export const GUEST_FRAME_CORNER_IDS: readonly GuestFrameCornerId[] = [
@@ -211,6 +215,8 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   stackLayout: 'pile',
   coverGilding: COVER_GILDING_DEFAULTS,
   contentWidth: 'standard',
+  contentBackdrop: 'card',
+  contentBackdropStrength: DEFAULT_CONTENT_BACKDROP_STRENGTH,
   layoutMode: 'rows',
   coverElements: {},
   guestFrame: GUEST_FRAME_DEFAULTS,
@@ -836,6 +842,7 @@ export function useCoverStageLayout(
     // onto the frame has its logo off, because the sample-logo pair it infers
     // from was drawn in the logo's place.
     const photoVisibility = resolveCoverPhotoVisibility(config, assets?.value)
+    const backdrop = resolveContentBackdrop(config)
 
     return {
       // Use new field, fallback to legacy prop, then default
@@ -891,6 +898,8 @@ export function useCoverStageLayout(
       stackLayout: config.stackLayout ?? COVER_STAGE_LAYOUT_DEFAULTS.stackLayout,
       coverGilding: config.coverGilding ?? COVER_STAGE_LAYOUT_DEFAULTS.coverGilding,
       contentWidth: config.contentWidth ?? COVER_STAGE_LAYOUT_DEFAULTS.contentWidth,
+      contentBackdrop: backdrop.mode,
+      contentBackdropStrength: backdrop.strength,
       layoutMode: config.layoutMode ?? COVER_STAGE_LAYOUT_DEFAULTS.layoutMode,
       coverElements: config.coverElements ?? COVER_STAGE_LAYOUT_DEFAULTS.coverElements,
       guestFrame: config.guestFrame ?? COVER_STAGE_LAYOUT_DEFAULTS.guestFrame,

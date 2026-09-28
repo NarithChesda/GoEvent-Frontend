@@ -3,6 +3,7 @@ import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
   GalleryDesignConfig,
+  FooterDesignConfig,
   GuestInviteDesignConfig,
   CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
@@ -74,6 +75,8 @@ export interface PartnerTemplateDraft {
   agenda_design: AgendaDesignConfig
   dress_code_design: DressCodeDesignConfig
   gallery_design: GalleryDesignConfig
+  /** The footer. Null = what the Liquid Glass switch picks. */
+  footer_design: FooterDesignConfig | null
   /** Guest dedication on the invitation. Null = no block. */
   guest_invite_design: GuestInviteDesignConfig | null
   /** Countdown + RSVP section. Null = both stay in the info card. */
@@ -282,6 +285,7 @@ export function partnerTemplateToAssets(template: PartnerTemplate): TemplateAsse
     agenda_design: template.agenda_design,
     dress_code_design: template.dress_code_design,
     gallery_design: template.gallery_design ?? null,
+    footer_design: template.footer_design ?? null,
     guest_invite_design: template.guest_invite_design ?? null,
     countdown_rsvp_design: template.countdown_rsvp_design ?? null,
     save_the_date_design: template.save_the_date_design,
@@ -325,6 +329,7 @@ export function partnerTemplateDraftToAssets(
     agenda_design: draft.agenda_design,
     dress_code_design: draft.dress_code_design,
     gallery_design: draft.gallery_design,
+    footer_design: draft.footer_design,
     guest_invite_design: draft.guest_invite_design,
     countdown_rsvp_design: draft.countdown_rsvp_design,
     save_the_date_design: draft.save_the_date_design,

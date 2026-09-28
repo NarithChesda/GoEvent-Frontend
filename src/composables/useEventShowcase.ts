@@ -9,6 +9,7 @@ import type {
   DressCodeDesignConfig,
   GuestInviteDesignConfig,
   GalleryDesignConfig,
+  FooterDesignConfig,
   CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
@@ -267,6 +268,12 @@ export interface TemplateAssets {
    * before this field existed.
    */
   gallery_design?: GalleryDesignConfig | null
+  /**
+   * The footer (plain | glass | card | minimal). Absent / unknown renders what
+   * `display_liquid_glass_background` picks, glass on and plain off, which is
+   * what every footer rendered before this field existed.
+   */
+  footer_design?: FooterDesignConfig | null
   /**
    * The countdown and the RSVP in a section of their own after the info card.
    * Absent keeps both inside the card, as every template drew them — never

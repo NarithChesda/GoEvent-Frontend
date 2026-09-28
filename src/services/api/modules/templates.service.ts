@@ -131,6 +131,7 @@ const TEMPLATE_JSON_CONFIG_FIELDS = [
   'dress_code_design',
   'guest_invite_design',
   'gallery_design',
+  'footer_design',
   'countdown_rsvp_design',
   'save_the_date_design',
   'text_effects',
