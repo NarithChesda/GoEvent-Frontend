@@ -2946,6 +2946,7 @@
       "previewUrlLabel": "Preview URL",
       "liquidGlass": "Liquid Glass Background",
       "liquidGlassHint": "Show liquid glass visual effect",
+      "liquidGlassScreenHint": "With Blur, Frosted or Smoked chosen above, this only styles the cover's panels.",
       "previewImageLabel": "Preview Image",
       "previewImageChange": "Change",
       "previewImageUpload": "Upload preview",
@@ -3136,6 +3137,17 @@
       "contentWidth": "Main Content Width",
       "contentWidthStandard": "Standard",
       "contentWidthWide": "Wide (more content width)",
+      "contentBackdrop": "Behind the Text",
+      "contentBackdropCard": "Card glass",
+      "contentBackdropCardHint": "The original pane on the card, when Liquid Glass is on.",
+      "contentBackdropBlur": "Blur",
+      "contentBackdropBlurHint": "Softens the whole backdrop and keeps its colours.",
+      "contentBackdropFrost": "Frosted",
+      "contentBackdropFrostHint": "Softens it and makes it lighter. For dark text.",
+      "contentBackdropSmoke": "Smoked",
+      "contentBackdropSmokeHint": "Softens it and makes it darker. For light text.",
+      "contentBackdropStrength": "Strength",
+      "contentBackdropStrengthHint": "Lower keeps more of the design. Higher makes the text easier to read.",
       "advancedGroup": "Advanced layout",
       "advancedHint": "Container box, row heights, host clip and decoration stacking",
       "containerPositioning": "Container Positioning (vh)",
@@ -3488,6 +3500,20 @@
         "mosaic": "Mosaic (rounded tiles, two columns) — quiet, most compact",
         "booth": "Photo booth (strips of three, each frame flashes in) — parties",
         "film": "Contact sheet (film strips, frames develop) — anniversaries"
+      }
+    },
+    "footerDesign": {
+      "sectionTitle": "Footer Design",
+      "designHint": "The foot of the invitation: the partner's logo, GoEvent's mark, the social links and the web address. Templates saved before this followed the Liquid Glass switch, which gave the glass band when on and plain when off.",
+      "types": {
+        "plain": "Plain",
+        "plainHint": "In the template's colour, straight on the page.",
+        "glass": "Glass band",
+        "glassHint": "White, on a band of the background colour.",
+        "card": "Paper card",
+        "cardHint": "Printed on the invitation's paper, like the reply card.",
+        "minimal": "Minimal",
+        "minimalHint": "Smaller and quieter. Suits formal and memorial events."
       }
     },
     "guestInviteDesign": {

@@ -8,6 +8,10 @@ import {
 } from '@/composables/showcase/useCoverStageLayout'
 import { resolveStackLayout } from '@/components/showcase/photo-stack/photoStack'
 import {
+  DEFAULT_CONTENT_BACKDROP_STRENGTH,
+  resolveContentBackdrop,
+} from '@/components/showcase/stageBackdrop'
+import {
   resolveCoverPhotoConfig,
   resolveCoverPhotoVisibility,
 } from '@/components/showcase/cover/coverPhoto'
@@ -70,6 +74,8 @@ export const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   showcaseAnimationType: 'decoration',
   stackLayout: 'pile',
   contentWidth: 'standard',
+  contentBackdrop: 'card',
+  contentBackdropStrength: DEFAULT_CONTENT_BACKDROP_STRENGTH,
 })
 
 export const defaultCoverLayout = (): CoverLayoutFormState => ({
@@ -112,6 +118,12 @@ export function hydrateCoverLayout(template: PartnerTemplate | null): CoverLayou
   // A stored null or an option this build doesn't know renders as the pile, so
   // the picker opens on the pile rather than on nothing.
   layout.stackLayout = resolveStackLayout(layout.stackLayout)
+  // Same for the backdrop: absent, null or unknown is the legacy card, and a
+  // strength out of range is pulled back, so the picker and slider open on what
+  // the stage draws.
+  const backdrop = resolveContentBackdrop(stored)
+  layout.contentBackdrop = backdrop.mode
+  layout.contentBackdropStrength = backdrop.strength
   return { cover_stage_layout: layout }
 }
 

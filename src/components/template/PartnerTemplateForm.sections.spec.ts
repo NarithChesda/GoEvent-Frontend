@@ -157,6 +157,38 @@ describe('PartnerTemplateForm — section panels', () => {
   })
 
   /**
+   * The backdrop behind the text opens on the legacy card with no strength
+   * control, since the card has no strength. Choosing a screen backdrop reaches
+   * the preview draft, reveals the strength, and tells the partner that the
+   * Liquid Glass switch now reaches only the cover and the footer bar.
+   */
+  it('offers a screen backdrop behind the text, with a strength only for those', async () => {
+    const wrapper = await openEditor()
+    await openSection(wrapper, 'content')
+
+    const key = 'management.partnerTemplateForm.coverLayout.contentBackdrop'
+    const preview = wrapper.findComponent(PartnerTemplatePreview)
+    const content = wrapper.findComponent(ContentSection)
+    const hasStrength = () => content.text().includes(`${key}Strength`)
+
+    expect(preview.props('draft').cover_stage_layout).toMatchObject({ contentBackdrop: 'card' })
+    expect(hasStrength()).toBe(false)
+    expect(content.text()).not.toContain('fields.liquidGlassScreenHint')
+
+    const blur = content.findAll('button').find((b) => b.text().startsWith(`${key}Blur`))
+    expect(blur, 'the blur backdrop option').toBeTruthy()
+    await blur!.trigger('click')
+    await flushPromises()
+
+    expect(preview.props('draft').cover_stage_layout).toMatchObject({
+      contentBackdrop: 'blur',
+      contentBackdropStrength: 50,
+    })
+    expect(hasStrength()).toBe(true)
+    expect(content.text()).toContain('fields.liquidGlassScreenHint')
+  })
+
+  /**
    * Walking every section once is also what proves no panel throws on mount —
    * a stale binding in a moved template only shows up when it renders.
    */

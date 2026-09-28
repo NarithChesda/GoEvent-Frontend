@@ -139,6 +139,8 @@ export type {
   GuestInviteDesignConfig,
   GalleryDesignType,
   GalleryDesignConfig,
+  FooterDesignType,
+  FooterDesignConfig,
   SaveTheDateDesignType,
   SaveTheDateDesignConfig,
   AmbientCreatureEffectType,

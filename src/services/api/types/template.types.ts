@@ -646,6 +646,9 @@ export interface CoverDetailsConfig {
  */
 export type StackLayoutType = 'pile' | 'split' | 'booth' | 'mosaic' | 'film'
 
+/** What sits behind the main content's text; see stageBackdrop.ts. */
+export type ContentBackdropMode = 'card' | 'blur' | 'frost' | 'smoke'
+
 /**
  * Cover stage layout configuration
  * All values are optional with sensible defaults applied in components
@@ -750,6 +753,14 @@ export interface CoverStageLayout {
   // Main-content liquid glass card width. 'wide' grows the card toward the
   // viewport edges and shrinks its inner horizontal padding for more content width.
   contentWidth?: 'standard' | 'wide'  // default: 'standard'
+
+  // What sits behind the main content's text (stageBackdrop.ts). 'card' is the
+  // legacy glass pane on the content card, switched by
+  // display_liquid_glass_background; 'blur', 'frost' and 'smoke' soften the
+  // whole backdrop instead. Absent, null or unknown means 'card'.
+  contentBackdrop?: ContentBackdropMode | null  // default: 'card'
+  // How far 'blur' / 'frost' / 'smoke' go, 0–100. Unused by 'card'.
+  contentBackdropStrength?: number  // default: 50
 
   // How the four cover blocks are placed. Omitted (or 'rows') keeps every
   // existing template rendering exactly as before — the free model is opt-in.
@@ -1386,6 +1397,27 @@ export interface GalleryDesignConfig {
 }
 
 /**
+ * The footer at the foot of the invitation (ShowcaseFooter.vue): the partner's
+ * mark, ours, the social links and the address.
+ *
+ * - `plain`: in the template's ink, on the page.
+ * - `glass`: white, on a translucent band of the template's background colour.
+ * - `card`: printed on the invitation's paper, as a card of its own.
+ * - `minimal`: smaller and quieter, bare icons, the address in spaced capitals.
+ *
+ * `plain` and `glass` are the two looks the footer always had, which
+ * `display_liquid_glass_background` used to choose between. When this field is
+ * absent / `null` (or unrecognised) that switch still chooses, so every
+ * already-published template is unchanged and no migration is needed.
+ */
+export type FooterDesignType = 'plain' | 'glass' | 'card' | 'minimal'
+
+export interface FooterDesignConfig {
+  /** Which footer composition to render. */
+  type: FooterDesignType
+}
+
+/**
  * Composition used for the **Save the Date** title card on the transition
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
@@ -1810,6 +1842,13 @@ export interface PartnerTemplate {
    */
   gallery_design?: GalleryDesignConfig | null
   /**
+   * Footer design. Null / absent = the look `display_liquid_glass_background`
+   * picks (`glass` on, `plain` off), as every footer rendered before. Optional
+   * because the backend field is pending
+   * (docs/backend-api-requirements/footer-design.md).
+   */
+  footer_design?: FooterDesignConfig | null
+  /**
    * The countdown and the RSVP in a section of their own. Null / absent =
    * both stay inside the info card. Optional because the backend field is
    * pending (docs/backend-api-requirements/countdown-rsvp-design.md).
@@ -1929,6 +1968,8 @@ export interface PartnerTemplateCreatePayload {
   guest_invite_design?: GuestInviteDesignConfig | null
   /** Photo gallery design. Pass `null` to fall back to the `column` design. */
   gallery_design?: GalleryDesignConfig | null
+  /** Footer design. Pass `null` to let the Liquid Glass switch pick it again. */
+  footer_design?: FooterDesignConfig | null
   /** Countdown + RSVP section. Pass `null` to keep both inside the info card. */
   countdown_rsvp_design?: CountdownRsvpDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */

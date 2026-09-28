@@ -6,6 +6,7 @@ import type {
   DressCodeDesignConfig,
   EventDetailsDesignConfig,
   FallingEffectConfig,
+  FooterDesignConfig,
   GalleryDesignConfig,
   GuestInviteDesignConfig,
   HostInfoDesignConfig,
@@ -58,6 +59,7 @@ import {
 import {
   buildAgendaDesignPayload,
   buildDressCodeDesignPayload,
+  buildFooterDesignPayload,
   buildGalleryDesignPayload,
   buildGuestInviteDesignPayload,
   buildInfoCardDesignPayload,
@@ -186,6 +188,7 @@ export interface TemplateConfigPayload {
   agenda_design: AgendaDesignConfig
   dress_code_design: DressCodeDesignConfig
   gallery_design: GalleryDesignConfig
+  footer_design: FooterDesignConfig
   guest_invite_design: GuestInviteDesignConfig | null
   countdown_rsvp_design: CountdownRsvpDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
@@ -214,6 +217,7 @@ export function buildConfigPayload(form: FormState): TemplateConfigPayload {
     agenda_design: buildAgendaDesignPayload(form),
     dress_code_design: buildDressCodeDesignPayload(form),
     gallery_design: buildGalleryDesignPayload(form),
+    footer_design: buildFooterDesignPayload(form),
     guest_invite_design: buildGuestInviteDesignPayload(form),
     countdown_rsvp_design: buildCountdownRsvpDesignPayload(form),
     save_the_date_design: buildSaveTheDateDesignPayload(form),

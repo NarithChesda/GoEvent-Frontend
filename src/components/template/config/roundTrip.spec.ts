@@ -39,6 +39,7 @@ function blankTemplate(overrides: Partial<PartnerTemplate> = {}): PartnerTemplat
     agenda_design: null,
     dress_code_design: null,
     gallery_design: null,
+    footer_design: null,
     save_the_date_design: null,
     stage_modes: null,
     text_effects: null,
@@ -205,6 +206,38 @@ describe('partner template form config round trip', () => {
       // save then writes the column rather than a value no build renders.
       expect(hydrateForm(template).gallery_design_type).toBe('column')
       expect(buildConfigPayload(hydrateForm(template)).gallery_design).toEqual({ type: 'column' })
+    })
+
+    /**
+     * A footer with no design of its own is whatever the Liquid Glass switch
+     * gives it. The form opens on that and a save pins it, so the save changes
+     * nothing on screen and the footer stops following the switch afterwards.
+     */
+    it('opens a footer with no design on what the Liquid Glass switch gives it, and pins it', () => {
+      const glassOff = blankTemplate({ display_liquid_glass_background: false })
+      expect(hydrateForm(glassOff).footer_design_type).toBe('plain')
+      expect(buildConfigPayload(hydrateForm(glassOff)).footer_design).toEqual({ type: 'plain' })
+
+      const glassOn = blankTemplate({ display_liquid_glass_background: true })
+      expect(hydrateForm(glassOn).footer_design_type).toBe('glass')
+
+      // Unknown falls back the same way absent does.
+      const unknown = blankTemplate({
+        display_liquid_glass_background: false,
+        footer_design: { type: 'ribbon' } as unknown as PartnerTemplate['footer_design'],
+      })
+      expect(hydrateForm(unknown).footer_design_type).toBe('plain')
+
+      // A chosen design survives a reload whatever the switch says.
+      const chosen = blankTemplate({
+        display_liquid_glass_background: true,
+        footer_design: { type: 'card' },
+      })
+      const saved = buildConfigPayload(hydrateForm(chosen))
+      expect(saved.footer_design).toEqual({ type: 'card' })
+      expect(
+        hydrateForm(blankTemplate({ footer_design: saved.footer_design })).footer_design_type,
+      ).toBe('card')
     })
 
     /**
@@ -379,6 +412,7 @@ describe('partner template form config round trip', () => {
         'cover_stage_layout',
         'dress_code_design',
         'gallery_design',
+        'footer_design',
         'event_details_design',
         'falling_effect',
         'guest_invite_design',
@@ -433,6 +467,40 @@ describe('partner template form config round trip', () => {
         cover_stage_layout: { stackLayout: stored } as unknown as PartnerTemplate['cover_stage_layout'],
       })
       expect(hydrateForm(template).cover_stage_layout.stackLayout).toBe('pile')
+    }
+  })
+
+  /**
+   * What sits behind the main content's text rides in the same blob. A chosen
+   * screen backdrop and its strength survive a reload; absent, null and unknown
+   * all open (and re-save) as the legacy card, which is what the stage draws
+   * for them, and a strength out of range comes back inside 0–100.
+   */
+  it('round-trips the content backdrop, reading absent, null and unknown as the card', () => {
+    const chosen = blankTemplate({
+      cover_stage_layout: {
+        contentBackdrop: 'smoke',
+        contentBackdropStrength: 72,
+      } as PartnerTemplate['cover_stage_layout'],
+    })
+    const saved = buildConfigPayload(hydrateForm(chosen))
+    expect(saved.cover_stage_layout?.contentBackdrop).toBe('smoke')
+    expect(saved.cover_stage_layout?.contentBackdropStrength).toBe(72)
+    const reloaded = hydrateForm(blankTemplate({ cover_stage_layout: saved.cover_stage_layout }))
+    expect(reloaded.cover_stage_layout.contentBackdrop).toBe('smoke')
+    expect(reloaded.cover_stage_layout.contentBackdropStrength).toBe(72)
+
+    expect(hydrateForm(blankTemplate()).cover_stage_layout.contentBackdrop).toBe('card')
+    for (const stored of [undefined, null, 'mirror']) {
+      const template = blankTemplate({
+        cover_stage_layout: {
+          contentBackdrop: stored,
+          contentBackdropStrength: 140,
+        } as unknown as PartnerTemplate['cover_stage_layout'],
+      })
+      const layout = hydrateForm(template).cover_stage_layout
+      expect(layout.contentBackdrop).toBe('card')
+      expect(layout.contentBackdropStrength).toBe(100)
     }
   })
   /**
