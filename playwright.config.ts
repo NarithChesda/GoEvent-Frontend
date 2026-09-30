@@ -49,9 +49,13 @@ export default defineConfig({
     navigationTimeout: 30 * 1000,
     baseURL: `http://localhost:${PORT}`,
 
-    /* Diagnostics kept only for failures, so passing runs stay cheap. */
+    /*
+     * Diagnostics kept only for failures, so passing runs stay cheap.
+     * ORCH_UI_SHOTS=1 keeps every test's final screen instead: the
+     * orchestrator skill's UI gate compares those against the prototype.
+     */
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    screenshot: process.env.ORCH_UI_SHOTS ? { mode: 'on', fullPage: true } : 'only-on-failure',
     video: 'retain-on-failure',
 
     /* Headless unless explicitly asked otherwise - agents have no display. */

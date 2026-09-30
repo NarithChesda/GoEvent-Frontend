@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Orchestrator plan",
+  "description": "What the checkpoint planner writes to <run>/plan.draft.json. `orch.mjs plan <file> --check` enforces it (and more: ids unique, depends_on only points backwards, prototypes exist).",
+  "type": "object",
+  "required": ["checkpoints"],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Two or three sentences: what the feature is when it is done."
+    },
+    "checkpoints": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered simplest → most complex. Each is atomic: one reviewable behavior, green on its own.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "intent", "acceptance", "tests"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^cp-\\d{2,3}$" },
+          "title": {
+            "type": "string",
+            "description": "Short, imperative: \"Store tags on a guest\"."
+          },
+          "intent": {
+            "type": "string",
+            "description": "What changes for the user or the code, and why it comes at this point in the order."
+          },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Earlier checkpoint ids only."
+          },
+          "files": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Files you expect to touch. Advisory — the reviewer compares it with the diff."
+          },
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Observable behaviors, one per line, each one a test can prove: \"Given…, when…, then…\"."
+          },
+          "tests": {
+            "type": "object",
+            "required": ["unit", "e2e"],
+            "properties": {
+              "unit": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^src/.*\\.(spec|test)\\.ts$" }
+              },
+              "e2e": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^e2e/.*\\.spec\\.ts$" },
+                "description": "NEW spec files only — a path that existed when the run started is refused, because the e2e gates judge whole files and existing specs may already fail."
+              }
+            }
+          },
+          "tdd_exempt": {
+            "type": ["string", "null"],
+            "description": "null, or the reason no failing test can come first (pure refactor under existing tests, config, copy). The human sees and approves it."
+          },
+          "ui": {
+            "type": ["object", "null"],
+            "required": ["prototype", "screens"],
+            "properties": {
+              "prototype": {
+                "type": "string",
+                "description": "Path relative to the run dir: prototypes/<id>.html"
+              },
+              "screens": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string" },
+                "description": "The states the e2e tests END on — each final screenshot is compared with the prototype."
+              }
+            }
+          },
+          "complexity": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "out_of_scope": { "type": "array", "items": { "type": "string" } },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Open questions and risks the human should see before approving."
+    },
+    "learnings": {
+      "type": "array",
+      "description": "Feedback rounds only: rules for NEXT time distilled from the human's notes. Appended to LEARNINGS.md on import.",
+      "items": {
+        "type": "object",
+        "required": ["rule", "why"],
+        "properties": {
+          "rule": { "type": "string" },
+          "why": { "type": "string" },
+          "applies_to": { "type": "string" }
+        }
+      }
+    }
+  }
+}
