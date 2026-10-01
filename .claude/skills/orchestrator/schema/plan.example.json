@@ -1,0 +1,73 @@
+{
+  "summary": "Organizers can mark a guest as VIP from the guest list and narrow the list to VIPs. The flag is stored on the guest; the list shows it inline and the existing group filter gains a VIP option.",
+  "checkpoints": [
+    {
+      "id": "cp-01",
+      "title": "Store the VIP flag on a guest",
+      "intent": "The type, the service call and the store action exist before any UI touches them, so the two UI checkpoints build on something already proven.",
+      "files": [
+        "src/services/api/types/guest.types.ts",
+        "src/services/api/modules/guests.service.ts",
+        "src/stores/guestManagement.ts"
+      ],
+      "acceptance": [
+        "Given a guest, when toggleVip(id) is called, then the store flips is_vip immediately (optimistic) and PATCHes { is_vip } to the guest endpoint",
+        "Given the PATCH fails, then the store restores the previous value and surfaces the API's error message"
+      ],
+      "tests": { "unit": ["src/stores/guestManagement.vip.spec.ts"], "e2e": [] },
+      "tdd_exempt": null,
+      "ui": null,
+      "complexity": 1
+    },
+    {
+      "id": "cp-02",
+      "title": "Toggle VIP from the guest row",
+      "intent": "The flag becomes visible and editable where organizers already work — inline in the row, no modal.",
+      "depends_on": ["cp-01"],
+      "files": [
+        "src/components/invitation/GuestListItem.vue",
+        "src/i18n/locales/en/management.json",
+        "src/i18n/locales/kh/management.json"
+      ],
+      "acceptance": [
+        "Given a guest row, when the star is tapped, then it fills and the guest is VIP without a page reload",
+        "Given a VIP guest, then the row shows the filled star to screen readers as 'VIP' in the current language"
+      ],
+      "tests": {
+        "unit": ["src/components/invitation/GuestListItem.vip.spec.ts"],
+        "e2e": ["e2e/guest-vip.spec.ts"]
+      },
+      "tdd_exempt": null,
+      "ui": {
+        "prototype": "prototypes/cp-02.html",
+        "screens": ["guest list with one VIP guest (desktop)", "same list at phone width"]
+      },
+      "complexity": 2
+    },
+    {
+      "id": "cp-03",
+      "title": "Filter the guest list to VIPs",
+      "intent": "Adds VIP to the existing group-filter dropdown rather than a new control — the repo's filter idiom.",
+      "depends_on": ["cp-01", "cp-02"],
+      "files": ["src/components/invitation/GuestGroupsView.vue"],
+      "acceptance": [
+        "Given the filter dropdown, when 'VIP' is chosen, then only VIP guests are listed and the trigger shows the VIP label",
+        "Given the VIP filter is active, when a guest's star is cleared, then that guest leaves the list"
+      ],
+      "tests": { "unit": [], "e2e": ["e2e/guest-vip-filter.spec.ts"] },
+      "tdd_exempt": null,
+      "ui": {
+        "prototype": "prototypes/cp-03.html",
+        "screens": [
+          "filter dropdown open with VIP row",
+          "list filtered to VIPs, trigger showing VIP"
+        ]
+      },
+      "complexity": 3
+    }
+  ],
+  "out_of_scope": ["VIP on the public showcase", "Bulk-marking VIPs from the import sheet"],
+  "risks": [
+    "Backend: does the guest serializer accept is_vip yet? Probe the live API before cp-01 (401 = exists, 404 = absent)."
+  ]
+}

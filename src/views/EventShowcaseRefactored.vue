@@ -600,10 +600,10 @@ const handleV2Opened = () => {
 
 /**
  * How long the cover takes to get off the screen after the tap — the doors to
- * swing clear, or the decorations to slide out. Both the hand-off to main
- * content and the `transition` music cue hang off this, so they can't drift
- * apart: it is the single answer to "when has the guest stopped looking at the
- * cover?"
+ * swing clear, or the decorations to slide out. The single answer to "when has
+ * the guest stopped looking at the cover?", which is when a template with no
+ * middle beat hands over to main content. (The `transition` music cue used to
+ * wait for this too; it now starts on the tap, with the transition itself.)
  */
 const coverExitDurationMs = (): number => {
   const animationType = event.value.template_assets?.cover_stage_layout?.showcaseAnimationType
@@ -621,11 +621,6 @@ const openEnvelopeWithVideoSync = async () => {
       musicLoopEnd: musicEndTime.value,
       musicStartStage: musicStartStage.value,
     })
-    // The stage flipped on the tap, but the transition scene is behind the cover
-    // until its exit finishes — so the music cue waits for the same moment the
-    // guest first sees that scene. A no-op unless this event asked for
-    // `transition`; `main_content` still waits for the stage to complete.
-    setTimeout(() => cueMusic('transition'), coverExitDurationMs())
     return
   }
 

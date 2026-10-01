@@ -1,0 +1,33 @@
+{
+  "runsDir": ".claude/orchestrator/runs",
+  "learnings": ".claude/skills/orchestrator/LEARNINGS.md",
+  "commands": {
+    "unit": "npx vitest run {files} --reporter=json --outputFile={out}",
+    "e2e": "npx playwright test {files} --output={out}",
+    "typecheck": "npx vue-tsc --build",
+    "lint": "npx eslint {files} --format json --output-file {out}",
+    "detector": "npx impeccable detect {files}"
+  },
+  "unitRoots": ["src"],
+  "lintRoots": ["src", "e2e"],
+  "lintScope": ["src/**", "e2e/**"],
+  "lintExtensions": [".ts", ".tsx", ".mts", ".vue"],
+  "unitTestPatterns": ["src/**/*.spec.ts", "src/**/*.test.ts"],
+  "e2eTestPatterns": ["e2e/**/*.spec.ts"],
+  "testFilePatterns": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "e2e/**",
+    "**/__tests__/**",
+    "**/__fixtures__/**"
+  ],
+  "uiFilePatterns": ["src/**/*.vue", "src/**/*.css"],
+  "prototypeShots": true,
+  "prototypeViewports": {
+    "desktop": { "device": "Desktop Chrome" },
+    "mobile": { "device": "Pixel 7" }
+  },
+  "timeouts": { "unit": 600, "e2e": 900, "typecheck": 600, "lint": 300 },
+  "adversaryMaxRounds": 4,
+  "hookMaxStalledBlocks": 4
+}
