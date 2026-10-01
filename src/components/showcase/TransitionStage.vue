@@ -363,9 +363,7 @@ const copyHalo = computed(() =>
  * beat, and only then did a photo start bleeding in — three events read as
  * three. Starting at 400ms makes the photograph the fifth beat of that same
  * stagger: it begins with the last ornament and takes the same 0.8s, so the
- * two land together at 1200ms and the frame changes hands once. The music then
- * cues at `coverExitDurationMs` (1400ms) onto a photograph that is already
- * there, rather than onto one still a third of the way in.
+ * two land together at 1200ms and the frame changes hands once.
  */
 const PHOTO_REVEAL_AT_MS = 400
 
@@ -391,7 +389,8 @@ const revealPhoto = () => {
 // TransitionStageStack.vue):
 //   0ms    - Envelope tapped. This stage mounts; the cover's copy leaves (0.7s),
 //            its gilding and creatures fade (0.7s), its ornaments slide out
-//            (staggered, last one clears at 1200ms)
+//            (staggered, last one clears at 1200ms). Music set to start at the
+//            transition starts here, on the tap
 //   400ms  - Photograph rises *veiled*, opening outward with the parting frame
 //            (scale 0.94→1, 0.8s → 1200ms)
 //            — the fifth beat of the cover's own 0.8s stagger. The veil starts
@@ -401,7 +400,6 @@ const revealPhoto = () => {
 //   1200ms - The photograph has the frame; last cover ornament clears. The veil
 //            has been dissolving since 400ms but holds ~85% to here, then
 //            releases and drifts upward off the photograph (→2600ms)
-//   1400ms - The view cues music here
 //   1800ms - Footer scrim rises
 //   1900ms - Flourish line draws outward from centre (lands ~2800ms)
 //   2200ms - "Save the Date" blooms letter by letter, 65ms apart (last letter ~3900ms)

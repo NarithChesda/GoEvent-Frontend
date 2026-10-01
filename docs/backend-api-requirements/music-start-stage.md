@@ -8,6 +8,22 @@
 > admin would otherwise store `''`. So clearing the control round-trips as `null`
 > whichever content type you use.
 >
+> ### Follow-up (2026-10-02): `transition` starts on the tap
+>
+> `transition` now starts the music the moment the guest taps the cover, because
+> that is when the transition starts: the transition stage mounts and begins
+> animating while the cover is still leaving, and a transition film starts
+> playing. Waiting for the cover to clear (~1.2–1.4s) played the opening
+> animation in silence, and on a film template the `transition` cue was never
+> sent at all, so the music waited for the whole film. Starting inside the tap
+> also keeps `play()` within the user gesture, which every autoplay policy
+> allows. That is the reverse of the reasoning in the 2026-08-10 follow-up
+> below; the timer it introduced was the riskier of the two.
+>
+> `NULL` (Default) and `main_content` are unchanged. A stored `cover` still
+> normalizes to `transition`, which now lands on the same tap `cover` always
+> meant. **Nothing is required of the backend.**
+>
 > ### Follow-up (2026-08-10): `cover` was withdrawn — two choices, not three
 >
 > The frontend no longer offers `cover`. Starting the track on the cover means
@@ -67,8 +83,10 @@ available, so nothing earlier is technically possible:
 
 - `cover` — the instant the guest opens the envelope. The track plays under the
   cover animating away and through the transition.
-- `transition` — as the transition scene (featured photo / door reveal) takes the
-  screen, after the cover has gone.
+- `transition` — as the transition scene (featured photo / door reveal, or the
+  template's transition film) takes the screen, after the cover has gone.
+  *Superseded 2026-10-02: it now starts on the tap, with the transition; see the
+  follow-up at the top.*
 - `main_content` — when the invitation itself is revealed.
 
 A value naming a stage that a given template's flow never reaches falls through

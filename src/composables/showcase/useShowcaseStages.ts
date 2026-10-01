@@ -15,10 +15,11 @@ type MusicCuePoint = 'cover' | MusicStartStage
 /**
  * Cue points in the order the showcase reaches them.
  *
- * Only three of the four stages are cue points: `event_video` is deliberately
- * absent. Music is paused for the duration of that video anyway (the view swaps
- * it out and restores it after), so a cue there would start a track that is
- * silenced in the same breath.
+ * `event_video` is not a cue point of its own: it is the `transition` beat played
+ * as a film (`stage_modes.transition: 'video'`), so it is cued as `transition`,
+ * on the tap that starts the film. Nothing pauses the track while the film
+ * plays; it runs under the film's own sound, as it always has for a video event
+ * left on the default.
  */
 const MUSIC_CUE_ORDER: Record<MusicCuePoint, number> = {
   cover: 0,
@@ -30,10 +31,9 @@ const MUSIC_CUE_ORDER: Record<MusicCuePoint, number> = {
  * Narrow whatever the column holds to something an organizer can currently pick.
  *
  * `cover` was briefly offered and is still stored on any event set during that
- * window; it resolves to `transition` — the earliest cue still on the menu —
- * rather than being honoured, so no event keeps playing music on a cover that
- * the product no longer scores. Anything unrecognised resolves to `null`, i.e.
- * the template flow's own timing.
+ * window; it resolves to `transition`, the earliest cue still on the menu,
+ * which starts on the same tap `cover` did. Anything unrecognised resolves to
+ * `null`, i.e. the template flow's own timing.
  */
 export function normalizeMusicStartStage(
   value: StoredMusicStartStage | null | undefined,
@@ -287,12 +287,13 @@ export function useShowcaseStages() {
         options?.musicStartStage ?? MUSIC_STAGE_FALLBACK.transition,
       )
       currentShowcaseStage.value = 'transition'
-      // Deliberately NOT cued here. This flips the stage on the tap, but the
-      // cover is still on screen for the length of its exit — the doors are
-      // mid-swing, the decorations mid-slide — so firing now would put music
-      // over the cover, which is the one thing `transition` exists to avoid.
-      // The caller cues it once the cover has actually cleared, since only it
-      // knows which exit animation is running and how long it takes.
+      // The transition starts on this tap: the stage mounts and begins animating
+      // while the cover is still leaving, so its music starts here too. This
+      // used to wait for the cover to clear (~1.4s), which played the cover's
+      // exit and the start of the transition in silence. Cueing inside the tap
+      // also keeps `play()` within the user gesture, the one place every
+      // autoplay policy allows it.
+      cueMusic('transition')
       return
     }
 
@@ -308,6 +309,8 @@ export function useShowcaseStages() {
         options?.musicLoopEnd,
         options?.musicStartStage ?? MUSIC_STAGE_FALLBACK.video,
       )
+      // The film is the transition, and it starts on this tap.
+      cueMusic('transition')
 
       await nextTick()
       if (eventVideoRef.value) {
