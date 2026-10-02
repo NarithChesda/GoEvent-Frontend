@@ -124,20 +124,12 @@
     },
     "previewCta": "Browse every design",
     "previewHint": "Pick a design and read the whole invitation it makes.",
-    "screensLabel": "Which screen to show",
-    "screens": {
-      "cover": {
-        "label": "The link",
-        "body": "One per guest, with their name on it — sent in the chat app they already use."
-      },
-      "rsvp": {
-        "label": "The reply",
-        "body": "Countdown, reply button and gift details — nothing to install."
-      },
-      "wishes": {
-        "label": "The wishes",
-        "body": "The messages guests leave, collected as they come in."
-      }
+    "cardsLabel": "What a guest sees: the link to their own invitation, with their name in it; the reply they send from it in one tap; and the wish they leave for the couple.",
+    "cards": {
+      "linkTitle": "✨ Sophea & Vichea ✨ - Welcome Mr. Dara Sok",
+      "linkDescription": "Join us as we celebrate the start of our life together.",
+      "wishName": "Bopha Lim",
+      "wishBody": "Congratulations to you both! Wishing you a lifetime of love and happiness."
     },
     "groups": {
       "guest": "On every invitation",

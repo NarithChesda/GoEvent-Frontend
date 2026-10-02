@@ -1,9 +1,17 @@
 # Regenerating the partner page screenshots
 
 `/partners` ([src/views/PartnerProgramView.vue](../../src/views/PartnerProgramView.vue)) makes its
-argument with eleven checked-in screenshots in [src/assets/partners/](../../src/assets/partners/).
-They are captured from the running app or a phone, not drawn, and this is how to capture them again
-when the showcase, the guest list or the analytics change shape.
+argument with checked-in screenshots in [src/assets/partners/](../../src/assets/partners/). They are
+captured from the running app or a phone, not drawn, and this is how to capture them again when the
+showcase, the guest list or the analytics change shape.
+
+**The product section is not screenshots any more.** "An invitation your customer could not make
+themselves" draws the link, the reply and the wish as live cards
+([PartnerInvitationMoments.vue](../../src/components/PartnerInvitationMoments.vue)): the link is the
+Design Studio's link-preview card, the reply and the wish use the showcase's own strings
+(`translateRSVP`). Only the link card's photograph is a file, `link-photo.webp`. So
+`the-opening.webp`, `invite-rsvp.webp` and `invite-wish.webp` are no longer shown anywhere; the
+first is kept only as the source `link-photo.webp` was cropped from.
 
 ## Why they are checked in rather than fetched live
 
@@ -16,19 +24,20 @@ inside one `<picture>`, so no reader downloads both.
 
 ## The assets
 
-| File                          | What it is                                      | Size        |
-| ----------------------------- | ----------------------------------------------- | ----------- |
-| `invite-cover-blush.webp`     | Cover — ivory, dark red border, Khmer gold      | 328 × 717   |
-| `invite-cover-khmer.webp`     | Cover — ivory + Khmer gold, chandeliers         | 330 × 717   |
-| `invite-cover-crimson.webp`   | Cover — white + gold ribbon                     | 327 × 716   |
-| `invite-cover-royal.webp`     | Cover — deep red + gold, "SN" monogram          | 318 × 690   |
-| `the-opening.webp`            | The shared link, as a guest receives it in chat | 587 × 1256  |
-| `invite-rsvp.webp`            | Main stage, scrolled to countdown + RSVP        | 526 × 1116  |
-| `invite-wish.webp`            | Main stage, guest wishes and comments           | 529 × 1117  |
-| `dashboard-guests.webp`       | Guest list panel, `2xl` one-row header          | 1500 × 1052 |
-| `dashboard-guests-phone.webp` | Guest list panel, phone layout                  | 796 × 1726  |
-| `dashboard-rsvp.webp`         | RSVP analytics card                             | 976 × 1318  |
-| `dashboard-gifts.webp`        | Cash gift analytics card                        | 976 × 1386  |
+| File                          | What it is                                    | Size        |
+| ----------------------------- | --------------------------------------------- | ----------- |
+| `invite-cover-blush.webp`     | Cover — ivory, dark red border, Khmer gold    | 328 × 717   |
+| `invite-cover-khmer.webp`     | Cover — ivory + Khmer gold, chandeliers       | 330 × 717   |
+| `invite-cover-crimson.webp`   | Cover — white + gold ribbon                   | 327 × 716   |
+| `invite-cover-royal.webp`     | Cover — deep red + gold, "SN" monogram        | 318 × 690   |
+| `link-photo.webp`             | The link card's photo (1200:630 banner ratio) | 400 × 210   |
+| `the-opening.webp`            | Not shown — crop source for `link-photo.webp` | 587 × 1256  |
+| `invite-rsvp.webp`            | Not shown since the cards replaced the phone  | 526 × 1116  |
+| `invite-wish.webp`            | Not shown since the cards replaced the phone  | 529 × 1117  |
+| `dashboard-guests.webp`       | Guest list panel, `2xl` one-row header        | 1500 × 1052 |
+| `dashboard-guests-phone.webp` | Guest list panel, phone layout                | 796 × 1726  |
+| `dashboard-rsvp.webp`         | RSVP analytics card                           | 976 × 1318  |
+| `dashboard-gifts.webp`        | Cash gift analytics card                      | 976 × 1386  |
 
 The four covers are the hero fan **and** the "Browse every design" strip — deliberately the same
 files, so a reader recognises three of them and the fourth reads as "and more".
@@ -44,6 +53,17 @@ exports rather than captured at `deviceScaleFactor: 2`, so they are roughly 1.2�
 renders at up to ~275px — under-resolved on any retina screen. Re-export at the capture settings
 below if they need to be sharp. The two main-stage shots were re-exported on 2026-09-01 at ~527px
 (~1.9×) and no longer have this problem; `the-opening.webp` never did, at 587px (~2.1×).
+
+## The link card's photo
+
+`link-photo.webp` is the couple photograph from the guest's link preview in `the-opening.webp`,
+cropped at 1200:630 (x 126–526, y 860–1070 of that capture) — the photo a real guest saw, so it is
+the honest picture for "the link". At 400px it is ~1.4× the card at its narrowest and soft on a
+retina phone. To sharpen it, export the event's original banner at 1200 × 630, downscale to
+~640 wide and save it under the same name: the card reserves the box from the `width`/`height`
+attributes (400 × 210), which keep the ratio at any resolution. The names on the card are the
+bundled sample event's (Sophea & Vichea), not the photographed couple's, and live in
+`partners.product.cards` in both locale files.
 
 ## Capturing the invitation screenshots
 

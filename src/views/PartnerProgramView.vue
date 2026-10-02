@@ -780,24 +780,23 @@
         justification for the retail price the slip above is worked out from.
 
         A SPEC PLATE: the invitation in the middle, what it does on either side.
+        The features are set around it as what they are — properties of that
+        object, in two groups the reader tells apart at a glance: what every
+        guest sees ON the invitation, and what the customer gets BEHIND it. The
+        hairline leaders pointing in at the centre are what make two lists read
+        as one diagram.
 
-        It was a picker of three rows, a phone beside it, and nine features in
-        small grey type under the picker — three separate objects, the smallest
-        of which was the invitation itself, and a feature list nobody could tell
-        from a terms page. Now the screenshot is the centre of the section and
-        the biggest thing in it, and the features are set around it as what they
-        are: properties of that object, in two groups the reader tells apart at
-        a glance — what every guest sees ON the invitation, and what the
-        customer gets BEHIND it. The hairline leaders pointing in at the screen
-        are what make two lists read as one diagram.
+        The centre is three floating pieces of the interface — the link, the
+        reply, the wish (PartnerInvitationMoments) — where it was a phone with
+        three screenshots behind a segmented control. The screenshots were the
+        real thing, but at phone scale the reply form and the wishes were 11px
+        gold type on ivory, and two of the three sat behind a press most readers
+        never made. As cards they are all in view at once, legible, and in both
+        languages; the link carries the one real photograph, because the
+        photograph is what a guest actually sees first in the chat.
 
-        Still one screen at a time, switched by the design system's segmented
-        control (DESIGN.md §6, the `.lfc-*` recipe): the three are parts of the
-        SAME invitation — the link, the reply, the wishes — and three phones
-        side by side would make a reader compare them as three designs.
-
-        DOM order is the phone's — screen, then the two groups — and the plate's
-        grid areas move the groups out to the flanks from `lg`.
+        DOM order is the phone's — the cards, then the two groups — and the
+        plate's grid areas move the groups out to the flanks from `lg`.
       -->
       <section class="bg-slate-50 py-14 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
@@ -813,90 +812,8 @@
           </header>
 
           <div class="plate mt-12 sm:mt-14 lg:mt-16">
-            <div
-              data-reveal
-              style="--reveal-lift: 24px"
-              class="plate__screen flex min-w-0 flex-col items-center"
-            >
-              <!--
-                All three screenshots are mounted and crossfaded rather than one
-                image element whose source is swapped: swapping the source shows
-                white until the new file decodes, and the first press of every
-                button would flash. Blur carries the fade because without it the
-                eye sees two invitations overlapping rather than one changing.
-              -->
-              <div class="phone">
-                <div class="screen">
-                  <img
-                    v-for="screen in SCREENS"
-                    :key="screen.key"
-                    :src="screen.src"
-                    :alt="
-                      activeScreen === screen.key
-                        ? t(`partners.product.screens.${screen.key}.body`)
-                        : ''
-                    "
-                    :aria-hidden="activeScreen !== screen.key ? 'true' : undefined"
-                    class="screen__shot"
-                    :class="{ 'is-active': activeScreen === screen.key }"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-                <span class="phone__camera" aria-hidden="true"></span>
-              </div>
-
-              <!--
-                The segmented control, exactly as TimeFilterToggle builds it: a
-                recessed track and ONE raised white thumb that travels, measured
-                off the pressed button by `useTravellingIndicator`. Buttons with
-                `aria-pressed` rather than a tablist — three toggles over one
-                picture owe the reader no roving focus and no labelled panels.
-
-                The labels are a word or two each so the three fit a 320px phone
-                in Khmer; the sentence that explains each screen is the caption
-                under the track, which is the control's answer and changes with it.
-              -->
-              <div
-                ref="screenTrackRef"
-                class="lfc-track lfc-surface--page relative mt-7 flex items-center gap-0.5 rounded-full p-1"
-                role="group"
-                :aria-label="t('partners.product.screensLabel')"
-              >
-                <span
-                  v-show="screenThumb.visible"
-                  class="lfc-thumb pointer-events-none absolute bottom-1 left-0 top-1 rounded-full will-change-transform"
-                  :style="{
-                    width: `${screenThumb.w}px`,
-                    transform: `translateX(${screenThumb.x}px)`,
-                  }"
-                  aria-hidden="true"
-                />
-                <button
-                  v-for="screen in SCREENS"
-                  :key="screen.key"
-                  type="button"
-                  class="lfc-press relative flex h-8 items-center justify-center whitespace-nowrap rounded-full px-3 text-[0.8125rem] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 sm:px-3.5 sm:text-sm"
-                  :class="
-                    activeScreen === screen.key
-                      ? 'text-slate-900'
-                      : 'text-slate-500 hover:text-slate-900'
-                  "
-                  :aria-pressed="activeScreen === screen.key"
-                  @click="activeScreen = screen.key"
-                >
-                  {{ t(`partners.product.screens.${screen.key}.label`) }}
-                </button>
-              </div>
-
-              <!-- `min-height` holds two lines so nothing below moves as the
-                   caption changes under the reader's own thumb. No `aria-live`:
-                   the pressed button already announces the change. -->
-              <p
-                class="mt-3 min-h-[2.75rem] max-w-[19rem] text-balance text-center text-sm leading-snug text-slate-600"
-              >
-                {{ t(`partners.product.screens.${activeScreen}.body`) }}
-              </p>
+            <div data-reveal style="--reveal-lift: 24px" class="plate__moments min-w-0">
+              <PartnerInvitationMoments />
             </div>
 
             <div
@@ -1480,76 +1397,93 @@
       </section>
 
       <!--
-        10. CLOSING — the page's last gradient object, and now also its
-        end. `AppFooter` is gone from here for the reason the top bar is: its
-        nav, its social row and its "explore the app" link all belong to a
-        product this reader has no account for, and on a page that is a pitch
-        they are five ways to leave before the ask. So everything the reader
-        still needs lands in this section or nowhere — the ask, a person to talk
-        to, and the way back.
+        10. CLOSING — the ask, said once more where the decision is made, and
+        also the page's end. `AppFooter` is gone from here for the reason the
+        top bar is: its nav, its social row and its "explore the app" link all
+        belong to a product this reader has no account for, and on a page that
+        is a pitch they are five ways to leave before the ask. So everything the
+        reader still needs lands in this section or nowhere — the ask, a person
+        to talk to, and the way back.
+
+        ON THE PAGE'S OWN GROUND, NOT IN A GRADIENT SLAB. It was a full-width
+        rounded panel of the brand gradient with white type centred on it — the
+        most recognisable close a generated page has — and on this page it
+        broke in two ways. The subtitle was regular-weight white at 90% on the
+        gradient's green end, about 2:1, where DESIGN.md §8 keeps white on the
+        gradient for medium weight and up. And it turned the primary action
+        white: the one button the page exists for was the only "Request partner
+        access" on it not drawn in the brand gradient. The landing page's close
+        was rebuilt the same way for the same reasons, so the two marketing
+        pages now end in one voice.
+
+        The gradient is spent once, on the button — the gradient's first claim
+        anyway — and the phone action pill withdraws as this section arrives,
+        so there is still one gradient object on screen. The two buttons are
+        the hero's pair, class for class: the page asks the same question in
+        the same words at both ends.
+
+        White, not a slate-50 band: below `lg` the layout pads the page's foot
+        by the action pill's inset, and a tinted band would end on a white
+        strip of that height under the last link.
       -->
-      <section ref="closingRef" class="px-4 pb-12 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
-        <div class="mx-auto max-w-4xl lg:max-w-6xl 2xl:max-w-7xl">
+      <section
+        ref="closingRef"
+        class="px-4 pb-12 pt-4 sm:px-6 sm:pb-20 sm:pt-6 lg:px-8 lg:pb-24 lg:pt-8"
+      >
+        <div class="mx-auto flex max-w-2xl flex-col items-center text-center">
+          <!-- The voucher's face value, carried down to the ask: the reader
+               who skimmed past the gift section still learns what the free
+               events are worth in the one place they decide. The hero
+               eyebrow's tinted chip, so it reads as a mark and not a button. -->
+          <p
+            data-reveal
+            class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 px-3.5 py-1.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-900/5"
+          >
+            <Gift class="h-4 w-4 text-slate-500" aria-hidden="true" />
+            {{ t('partners.closing.badge', offer) }}
+          </p>
+          <h2
+            data-reveal
+            style="--reveal-delay: var(--stagger)"
+            class="type-display-sm mt-5 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+          >
+            {{ t('partners.closing.title') }}
+          </h2>
+          <p
+            data-reveal
+            style="--reveal-delay: calc(var(--stagger) * 2)"
+            class="mt-4 max-w-xl text-pretty text-base leading-relaxed text-slate-600 sm:text-lg"
+          >
+            {{ t('partners.closing.subtitle') }}
+          </p>
+
           <div
             data-reveal
-            class="relative isolate overflow-hidden rounded-3xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-14 text-center shadow-xl shadow-slate-900/10 sm:px-10 sm:py-16 lg:py-20"
+            style="--reveal-delay: calc(var(--stagger) * 3)"
+            class="mt-9 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center"
           >
-            <!-- Light inside the one gradient object rather than a second one:
-                 two soft radial washes give the band a lit corner and a shaded
-                 one, so at this size it reads as a surface and not a swatch. -->
-            <div class="cta-sheen pointer-events-none absolute inset-0" aria-hidden="true"></div>
+            <RouterLink
+              to="/partners/apply"
+              class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-[transform,box-shadow,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-xl hover:shadow-emerald-600/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
+            >
+              {{ t('partners.closing.cta') }}
+              <ArrowRight
+                class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </RouterLink>
 
-            <div class="relative">
-              <!-- The voucher's face value, carried down to the ask: the reader
-                   who skimmed past the gift section still learns what the free
-                   events are worth in the one place they decide. A translucent
-                   chip inside the gradient, not an object of its own. -->
-              <p
-                class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/25"
-              >
-                <Gift class="h-4 w-4" aria-hidden="true" />
-                {{ t('partners.closing.badge', offer) }}
-              </p>
-              <h2
-                class="type-display-sm mx-auto mt-5 max-w-2xl text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl"
-              >
-                {{ t('partners.closing.title') }}
-              </h2>
-              <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
-                {{ t('partners.closing.subtitle') }}
-              </p>
-
-              <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <RouterLink
-                  to="/partners/apply"
-                  class="group inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
-                >
-                  {{ t('partners.closing.cta') }}
-                  <ArrowRight
-                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </RouterLink>
-
-                <!--
-                  Given a shape, because it was a ghost: white-on-gradient text
-                  with no edge is the weakest thing in the panel, and this is
-                  the one control for a shop owner who would rather ask a person
-                  than fill in a form. It stays quieter than the primary by fill
-                  — a translucent wash against solid white — rather than by
-                  having no outline at all.
-                -->
-                <a
-                  :href="TELEGRAM_URL"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 py-3.5 text-sm font-medium text-white backdrop-blur-sm transition-[transform,background-color,border-color] duration-200 ease-out hover:border-white/60 hover:bg-white/20 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
-                >
-                  <MessageCircle class="h-4 w-4" aria-hidden="true" />
-                  {{ t('partners.closing.telegram') }}
-                </a>
-              </div>
-            </div>
+            <!-- The one control for a shop owner who would rather ask a person
+                 than fill in a form: the hero's secondary, a slate fill. -->
+            <a
+              :href="TELEGRAM_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-base"
+            >
+              <MessageCircle class="h-4 w-4" aria-hidden="true" />
+              {{ t('partners.closing.telegram') }}
+            </a>
           </div>
 
           <!--
@@ -1559,18 +1493,18 @@
             One link on the page's own ground, deliberately not a bar with a
             rule over it — that would be the footer again, rebuilt by hand.
           -->
-          <div data-reveal class="mt-8 flex justify-center sm:mt-10">
-            <RouterLink
-              to="/events"
-              class="group inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-sm font-medium text-slate-500 transition-colors duration-200 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            >
-              <ArrowLeft
-                class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
-                aria-hidden="true"
-              />
-              {{ t('partners.backToEvents') }}
-            </RouterLink>
-          </div>
+          <RouterLink
+            data-reveal
+            style="--reveal-delay: calc(var(--stagger) * 4)"
+            to="/events"
+            class="group mt-10 inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-sm font-medium text-slate-500 transition-colors duration-200 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:mt-12"
+          >
+            <ArrowLeft
+              class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+              aria-hidden="true"
+            />
+            {{ t('partners.backToEvents') }}
+          </RouterLink>
         </div>
       </section>
     </div>
@@ -1611,7 +1545,7 @@
  * public page now and the account is asked for at its submit, so the ask on this
  * page leads to the thing it names.
  */
-import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch, type Component } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount, type Component } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   ArrowDown,
@@ -1636,7 +1570,6 @@ import {
   Palette,
   QrCode,
   ShieldCheck,
-  Sparkles,
   Store,
   Tag,
   UserCheck,
@@ -1645,10 +1578,10 @@ import {
   Wrench,
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
+import PartnerInvitationMoments from '@/components/PartnerInvitationMoments.vue'
 import PartnerTestimonials from '@/components/PartnerTestimonials.vue'
 import testimonialsData from '@/assets/testimonials.json'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { useTravellingIndicator } from '@/composables/useTravellingIndicator'
 import { partnerOfferFigures } from '@/constants/partnerOffer'
 /**
  * Real screenshots of a real invitation and a real guest list, captured from
@@ -1664,9 +1597,6 @@ import HeroFanLeftImg from '@/assets/partners/invite-cover-khmer.webp'
 import HeroFanLeadImg from '@/assets/partners/invite-cover-blush.webp'
 import HeroFanRightImg from '@/assets/partners/invite-cover-crimson.webp'
 import CoverRoyalImg from '@/assets/partners/invite-cover-royal.webp'
-import ScreenOpeningImg from '@/assets/partners/the-opening.webp'
-import ScreenRsvpImg from '@/assets/partners/invite-rsvp.webp'
-import ScreenWishImg from '@/assets/partners/invite-wish.webp'
 import DashboardGuestsImg from '@/assets/partners/dashboard-guests.webp'
 import DashboardGuestsPhoneImg from '@/assets/partners/dashboard-guests-phone.webp'
 import DashboardRsvpImg from '@/assets/partners/dashboard-rsvp.webp'
@@ -1748,44 +1678,6 @@ const FAQ_KEYS = [
 ] as const
 
 /**
- * The three screens the invitation is judged on, in the order a guest meets
- * them: the link they are sent, the reply it asks for, the wish they leave
- * afterwards. The arc is the guest's, not the product's — it starts before the
- * invitation is open and ends after it is answered.
- *
- * The opening is deliberately a *messaging app*, not the cover itself. The
- * cover is already the hero's fan and the design strip below; showing it a
- * third time argues nothing new, whereas the thread does the one job neither
- * can — it answers "how does this reach my customer's guests?" with the
- * ordinary chat they already send everything else through, no app to install.
- *
- * Three and not eight. Every extra screen costs a file the reader downloads and
- * a decision they have to make, and the fourth-best screenshot of an invitation
- * argues less well than the third-best one does on its own.
- */
-const SCREENS = [
-  { key: 'cover', icon: Sparkles, src: ScreenOpeningImg },
-  { key: 'rsvp', icon: ClipboardCheck, src: ScreenRsvpImg },
-  { key: 'wishes', icon: MessageCircle, src: ScreenWishImg },
-] as const
-
-const activeScreen = ref<(typeof SCREENS)[number]['key']>('cover')
-
-/*
-  The screen switcher's thumb — one travelling element, the recipe every
-  segmented control in the app follows. A relabel on a language switch resizes
-  the segments without changing the selection, so the thumb repositions rather
-  than travels (the composable's own ResizeObserver covers the viewport).
-*/
-const screenTrackRef = ref<HTMLElement | null>(null)
-const { indicator: screenThumb, settle: settleScreenThumb } = useTravellingIndicator({
-  row: screenTrackRef,
-  path: computed(() => activeScreen.value),
-  activeSelector: '[aria-pressed="true"]',
-})
-watch(locale, () => nextTick(settleScreenThumb))
-
-/**
  * Evidence for "browse every design", not decoration: four covers that share
  * nothing but the product — ivory Khmer gold, blush rose, deep crimson, royal
  * blue. Three of them are already the hero's fan, which is deliberate; a
@@ -1842,19 +1734,18 @@ const RUN_DAY_SHOTS = [
  * approximate with a poster and a group chat: the guest list issues a link per
  * guest, the name is already written on the invitation when it opens, and the
  * reply that comes back is attached to that guest rather than to a stranger who
- * typed a name into a form. The screenshot above it has always shown this —
- * two chat messages, two links, two different names — and until now nothing
- * said so.
+ * typed a name into a form. The link card in the middle of the plate shows
+ * exactly this — the guest's own name in the preview's title.
  *
  * Nine and not ten: the wishes line is gone, because the wishes are already
- * the third screenshot on the glass beside this list — a tick that repeats a
- * picture in view argues nothing the picture has not already made. `agenda`
- * stays; it is a real part of the invitation the list had never mentioned.
+ * the third card beside this list — a tick that repeats a picture in view
+ * argues nothing the picture has not already made. `agenda` stays; it is a
+ * real part of the invitation the list had never mentioned.
  *
  * Split by who meets the feature, because that is the question the plate's two
  * flanks answer: the guest sees the left one on the invitation, the customer
  * runs their event from the right one. Five and four, so the two flanks stand
- * within a row of each other beside the screen.
+ * within a row of each other beside the cards.
  */
 const FEATURE_GROUPS = [
   {
@@ -2390,15 +2281,16 @@ onBeforeUnmount(() => {
 }
 
 /*
-  The closing panel's inner light. Two radial washes over the brand gradient,
-  not a second gradient object: white at low alpha, so whatever the band's own
+  The gift voucher's inner light (it was the closing panel's too, until that
+  panel came off its gradient). Two radial washes over the brand gradient, not
+  a second gradient object: white at low alpha, so whatever the voucher's own
   colour is underneath, this only lifts it. Authored here rather than as two
   arbitrary `bg-[radial-gradient(...)]` values because the commas and spaces a
   two-stop radial needs are exactly what Tailwind's arbitrary-value parser
   makes unreadable.
 
   Painted, not blurred: a `blur-3xl` disc would be the same picture at the cost
-  of a 64px filter pass over a full-width panel on every paint.
+  of a 64px filter pass over the whole voucher on every paint.
 */
 .cta-sheen {
   background:
@@ -2766,192 +2658,32 @@ onBeforeUnmount(() => {
 
 /*
   ---------------------------------------------------------------------------
-  The phone, and the screen inside it
-  ---------------------------------------------------------------------------
-  The captures are of an invitation opened on a phone, so they are shown in one:
-  a reader who sees a bare tall rectangle has to work out what it is, and a
-  phone answers that before the first word is read.
-
-  Built in two layers, the way the object is. `.phone` is the metal band — a
-  lit gradient, 0.15rem wide, carrying the shadow and the side buttons — and
-  `.screen`'s near-black border is the glass bezel inside it. Each radius is the
-  one outside it less the layer between, so the band, the bezel and the picture
-  run concentric at every size; a single radius on both would pinch the corners.
-
-  Deliberately generic: no make, no notch shape that dates the page the year a
-  model is replaced, nothing on the glass but a punch-hole camera. That sits in
-  the centre of the status bar, which is empty in the chat capture and is
-  invitation artwork in the other two, where a real phone would cover it too.
-
-  It is the centre of the spec plate, so it is the biggest thing in the section
-  at every width, and from `lg` a rem under the plate's centre track so the
-  side buttons and the leaders keep their room. `aspect-ratio` holds the screen
-  at the size the captures were taken (390 x 844), so nothing jumps when a lazy
-  shot decodes. Everything is in `rem` so the frame scales with the 75% laptop
-  root font exactly as the picture does.
-*/
-.phone {
-  --phone-band: 0.15rem;
-  --phone-bezel: 0.35rem;
-  --phone-radius: 2.1rem;
-
-  position: relative;
-  width: 100%;
-  max-width: 15.5rem;
-  padding: var(--phone-band);
-  border-radius: var(--phone-radius);
-  background: linear-gradient(
-    145deg,
-    rgb(148 163 184),
-    rgb(71 85 105) 30%,
-    rgb(30 41 59) 60%,
-    rgb(100 116 139)
-  );
-  box-shadow:
-    0 0 0 1px rgb(15 23 42 / 0.2),
-    0 1.75rem 3.5rem -1.5rem rgb(15 23 42 / 0.5),
-    0 0.125rem 0.5rem rgb(15 23 42 / 0.1);
-}
-
-/* The side buttons: power on the right, the volume rocker on the left, sitting
- * proud of the band by their own width. */
-.phone::before,
-.phone::after {
-  content: '';
-  position: absolute;
-  width: 0.2rem;
-  background: linear-gradient(to bottom, rgb(100 116 139), rgb(51 65 85));
-}
-
-.phone::before {
-  top: 24%;
-  right: -0.2rem;
-  height: 10%;
-  border-radius: 0 0.15rem 0.15rem 0;
-}
-
-.phone::after {
-  top: 17%;
-  left: -0.2rem;
-  height: 15%;
-  border-radius: 0.15rem 0 0 0.15rem;
-}
-
-.screen {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border: var(--phone-bezel) solid rgb(2 6 23);
-  border-radius: calc(var(--phone-radius) - var(--phone-band));
-  background: #fff;
-  aspect-ratio: 390 / 844;
-}
-
-.phone__camera {
-  position: absolute;
-  top: calc(var(--phone-band) + var(--phone-bezel) + 0.5rem);
-  left: 50%;
-  height: 0.55rem;
-  width: 0.55rem;
-  translate: -50% 0;
-  border-radius: 9999px;
-  background: radial-gradient(circle at 35% 35%, rgb(51 65 85), rgb(2 6 23) 65%);
-  box-shadow: 0 0 0 1.5px rgb(2 6 23 / 0.65);
-}
-
-@media (min-width: 640px) {
-  .phone {
-    --phone-radius: 2.45rem;
-
-    max-width: 17.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .phone {
-    --phone-radius: 2.55rem;
-
-    max-width: 18.5rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .phone {
-    --phone-radius: 2.7rem;
-
-    max-width: 19.5rem;
-  }
-}
-
-/*
-  All three shots are stacked and crossfaded. Blur is what makes it read as one
-  invitation changing rather than two invitations overlapping — without it the
-  eye resolves both images for the length of the fade and sees a double
-  exposure. 6px, well under the 20px where the filter starts costing real time
-  on a full-width element in Safari.
-
-  Transitions, not keyframes: the three buttons can be pressed as fast as
-  someone can move a finger, and a transition retargets from wherever it is
-  while a keyframe animation restarts from zero.
-
-  `width`/`height` are set explicitly alongside `object-fit` because Tailwind's
-  preflight puts `max-width: 100%` on every `img`, which silently distorts an
-  image sized any other way inside a fixed-ratio box.
-*/
-.screen__shot {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transform: scale(1.015);
-  filter: blur(6px);
-  transition:
-    opacity 260ms var(--ease-out),
-    transform 260ms var(--ease-out),
-    filter 260ms var(--ease-out);
-}
-
-.screen__shot.is-active {
-  opacity: 1;
-  transform: none;
-  filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .screen__shot {
-    transform: none;
-    filter: none;
-    transition: opacity 150ms linear;
-  }
-}
-
-/*
-  ---------------------------------------------------------------------------
   The spec plate
   ---------------------------------------------------------------------------
-  Grid areas, so the DOM stays in the phone's order — screen, then the guest
-  group, then the host group — while the desktop flanks the screen with the two
-  groups. Every track is `minmax(0, 1fr)` or a fixed size: a flank holds Khmer,
-  which must wrap inside its track rather than widen it.
+  Grid areas, so the DOM stays in the phone's order — the cards, then the
+  guest group, then the host group — while the desktop flanks the cards with
+  the two groups. Every track is `minmax(0, 1fr)` or a fixed size: a flank
+  holds Khmer, which must wrap inside its track rather than widen it.
 
-  Two columns from `sm`, under the screen: a tablet is too narrow to flank a
-  phone-shaped picture with two lists, and too wide to stack nine short lines
-  in one column.
+  Two columns from `sm`, under the cards: a tablet is too narrow to flank a
+  tall cluster with two lists, and too wide to stack nine short lines in one
+  column. The centre track is the cluster's own width (23rem, its max) at
+  `xl`, and two rem under it at `lg`, where the cards simply take what is
+  there. Wider than the phone's was, because the cards carry text to be read
+  where the phone carried a picture.
 */
 .plate {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'screen'
+    'moments'
     'guest'
     'host';
   gap: 2.75rem;
 }
 
-.plate__screen {
-  grid-area: screen;
+.plate__moments {
+  grid-area: moments;
 }
 
 .plate__group--guest {
@@ -2966,7 +2698,7 @@ onBeforeUnmount(() => {
   .plate {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
-      'screen screen'
+      'moments moments'
       'guest host';
     gap: 3rem 2.5rem;
   }
@@ -2974,8 +2706,8 @@ onBeforeUnmount(() => {
 
 @media (min-width: 1024px) {
   .plate {
-    grid-template-columns: minmax(0, 1fr) 20rem minmax(0, 1fr);
-    grid-template-areas: 'guest screen host';
+    grid-template-columns: minmax(0, 1fr) 21rem minmax(0, 1fr);
+    grid-template-areas: 'guest moments host';
     align-items: center;
     gap: 0 3rem;
   }
@@ -2983,7 +2715,7 @@ onBeforeUnmount(() => {
 
 @media (min-width: 1280px) {
   .plate {
-    grid-template-columns: minmax(0, 1fr) 21rem minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 23rem minmax(0, 1fr);
     column-gap: 4rem;
   }
 }
@@ -3009,8 +2741,11 @@ onBeforeUnmount(() => {
   box-shadow: inset 0 0 0 1px rgb(226 232 240);
 }
 
+/* Balanced, because a flank is narrow enough that a label wraps, and an
+ * unbalanced wrap leaves one word ("it", "name") alone under a full line. */
 .plate__label {
   min-width: 0;
+  text-wrap: balance;
   font-size: 0.9375rem;
   font-weight: 500;
   color: rgb(30 41 59);
@@ -3021,7 +2756,7 @@ onBeforeUnmount(() => {
 }
 
 /*
-  Desktop: each flank is set toward the screen — the guest group right-aligned
+  Desktop: each flank is set toward the cards — the guest group right-aligned
   with its discs on the inner edge, the host group mirrored — and every row ends
   in a hairline leader reaching across the gutter. The leaders are what turn two
   lists into a diagram of one object.
@@ -3029,7 +2764,7 @@ onBeforeUnmount(() => {
   They draw outward from the disc as their group arrives, one after another down
   the column — once, keyed off the page's own reveal, and not at all under
   reduced motion. `order` does the mirroring so the markup stays disc, label,
-  leader for both flanks and for the phone.
+  leader for both flanks and for a phone.
 */
 @media (min-width: 1024px) {
   .plate__group--guest {
@@ -3061,7 +2796,7 @@ onBeforeUnmount(() => {
 
   /*
     The leader spends all but 0.25rem of itself in the gutter (the negative
-    margin), so it ends ~1.25rem short of the screen's edge at both widths below,
+    margin), so it ends ~1.25rem short of the centre track at both widths below,
     and each disc's outer edge sits 1rem inside the flank. The headings are
     padded by that same 1rem so they stand over the discs rather than a disc's
     width outside them.
@@ -3353,8 +3088,10 @@ onBeforeUnmount(() => {
      scroll on the page feels like moving past real objects.
   2. The gift voucher is handed over: it arrives turned and a little low, and
      straightens into place as it comes up the screen.
-  3. The phone stands up, from tipped back on its base to upright, as it reaches
-     the middle of the screen — the invitation being picked up to read.
+  3. The invitation's three cards gather: they come up the screen spread apart
+     and settle into one cluster at its middle, the front card travelling
+     furthest. Its rules live in PartnerInvitationMoments.vue, beside the cards
+     they move, and follow every rule set out here.
   4. The steps' thread draws itself across as the row comes into view, and each
      numeral inks as the thread reaches it: the sequence explained by motion.
 
@@ -3377,8 +3114,8 @@ onBeforeUnmount(() => {
   Timing: `linear`, all four. A scrubbed animation's easing is the reader's own
   scroll — it slows when they slow — so a curve on top of it is a second easing
   fighting the first. It was measured, not assumed: on the page's strong
-  `--ease-out` the phone was 99.8% upright when it had barely entered the
-  screen, and on a 1440x900 laptop the voucher had finished turning before it
+  `--ease-out` the phone that stood where the cards are now was 99.8% upright
+  when it had barely entered the screen, and on a 1440x900 laptop the voucher had finished turning before it
   was in view. The settle each one needs comes from where its range ends (the
   middle of the screen), not from a curve.
 */
@@ -3415,16 +3152,6 @@ onBeforeUnmount(() => {
       animation-fill-mode: both;
       animation-timeline: view();
       animation-range: entry 0% cover 50%;
-    }
-
-    /* 3. Pivots on its base, so it stands up rather than flipping over. */
-    .phone {
-      transform-origin: 50% 100%;
-      animation-name: phoneStandUp;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 40%;
     }
 
     /* 4. The row's thread, and on a phone each step's own segment downward. */
@@ -3504,16 +3231,6 @@ onBeforeUnmount(() => {
     rotate: 0deg;
     translate: 0 0;
     scale: 1;
-  }
-}
-
-@keyframes phoneStandUp {
-  from {
-    transform: perspective(60rem) rotateX(22deg) scale(0.92);
-  }
-
-  to {
-    transform: perspective(60rem) rotateX(0deg) scale(1);
   }
 }
 
