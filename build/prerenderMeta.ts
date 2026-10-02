@@ -38,6 +38,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { Plugin } from 'vite'
 import { SERVICES_DESCRIPTION_KH, STATIC_BODY_STYLE, createBodyRenderer } from './prerenderBodies'
+import { partnerOfferFigures } from '../src/constants/partnerOffer'
 
 const META_START = '<!-- meta:start -->'
 const META_END = '<!-- meta:end -->'
@@ -233,7 +234,7 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
   {
     path: '/partners',
     title: 'កម្មវិធីដៃគូ GoEvent',
-    description: 'អ្នករៀបចំធៀបជូនអតិថិជន ២កម្មវិធីដំបូងឥតគិតថ្លៃ។',
+    description: `រៀបចំធៀបជូនអតិថិជន — ២ កម្មវិធីដំបូងឥតគិតថ្លៃ តម្លៃដល់ទៅ ${partnerOfferFigures().worth} បន្ទាប់មកបញ្ចុះ ៥០%។`,
     image: '/og/partners.png',
     imageAlt: 'ធៀបអញ្ជើញ GoEvent បី បើកជាទម្រង់ផ្លិត',
     locale: 'km_KH',

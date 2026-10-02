@@ -26,6 +26,7 @@ import {
   type LegalBlock,
 } from '../src/components/legal/privacyPolicyContent'
 import { FALLBACK_PRICING_PLANS } from '../src/constants/pricingFallback'
+import { partnerOfferFigures } from '../src/constants/partnerOffer'
 import {
   DESIGN_STEP,
   FAQ,
@@ -220,15 +221,41 @@ export function createBodyRenderer(root: string) {
 
   const partners = () => {
     const kh: Lang = 'kh'
-    const p = (key: string) => t(kh, `partners.${key}`)
+    // The page interpolates the offer's figures into its copy; so does this, from
+    // the same constants, or crawlers would read `{worth}` where people read $170.
+    const figures = partnerOfferFigures()
+    const fill = (text: string) =>
+      text.replace(/\{(\w+)\}/g, (match, name: string) =>
+        name in figures ? figures[name as keyof typeof figures] : match,
+      )
+    const p = (key: string) => fill(t(kh, `partners.${key}`))
     const titled = (key: string) =>
       entries(kh, `partners.${key}`, 'title')
-        .map((item) => `<li>${tag('h3', item.title!)}${item.body ? tag('p', item.body) : ''}</li>`)
+        .map(
+          (item) =>
+            `<li>${tag('h3', fill(item.title!))}${item.body ? tag('p', fill(item.body)) : ''}</li>`,
+        )
         .join('')
     return [
       `<h1>${esc(p('hero.titleLead'))} ${esc(p('hero.titleAccent'))}</h1>`,
       tag('p', p('hero.subtitle')),
       `<p>${link('/partners/apply', p('hero.ctaPrimary'))}</p>`,
+      tag('h2', p('gift.title')),
+      tag('p', p('gift.subtitle')),
+      tag(
+        'p',
+        `${p('gift.voucher.title')} — ${p('gift.voucher.worth')} ${figures.worth} (${p('gift.voucher.count')} ${p('gift.voucher.each')})`,
+      ),
+      `<ul>${titled('gift.facts')}</ul>`,
+      tag('h2', p('payg.title')),
+      tag('p', p('payg.body')),
+      tag(
+        'p',
+        `${p('payg.slip.example')} — ${p('payg.slip.customerPays')} ${figures.retail} · ${p('payg.slip.youPay')} ${figures.partnerPrice} · ${p('payg.slip.youKeep')} ${figures.partnerPrice}`,
+      ),
+      tag('p', p('payg.margin')),
+      tag('h3', p('payg.packs.title')),
+      tag('p', p('payg.packs.body')),
       tag('h2', p('steps.title')),
       tag('p', p('steps.subtitle')),
       `<ol>${titled('steps')}</ol>`,
@@ -240,8 +267,9 @@ export function createBodyRenderer(root: string) {
       `<ul>${titled('partner')}</ul>`,
       tag('h2', p('faq.title')),
       entries(kh, 'partners.faq', 'q', 'a')
-        .map((item) => `${tag('h3', item.q!)}${tag('p', item.a!)}`)
+        .map((item) => `${tag('h3', fill(item.q!))}${tag('p', fill(item.a!))}`)
         .join(''),
+      tag('p', p('closing.badge')),
       tag('h2', p('closing.title')),
       tag('p', p('closing.subtitle')),
       `<p>${link('/partners/apply', p('closing.cta'))}</p>`,

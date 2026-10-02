@@ -1,141 +1,147 @@
 <template>
-  <div ref="rootEl" class="ptst" :class="{ 'is-revealed': revealed }">
+  <div v-if="items.length" ref="rootEl" class="ptst" :class="{ 'is-revealed': revealed }">
     <!--
-      The lead. One shop's story told at full size, because six quotes at equal
-      weight is a wall a reader skims and forgets — and the thing that makes a
-      testimonial land is reading one of them properly.
+      ONE VOICE AT A TIME, EVERY SHOP IN VIEW.
 
-      Set in the Khmer display face (`.type-display-sm` swaps it under
-      `:lang(km)`), which is the one typographic move on this page that reads as
-      a magazine rather than as an app: Kantumruy is a UI face, and at pull-quote
-      size its counters close up. The supporting quotes stay in it — a display
-      face for the lead and a text face for the body is how print has separated
-      the two for a century.
+      This used to be a lead quote over a grid of six, all in the same small
+      grey text — a wall a reader skims and forgets, where the one thing a
+      testimonial has going for it (a person, saying something in their own
+      words) was spread across seven equal blocks until none of them was
+      anybody. So the section now does two different jobs with two different
+      objects:
+
+      - The STAGE says one review properly, at display size in the Khmer
+        display face, the way a magazine sets a pull quote.
+      - The ROSTER says how many shops there are and who they are — name,
+        trade, town — which is the part a shop owner actually scans for
+        ("is anyone like me, near me, using this?"). It is also the control.
+
+      Every review stays in the DOM (crawlers and screen readers get all of
+      them); only the active one is visible.
     -->
-    <!--
-      The grid lives on the `<figure>` itself, not on a wrapper inside it:
-      `<figcaption>` has to be a direct child of its `<figure>`, so an
-      intervening layout div is invalid HTML (and Vue's compiler says so).
-    -->
-    <figure
-      v-if="lead"
-      lang="km"
-      class="ptst-reveal lg:grid lg:grid-cols-12 lg:gap-x-12"
-      :style="{ '--ptst-i': 0 }"
-    >
-      <div class="lg:col-span-7">
-        <div class="h-0.5 w-10 bg-slate-900" aria-hidden="true"></div>
-        <blockquote
-          class="type-display-sm mt-6 max-w-[34rem] text-xl font-medium text-slate-900 sm:text-2xl lg:max-w-none lg:text-[1.75rem]"
+    <div class="ptst-layout">
+      <div class="ptst-reveal min-w-0" :style="{ '--ptst-i': 0 }">
+        <!--
+          All slides share one grid cell, so the stage is always as tall as its
+          longest review and switching never moves the roster or the page under
+          the reader's finger. The live region announces the review that
+          arrives; the hidden ones are out of the accessibility tree.
+
+          `touch-action: pan-y` (in CSS) leaves vertical scrolling to the page
+          and hands horizontal swipes to us.
+        -->
+        <div
+          class="ptst-stage"
+          aria-live="polite"
+          @pointerdown="onPointerDown"
+          @pointerup="onPointerUp"
+          @pointercancel="swipeStart = null"
         >
-          {{ lead.quote }}
-        </blockquote>
+          <svg class="ptst-mark" viewBox="0 0 48 36" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="ptst-mark-fill" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#2ecc71" />
+                <stop offset="1" stop-color="#1e90ff" />
+              </linearGradient>
+            </defs>
+            <path
+              fill="url(#ptst-mark-fill)"
+              d="M0 36V22.5C0 9.9 6.6 2.4 19.2 0l2.1 5.1C14.4 7.2 11.1 11.4 10.8 17.4H20V36H0Zm27.6 0V22.5C27.6 9.9 34.2 2.4 46.8 0l2.1 5.1c-6.9 2.1-10.2 6.3-10.5 12.3h9.2V36H27.6Z"
+            />
+          </svg>
+
+          <figure
+            v-for="(item, index) in items"
+            :key="item.id"
+            lang="km"
+            class="ptst-slide"
+            :class="{ 'is-active': index === activeIndex }"
+            :aria-hidden="index === activeIndex ? undefined : 'true'"
+          >
+            <blockquote class="type-display-sm font-medium text-slate-900" :class="quoteSize(item)">
+              {{ item.quote }}
+            </blockquote>
+
+            <figcaption
+              class="mt-auto flex flex-wrap items-end justify-between gap-x-8 gap-y-5 border-t border-slate-200 pt-6"
+            >
+              <div class="flex min-w-0 items-center gap-3.5">
+                <span class="ptst-disc ptst-disc--stage" aria-hidden="true">
+                  {{ initialOf(item.name) }}
+                </span>
+                <div class="min-w-0">
+                  <div class="text-base font-semibold text-slate-900">{{ item.name }}</div>
+                  <div class="mt-0.5 text-sm leading-relaxed text-slate-500">
+                    {{ item.role }} · {{ item.location }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- `metric.value`, not `metric`: a record saved with an empty
+                   metric object used to draw a stray rule under its quote. -->
+              <div v-if="item.metric?.value" class="min-w-0 sm:text-right">
+                <div class="text-2xl font-semibold tracking-tight text-slate-900">
+                  {{ item.metric.value }}
+                </div>
+                <div class="mt-0.5 text-xs leading-relaxed text-slate-500">
+                  {{ item.metric.label }}
+                </div>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
       </div>
 
-      <figcaption
-        class="mt-8 lg:col-span-5 lg:col-start-8 lg:mt-0 lg:flex lg:h-full lg:flex-col lg:justify-end lg:border-l lg:border-slate-200 lg:pl-8"
+      <!--
+        The roster, in two shapes from one markup — the screen picker's
+        technique on the same page, and for the same reason.
+
+        From `lg` up it is a list beside the stage: initial, name, trade · town.
+        Below `lg` it is a rail of initials directly under the stage, because
+        stacked, a list would put the shop being pressed a screen below the
+        review it changes; the rail keeps the change inside the reader's view.
+        The name is not lost there — the stage's own attribution carries it.
+
+        Toggle buttons with `aria-pressed`, not a tablist: a tablist owes the
+        reader roving arrow-key focus and labelled panels, and this is seven
+        toggles over one stage.
+      -->
+      <ul
+        v-if="items.length > 1"
+        class="ptst-roster ptst-reveal scrollbar-hide"
+        :style="{ '--ptst-i': 1 }"
+        :aria-label="t('partners.testimonials.rosterLabel')"
       >
-        <div class="flex items-center gap-3.5">
-          <span
-            class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white text-base font-semibold text-slate-700 ring-1 ring-slate-200"
-            aria-hidden="true"
-            >{{ initialOf(lead.name) }}</span
+        <li v-for="(item, index) in items" :key="item.id" class="flex-none lg:flex-auto">
+          <button
+            type="button"
+            class="ptst-who"
+            :data-active="index === activeIndex"
+            :aria-pressed="index === activeIndex"
+            :aria-label="`${item.name} · ${item.role} · ${item.location}`"
+            @click="activeIndex = index"
           >
-          <div class="min-w-0">
-            <div class="text-base font-semibold text-slate-900">{{ lead.name }}</div>
-            <div class="mt-0.5 text-sm leading-relaxed text-slate-500">
-              {{ lead.role }} · {{ lead.location }}
-            </div>
-          </div>
-        </div>
-
-        <div v-if="lead.metric" class="mt-6 border-t border-slate-200 pt-5">
-          <div class="text-2xl font-semibold tracking-tight text-slate-900">
-            {{ lead.metric.value }}
-          </div>
-          <div class="mt-1 text-xs leading-relaxed text-slate-500">{{ lead.metric.label }}</div>
-        </div>
-      </figcaption>
-    </figure>
-
-    <!--
-      The rest. One list, two layouts: an equal-height grid from `sm` up, and a
-      snap rail on a phone.
-
-      A grid rather than the masonry it replaced, because these blocks are
-      separated by a hairline and hairlines that do not line up read as a
-      rendering fault rather than as rhythm. Equal-height rows plus `mt-auto` on
-      the attribution means every rule at the top of a row and every name at the
-      bottom of it sits on one line.
-
-      A rail rather than a stack on a phone, because six of these stacked is
-      2,000px of dense Khmer between a reader and the closing ask. Swiping is
-      also the gesture a phone reader already has in their thumb.
-    -->
-    <ul class="ptst-list mt-14 sm:mt-16 lg:mt-20" ref="railEl">
-      <li
-        v-for="(item, index) in supporting"
-        :key="item.id"
-        class="ptst-item ptst-reveal flex flex-col border-t border-slate-200 pt-6"
-        :style="{ '--ptst-i': index + 1 }"
-      >
-        <figure lang="km" class="flex h-full flex-col">
-          <blockquote class="leading-relaxed text-slate-700" :class="quoteSize(item)">
-            {{ item.quote }}
-          </blockquote>
-
-          <div v-if="item.metric" class="mt-5 border-l border-slate-300 pl-3.5">
-            <div class="text-base font-semibold text-slate-900">{{ item.metric.value }}</div>
-            <div class="mt-0.5 text-xs leading-relaxed text-slate-500">{{ item.metric.label }}</div>
-          </div>
-
-          <figcaption class="mt-auto flex items-center gap-3 pt-7">
-            <span
-              class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-slate-600 ring-1 ring-slate-200"
-              aria-hidden="true"
-              >{{ initialOf(item.name) }}</span
-            >
-            <div class="min-w-0">
-              <div class="text-sm font-semibold text-slate-900">{{ item.name }}</div>
-              <div class="text-xs leading-relaxed text-slate-500">
+            <span class="ptst-disc ptst-disc--roster" aria-hidden="true">
+              {{ initialOf(item.name) }}
+            </span>
+            <span class="ptst-who__text" aria-hidden="true">
+              <span class="block truncate text-sm font-semibold text-slate-900">
+                {{ item.name }}
+              </span>
+              <span class="block truncate text-xs leading-relaxed text-slate-500">
                 {{ item.role }} · {{ item.location }}
-              </div>
-            </div>
-          </figcaption>
-        </figure>
-      </li>
-    </ul>
-
-    <!--
-      Rail position, phone only — and tappable, so the indicator is also the
-      control and the rail has a keyboard path without making the scroller
-      itself a tab stop.
-
-      Segments rather than dots. A dot small enough to look right (5px) inside a
-      target big enough to be legal (40px) leaves the marks a finger's width
-      apart, which reads as five loose specks rather than as one control; a
-      divided rail is contiguous by design, so the target and the mark can be
-      the same 40px.
-    -->
-    <div class="ptst-nav mt-8 flex sm:hidden">
-      <button
-        v-for="(item, index) in supporting"
-        :key="item.id"
-        type="button"
-        class="ptst-seg"
-        :class="{ 'is-active': index === activeIndex }"
-        :aria-label="item.name"
-        :aria-current="index === activeIndex ? 'true' : undefined"
-        @click="scrollToIndex(index)"
-      >
-        <span class="ptst-seg__bar" aria-hidden="true"></span>
-      </button>
+              </span>
+            </span>
+          </button>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Testimonial {
   id: string
@@ -149,88 +155,65 @@ interface Testimonial {
 
 const props = defineProps<{ items: Testimonial[] }>()
 
-const lead = computed(() => props.items.find((item) => item.featured) ?? props.items[0])
-const supporting = computed(() => props.items.filter((item) => item !== lead.value))
+const { t } = useAppLanguage()
+
+/** Opens on the featured review — the one chosen to be read first. */
+const activeIndex = ref(
+  Math.max(
+    0,
+    props.items.findIndex((item) => item.featured),
+  ),
+)
 
 /*
-  Short quotes are set larger.
+  The stage is as tall as its longest review, so a short one set at the same
+  size as a long one is a line of type over a block of air. Shorter reviews are
+  set larger instead — a magazine's answer to the same problem, and the one that
+  favours the short reviews, which are often the most human.
 
-  The rows are equal height, so a four-word quote in a row measured by a
-  four-line one is a block of air with a name at the bottom of it — and the
-  shortest reviews are the most human ones, so shrinking the set to fix that
-  would cost exactly the wrong quotes. Setting them up a step is what a magazine
-  does with the same problem: the short one fills its column and reads as a
-  deliberate pull-quote rather than as a gap.
-
-  Measured in code points, not `.length`: a Khmer cluster is several UTF-16
-  units, so `.length` would call every Khmer quote long.
+  Counted in code points, not `.length`: a Khmer cluster is several UTF-16
+  units, and `.length` would call every Khmer review long. The steps are tuned
+  on the current set (29 to 102 code points).
 */
-const SHORT_QUOTE_CHARS = 70
-
-const quoteSize = (item: Testimonial) =>
-  Array.from(item.quote).length <= SHORT_QUOTE_CHARS ? 'text-lg' : 'text-base'
+const quoteSize = (item: Testimonial) => {
+  const length = Array.from(item.quote).length
+  if (length <= 40) return 'ptst-q ptst-q--xl'
+  if (length <= 90) return 'ptst-q ptst-q--lg'
+  return 'ptst-q ptst-q--md'
+}
 
 const initialOf = (name: string) => Array.from(name)[0] ?? ''
 
-/* ------------------------------------------------------------------ reveal */
+/* ------------------------------------------------------------------ swipe */
+
+/*
+  A horizontal swipe on the stage moves to the next or previous review. Touch
+  and pen only: a mouse drag across text is a selection, not a gesture. The
+  thresholds keep a vertical scroll that wanders sideways from turning a page.
+*/
+let swipeStart: { x: number; y: number } | null = null
+
+const onPointerDown = (event: PointerEvent) => {
+  swipeStart = event.pointerType === 'mouse' ? null : { x: event.clientX, y: event.clientY }
+}
+
+const onPointerUp = (event: PointerEvent) => {
+  if (!swipeStart) return
+  const dx = event.clientX - swipeStart.x
+  const dy = event.clientY - swipeStart.y
+  swipeStart = null
+  if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+  const count = props.items.length
+  activeIndex.value = (activeIndex.value + (dx < 0 ? 1 : -1) + count) % count
+}
+
+/* ----------------------------------------------------------------- reveal */
 
 const rootEl = ref<HTMLElement>()
 const revealed = ref(false)
 let observer: IntersectionObserver | null = null
 
-/* -------------------------------------------------------------------- rail */
-
-const railEl = ref<HTMLElement>()
-const activeIndex = ref(0)
-let scrollFrame = 0
-
-const prefersReducedMotion = () =>
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-/** Distance from the rail's snap line to an item's leading edge. */
-const offsetOf = (rail: HTMLElement, item: Element) =>
-  item.getBoundingClientRect().left -
-  rail.getBoundingClientRect().left -
-  (parseFloat(getComputedStyle(rail).paddingLeft) || 0)
-
-const syncActiveIndex = () => {
-  scrollFrame = 0
-  const rail = railEl.value
-  if (!rail) return
-
-  let best = 0
-  let bestDistance = Infinity
-  Array.from(rail.children).forEach((item, index) => {
-    const distance = Math.abs(offsetOf(rail, item))
-    if (distance < bestDistance) {
-      bestDistance = distance
-      best = index
-    }
-  })
-  activeIndex.value = best
-}
-
-const onRailScroll = () => {
-  if (scrollFrame) return
-  scrollFrame = requestAnimationFrame(syncActiveIndex)
-}
-
-const scrollToIndex = (index: number) => {
-  const rail = railEl.value
-  const item = rail?.children[index]
-  if (!rail || !item) return
-
-  // Not `scrollIntoView`: it would also scroll the page vertically to satisfy
-  // the same call, which on a section this tall is a visible jump.
-  rail.scrollTo({
-    left: rail.scrollLeft + offsetOf(rail, item),
-    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-  })
-}
-
 onMounted(() => {
-  railEl.value?.addEventListener('scroll', onRailScroll, { passive: true })
-
   if (!rootEl.value) return
   if (!('IntersectionObserver' in window)) {
     revealed.value = true
@@ -253,17 +236,18 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  railEl.value?.removeEventListener('scroll', onRailScroll)
-  if (scrollFrame) cancelAnimationFrame(scrollFrame)
   observer?.disconnect()
   observer = null
 })
 </script>
 
 <style scoped>
+/* Hallmark · component: review stage + roster · design-system: DESIGN.md (slate · brand tint · Noto Serif Khmer display)
+ * states: default · hover · focus-visible · active (press) · selected · reduced-motion */
+
 /* Motion defers to the host page's own reveal tokens (PartnerProgramView
- * publishes all four on `.partner-page`) so this section runs the page's
- * motion language rather than a second, slightly-different one inside it. */
+ * publishes them on `.partner-page`) so this section runs the page's motion
+ * language rather than a second, slightly-different one inside it. */
 .ptst {
   --ptst-ease: var(--ease-reveal, cubic-bezier(0.23, 1, 0.32, 1));
   --ptst-duration: var(--reveal-duration, 500ms);
@@ -272,9 +256,9 @@ onBeforeUnmount(() => {
 }
 
 .ptst-reveal {
-  /* Declared here, not on the root, because `--ptst-i` is set per item and a
-   * custom property is substituted on the element that declares it. */
-  --ptst-delay: calc(var(--ptst-stagger) * min(var(--ptst-i, 0), 8));
+  /* Declared here, not on the root, because `--ptst-i` is set per element and
+   * a custom property is substituted on the element that declares it. */
+  --ptst-delay: calc(var(--ptst-stagger) * var(--ptst-i, 0));
 
   opacity: 0;
   translate: 0 var(--ptst-lift);
@@ -282,7 +266,6 @@ onBeforeUnmount(() => {
     opacity var(--ptst-duration) var(--ptst-ease),
     translate var(--ptst-duration) var(--ptst-ease);
   transition-delay: var(--ptst-delay);
-  will-change: opacity, translate;
 }
 
 .ptst.is-revealed .ptst-reveal {
@@ -290,106 +273,307 @@ onBeforeUnmount(() => {
   translate: none;
 }
 
-/* ---------------------------------------------------------------- the list */
+/* ------------------------------------------------------------------ layout */
 
-.ptst-list {
+.ptst-layout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2.5rem 2rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
 }
 
+/* The stage takes seven twelfths and the roster the rest; `stretch` makes the
+ * stage as tall as the roster, so its attribution rule lines up with the
+ * roster's last row instead of floating above it. */
 @media (min-width: 1024px) {
-  .ptst-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 3rem 4rem;
+  .ptst-layout {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 3rem;
+    align-items: stretch;
   }
 }
 
-/* Phone: the same list becomes a snap rail. `grid-auto-flow: column` keeps the
- * items on one row and keeps them the same height, which is what lets every
- * card's name sit on one line as you swipe. */
-@media (max-width: 639px) {
-  .ptst-list {
-    grid-auto-flow: column;
-    grid-template-columns: none;
-    grid-auto-columns: 78%;
-    gap: 1.25rem;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    /* Bleeds to the screen edges so the next card peeks, while the first stays
-     * flush with the headline above it. */
-    margin-inline: -1rem;
-    padding-inline: 1rem;
-    scroll-padding-left: 1rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
+/* ------------------------------------------------------------------- stage */
 
-  .ptst-list::-webkit-scrollbar {
-    display: none;
-  }
+/*
+  A white card on the section's grey ground: the review is the one object here
+  a reader is asked to stop and read, so it is the one that is lifted.
+*/
+.ptst-stage {
+  position: relative;
+  display: grid;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: #fff;
+  padding: 4.25rem 1.5rem 1.5rem;
+  box-shadow:
+    0 1.25rem 2.5rem -1.5rem rgb(15 23 42 / 0.18),
+    0 0.0625rem 0.125rem rgb(15 23 42 / 0.04);
+  touch-action: pan-y;
+}
 
-  .ptst-item {
-    scroll-snap-align: start;
+@media (min-width: 640px) {
+  .ptst-stage {
+    padding: 5.25rem 2.5rem 2.25rem;
   }
 }
 
-/* ------------------------------------------------------------ rail position */
-
-/* Pulls the first bar's own padding back off, so the rail starts on the same
- * line as the quote above it. */
-.ptst-nav {
-  margin-left: -3px;
+/* The quotation mark is the stage's, not each review's: it stays put while
+ * the words under it change, which is what makes the change read as the next
+ * voice rather than as a new card. A brand tint, so it is texture rather than
+ * a second gradient object on the screen. */
+.ptst-mark {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  width: 2.25rem;
+  opacity: 0.35;
 }
 
-.ptst-seg {
+@media (min-width: 640px) {
+  .ptst-mark {
+    top: 2.25rem;
+    left: 2.5rem;
+    width: 2.75rem;
+  }
+}
+
+/*
+  Every slide sits in the same cell. The leaving one fades out first and fast;
+  the arriving one follows a beat later, lifting a few pixels — so there is no
+  frame where two reviews are legible on top of each other. `visibility` flips
+  after the fade, which takes a hidden slide out of hit-testing and out of the
+  accessibility tree in the same declaration that hides it.
+*/
+.ptst-slide {
+  grid-area: 1 / 1;
   display: flex;
+  min-width: 0;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.5rem);
+  transition:
+    opacity 140ms var(--ptst-ease),
+    transform 140ms var(--ptst-ease),
+    visibility 0s linear 140ms;
+}
+
+.ptst-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 280ms var(--ptst-ease) 90ms,
+    transform 280ms var(--ptst-ease) 90ms,
+    visibility 0s;
+}
+
+/* Three steps of the display ladder, by length (see `quoteSize`). Leading is
+ * left to `.type-display-sm`, which carries the Khmer value. */
+.ptst-q--xl {
+  font-size: 1.75rem;
+}
+
+.ptst-q--lg {
+  font-size: 1.375rem;
+}
+
+.ptst-q--md {
+  font-size: 1.1875rem;
+}
+
+@media (min-width: 640px) {
+  .ptst-q--xl {
+    font-size: 2.5rem;
+  }
+
+  .ptst-q--lg {
+    font-size: 1.875rem;
+  }
+
+  .ptst-q--md {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .ptst-q--xl {
+    font-size: 2.875rem;
+  }
+
+  .ptst-q--lg {
+    font-size: 2.125rem;
+  }
+
+  .ptst-q--md {
+    font-size: 1.6875rem;
+  }
+}
+
+.ptst-q {
+  padding-bottom: 2rem;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------- discs */
+
+.ptst-disc {
+  display: flex;
+  flex: none;
   align-items: center;
-  height: 44px;
-  width: 40px;
-  padding-inline: 3px;
-  background: none;
-  border: 0;
-  cursor: pointer;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 600;
 }
 
-.ptst-seg__bar {
-  display: block;
-  height: 3px;
+.ptst-disc--stage {
+  height: 3rem;
+  width: 3rem;
+  font-size: 1rem;
+  color: rgb(51 65 85);
+  background: linear-gradient(135deg, rgb(46 204 113 / 0.16), rgb(30 144 255 / 0.16));
+}
+
+.ptst-disc--roster {
+  /* 2.5rem: seven of these and their gaps fit the 343px a 375px phone leaves,
+   * and still clear the 40px touch-target floor. */
+  height: 2.5rem;
+  width: 2.5rem;
+  font-size: 0.875rem;
+  color: rgb(71 85 105);
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgb(226 232 240);
+  transition:
+    background-color 200ms var(--ptst-ease),
+    color 200ms var(--ptst-ease),
+    box-shadow 200ms var(--ptst-ease);
+}
+
+/* ------------------------------------------------------------------ roster */
+
+/* Phone and tablet: a rail of initials, bled to the screen edges so a set too
+ * long for a 320px phone scrolls instead of wrapping into a ragged second row. */
+.ptst-roster {
+  display: flex;
+  gap: 0.375rem;
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.ptst-who {
+  display: flex;
   width: 100%;
-  border-radius: 999px;
-  background: rgb(203 213 225);
-  transition: background-color 200ms var(--ptst-ease);
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0;
+  text-align: left;
+  transition:
+    background-color 200ms var(--ptst-ease),
+    box-shadow 200ms var(--ptst-ease),
+    transform 200ms var(--ptst-ease);
 }
 
-/* Press feedback: a 3px bar has nothing to scale, so the response is tonal. */
-.ptst-seg:active .ptst-seg__bar {
-  background: rgb(148 163 184);
+.ptst-who:active {
+  transform: scale(0.96);
 }
 
-.ptst-seg.is-active .ptst-seg__bar {
-  background: rgb(15 23 42);
-}
-
-.ptst-seg:focus-visible {
+.ptst-who:focus-visible {
   outline: none;
+  box-shadow: 0 0 0 2px rgb(125 211 252);
 }
 
-.ptst-seg:focus-visible .ptst-seg__bar {
-  outline: 2px solid rgb(186 230 253);
-  outline-offset: 4px;
+.ptst-who__text {
+  display: none;
+}
+
+.ptst-who[data-active='true'] .ptst-disc--roster {
+  color: #fff;
+  background: rgb(15 23 42);
+  box-shadow: inset 0 0 0 1px rgb(15 23 42);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ptst-who:not([data-active='true']):hover .ptst-disc--roster {
+    box-shadow: inset 0 0 0 1px rgb(148 163 184);
+  }
+}
+
+/*
+  Desktop: the same buttons become rows — initial, name, trade · town. The
+  chosen row is raised (white, a hairline, a soft shadow) and its initial
+  inverts, which is the stage's own white card answering it from across the
+  gutter.
+*/
+@media (min-width: 1024px) {
+  .ptst-roster {
+    display: block;
+    margin-inline: 0;
+    padding-inline: 0;
+    overflow: visible;
+  }
+
+  .ptst-roster > li + li {
+    margin-top: 0.25rem;
+  }
+
+  .ptst-who {
+    gap: 0.875rem;
+    border-radius: 1rem;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .ptst-who:active {
+    transform: scale(0.99);
+  }
+
+  .ptst-who__text {
+    display: block;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .ptst-who[data-active='true'] {
+    background: #fff;
+    box-shadow:
+      inset 0 0 0 1px rgb(226 232 240),
+      0 0.375rem 1rem -0.5rem rgb(15 23 42 / 0.14);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .ptst-who:not([data-active='true']):hover {
+      background: rgb(255 255 255 / 0.6);
+    }
+  }
+
+  .ptst-who:focus-visible {
+    box-shadow:
+      0 0 0 2px rgb(125 211 252),
+      0 0.375rem 1rem -0.5rem rgb(15 23 42 / 0.14);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ptst-reveal {
     translate: none;
-    transition: opacity 200ms ease;
+    transition: opacity 200ms linear;
     transition-delay: 0ms;
   }
 
-  .ptst-seg__bar {
-    transition: none;
+  .ptst-slide,
+  .ptst-slide.is-active {
+    transform: none;
+    transition:
+      opacity 150ms linear,
+      visibility 0s;
+  }
+
+  .ptst-who:active {
+    transform: none;
   }
 }
 </style>
