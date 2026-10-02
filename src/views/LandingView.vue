@@ -8,11 +8,12 @@
        The chrome steps aside as it does on the signed-out /events: the hero
        owns the first screen. It offers three ways on: create an event (the
        wizard, below), discover events (/explore), and a Sign in in its corner
-       that takes a returning organizer to their events. -->
+       that takes a returning organizer to their events. The page's close
+       offers the same wizard again, so the end of the page is not a dead end. -->
   <MainLayout hide-top-nav hide-mobile-tab-bar hide-contact-fab>
     <div class="flex flex-col">
       <EventsLandingHero @create="showCreate = true" />
-      <LandingSections />
+      <LandingSections @create="showCreate = true" />
       <AppFooter />
     </div>
 

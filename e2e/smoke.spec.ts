@@ -35,7 +35,8 @@ test.describe('app boot', () => {
     await waitForAppMount(page)
 
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Create Your First Event' })).toBeVisible()
+    // The hero's — the page's close repeats it, same words, same wizard.
+    await expect(page.getByRole('button', { name: 'Create Your First Event' }).first()).toBeVisible()
     await expect(page.getByRole('link', { name: 'Discover Events' })).toBeVisible()
 
     // A returning organizer's way in: it signs them in and lands on their

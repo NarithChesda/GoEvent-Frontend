@@ -26,6 +26,12 @@ import {
   type LegalBlock,
 } from '../src/components/legal/privacyPolicyContent'
 import { FALLBACK_PRICING_PLANS } from '../src/constants/pricingFallback'
+import {
+  DESIGN_STEP,
+  FAQ,
+  FEATURE_GROUPS,
+  STEPS,
+} from '../src/components/landing/landingContent'
 
 type Lang = 'en' | 'kh'
 type Tree = { [key: string]: string | Tree }
@@ -114,21 +120,33 @@ export function createBodyRenderer(root: string) {
       tag('p', k('subtitle')),
       `<p>${link('/explore', k('secondaryCta'))}</p>`,
 
+      // Same structure as LandingFeatures / LandingSteps, from the same
+      // landingContent.ts: features by who they are for, and the designs
+      // inside the step that chooses one.
       tag('h2', k('features.title')),
       tag('p', k('features.subtitle')),
-      `<ul>${entries(kh, 'events.landing.features', 'title', 'body')
-        .map((item) => `<li>${tag('h3', item.title!)}${tag('p', item.body!)}</li>`)
-        .join('')}</ul>`,
+      FEATURE_GROUPS.map(
+        (group) =>
+          `${tag('h3', k(`features.groups.${group.key}`))}<ul>${group.features
+            .map(
+              (key) =>
+                `<li>${tag('h4', k(`features.${key}.title`))}${tag('p', k(`features.${key}.body`))}</li>`,
+            )
+            .join('')}</ul>`,
+      ).join(''),
 
       tag('h2', k('steps.title')),
-      `<ol>${entries(kh, 'events.landing.steps', 'title', 'body')
-        .map((item) => `<li>${tag('h3', item.title!)}${tag('p', item.body!)}</li>`)
-        .join('')}</ol>`,
-
-      tag('h2', k('designs.title')),
-      tag('p', k('designs.body')),
-      `<p>${link('/partners/templates', k('designs.cta'))}</p>`,
-      `<p>${esc(k('designs.partner'))} ${link('/partners', k('designs.partnerCta'))}</p>`,
+      `<ol>${STEPS.map((step) => {
+        const designs =
+          step === DESIGN_STEP
+            ? [
+                tag('p', k('designs.body')),
+                `<p>${link('/partners/templates', k('designs.cta'))}</p>`,
+                `<p>${esc(k('designs.partner'))} ${link('/partners', k('designs.partnerCta'))}</p>`,
+              ].join('')
+            : ''
+        return `<li>${tag('h3', k(`steps.${step}.title`))}${tag('p', k(`steps.${step}.body`))}${designs}</li>`
+      }).join('')}</ol>`,
 
       // The page's own pricing comes from the API; this is the committed copy
       // of the same plans (src/constants/pricingFallback.ts), which is also
@@ -143,9 +161,10 @@ export function createBodyRenderer(root: string) {
         .join('')}</ul>`,
 
       tag('h2', k('faq.title')),
-      entries(kh, 'events.landing.faq', 'q', 'a')
-        .map((item) => `${tag('h3', item.q!)}${tag('p', item.a!)}`)
-        .join(''),
+      FAQ.map((item) => `${tag('h3', k(`faq.${item}.q`))}${tag('p', k(`faq.${item}.a`))}`).join(''),
+
+      // The close: pricing's sentence again, and the call to start.
+      tag('p', k('pricing.subtitle')),
     ].join('')
   }
 
