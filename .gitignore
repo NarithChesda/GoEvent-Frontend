@@ -48,6 +48,10 @@ DESIGN_GUIDE/
 # Impeccable design detector: share rule config, keep local overrides private
 .impeccable/config.local.json
 
+# Hallmark design skill: its pre-flight cache and rotation log are per-machine
+# (CLAUDE.md: never commit them)
+.hallmark/
+
 # Environment Variables - Security Critical (exclude ALL .env files)
 .env
 .env.*
