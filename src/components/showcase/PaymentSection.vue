@@ -21,8 +21,10 @@
   <div class="pay" :style="payVars">
     <!-- ══ Heading ══════════════════════════════════════════════════════
          A sibling of the Agenda and guestbook headings: same size ladder, same
-         ornament, same face (the template's primary, bound inline). -->
-    <header v-if="paymentSectionTitle" class="pay-head">
+         ornament, same face (the template's primary, bound inline). Under the
+         scroll story (scroll-story.css) it comes into focus as it rises and
+         its ornament opens, the way every chapter title does. -->
+    <header v-if="paymentSectionTitle" class="pay-head story-title">
       <h2
         class="pay-title"
         :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
@@ -31,9 +33,9 @@
         <span class="tfx-ink">{{ paymentSectionTitle }}</span>
       </h2>
       <span class="pay-orn" aria-hidden="true">
-        <span class="pay-orn__rule"></span>
-        <span class="pay-orn__gem"></span>
-        <span class="pay-orn__rule"></span>
+        <span class="pay-orn__rule story-rule story-rule--lead"></span>
+        <span class="pay-orn__gem story-gem"></span>
+        <span class="pay-orn__rule story-rule story-rule--trail"></span>
       </span>
     </header>
 
@@ -509,10 +511,10 @@ onUnmounted(() => {
 /* ---------------------------------------------------------------------------
  * The sheet
  *
- * The one element in this section that is really glass — same recipe as the
- * guestbook's `.wb-panel`, deliberately identical rather than merely similar:
- * they sit two sections apart in the same scroller and any drift between them
- * reads as one of the two being wrong.
+ * The one element in this section that is really glass. It was drawn to the
+ * guestbook's old `.wb-panel` recipe, deliberately identical rather than merely
+ * similar; the guestbook has since become blessing cards (CommentSection.vue),
+ * and this recipe now lives on here and in EventInfo's `frosted` card.
  *
  * The blur is not decorative: when a template turns the card's own glass off
  * (`display_liquid_glass_background: false`), this sheet is all that stands

@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import type { EventText } from '../../types/showcase'
 import {
@@ -197,16 +197,13 @@ const setupObserver = () => {
     observer.disconnect()
   }
 
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          isVisible.value = true
-        }
-      })
-    },
-    showcaseRevealObserverInit(),
-  )
+  observer = createShowcaseRevealObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        isVisible.value = true
+      }
+    })
+  })
 
   if (containerRef.value) {
     observer.observe(containerRef.value)

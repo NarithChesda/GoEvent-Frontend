@@ -65,7 +65,7 @@ import { computed, inject, onUnmounted, ref, watch, type Ref } from 'vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '@/composables/showcase/useScrollProgress'
 import type { EventPhoto } from '@/composables/useEventShowcase'
 import type {
   CountdownDesignType,
@@ -308,12 +308,12 @@ function useRevealOnce(target: Ref<HTMLElement | null>) {
         revealed.value = true
         return
       }
-      observer = new IntersectionObserver((entries) => {
+      observer = createShowcaseRevealObserver((entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
           revealed.value = true
           stop()
         }
-      }, showcaseRevealObserverInit())
+      })
       observer.observe(el)
     },
     { flush: 'post' },

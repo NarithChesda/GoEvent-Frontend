@@ -3,10 +3,11 @@
     <!-- Gallery Header. Deliberately identical in markup and type scale to the
          video section's header: the film and the photographs come from the same
          shoot, and every other section on the invitation announces itself, so
-         the gallery arriving unnamed read as an appendix rather than a chapter. -->
+         the gallery arriving unnamed read as an appendix rather than a chapter.
+         `story-title`: comes into focus with the scroll (scroll-story.css). -->
     <div
       v-if="photos.length > 0"
-      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3"
+      class="story-title text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3"
     >
       <h2
         :class="[

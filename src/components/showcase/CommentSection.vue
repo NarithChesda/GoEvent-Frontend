@@ -2,26 +2,27 @@
   <!--
     The guestbook.
 
-    Not a comment thread. A guest writes one blessing, signs it, and everyone
-    who opens the invitation reads it — so this is a signed page, not a feed:
-    one glass sheet tinted in the template's own colour, wishes separated by a
-    hairline rather than each boxed on its own, and every entry closed by a
-    signature rather than opened by an avatar.
+    Not a comment thread: a book of blessings. Each wish is a small card in the
+    template's own colours, framed by a hairline with a diamond set into its top
+    edge, the message centred, and the guest's name signed beneath it in the
+    template's heading face, the way a wish card is signed at a ceremony. There
+    is no avatar and no "2 hours ago": what a blessing says and who gave it are
+    the two facts it has, and a feed's chrome around them made the section read
+    as an app inside an invitation.
 
-    What that replaced, and why: each wish used to be its own bordered card
-    carrying a 28px avatar disc, an inner hairline, a name row and a relative
-    time — four pieces of chrome around two facts, stacked N deep inside a card
-    that is itself glass. On a 390px phone that is roughly a third of the
-    section spent on frames, and the frames read as a comment app. Each card
-    also ran its own `backdrop-filter`, so a list of wishes cost N compositor
-    passes on the phone least able to pay them; the sheet blurs once.
+    The card's colours come from the template's own base (wishSurface.ts): a
+    pale tint of its secondary on a white or cream template, its base colour
+    deepened on a green, maroon or navy one. A white card on a solid dark
+    template was the look this replaced, and it fitted none of them.
   -->
-  <div id="comment-section" class="wb" :style="wbVars">
+  <div id="comment-section" class="wb" :class="`wb--${card.tone}`" :style="wbVars">
     <!-- ══ Heading ══════════════════════════════════════════════════════
          A sibling of the Agenda and RSVP headings: same size ladder, same
          ornament, and it keeps the template's primary face through its own
-         inline style (see the guestbook type rule in the unscoped block). -->
-    <header class="wb-head">
+         inline style (see the guestbook type rule in the unscoped block).
+         Under the scroll story (scroll-story.css) it comes into focus as it
+         rises and its ornament opens, the way every chapter title does. -->
+    <header class="wb-head story-title">
       <h2
         class="wb-title"
         :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
@@ -30,210 +31,231 @@
         <span class="tfx-ink">{{ commentHeaderText }}</span>
       </h2>
       <span class="wb-orn" aria-hidden="true">
-        <span class="wb-orn__rule"></span>
-        <span class="wb-orn__gem"></span>
-        <span class="wb-orn__rule"></span>
+        <span class="wb-orn__rule story-rule story-rule--lead"></span>
+        <span class="wb-orn__gem story-gem"></span>
+        <span class="wb-orn__rule story-rule story-rule--trail"></span>
       </span>
     </header>
 
-    <!-- ══ The book ═════════════════════════════════════════════════════
-         One surface. Everything below — the composer, its notices, the
-         wishes, the ask for more — lives on it, separated by hairlines. -->
-    <div ref="panelRef" class="wb-panel" :class="{ 'is-revealed': isRevealed }">
-      <!-- ── Where a guest signs ────────────────────────────────────────
-           Kept above the wishes and collapsed to a single row: expanded it
-           is a textarea, a counter and a button, and an empty box asking a
-           guest to write before they have read anything is the wrong first
-           screen. It opens by default when there is nothing to read, since
-           composing is then the only thing this section can offer. -->
-      <div class="wb-compose">
-        <!-- Private event opened without an invitation link -->
-        <p v-if="showInviteOnlyPrompt" class="wb-note">
-          {{ commentInviteOnlyPromptText }}
+    <div ref="panelRef" class="wb-book" :class="{ 'is-revealed': isRevealed }">
+      <!-- ── Where a guest writes ───────────────────────────────────────
+           A blank card above the blessings, its frame dashed where the
+           written ones are drawn. Signed out, the same card is the way to sign
+           in: the guest taps the thing they wanted to do and is asked who they
+           are, rather than meeting a sign-in button before any blessing. -->
+
+      <!-- Private event opened without an invitation link: a card that
+           cannot be written on, so it is not a button. -->
+      <div v-if="showInviteOnlyPrompt" class="wb-blank is-static">
+        <Lock class="wb-blank__icon" aria-hidden="true" />
+        <span class="wb-blank__sub">{{ commentInviteOnlyPromptText }}</span>
+      </div>
+
+      <!-- Already signed. One quiet line: their blessing is first below,
+           marked as theirs. -->
+      <p v-else-if="hasAlreadyCommented" class="wb-done">
+        <Check class="wb-done__tick" aria-hidden="true" />
+        <span>{{ commentAlreadyCommentedText }}</span>
+      </p>
+
+      <button
+        v-else-if="showBlankNote"
+        type="button"
+        class="wb-blank"
+        @click="handleBlankNoteClick"
+      >
+        <span class="wb-blank__label">
+          <PenLine class="wb-blank__icon" aria-hidden="true" />
+          <span class="wb-blank__text">{{ commentComposeCtaText }}</span>
+        </span>
+        <span v-if="blankNoteSubline" class="wb-blank__sub">{{ blankNoteSubline }}</span>
+      </button>
+
+      <!-- The card being written. Set in the size and leading a blessing is
+           shown in, so a guest writes into the shape they are about to
+           appear in. -->
+      <form
+        v-else-if="canShowCommentForm"
+        class="wb-card wb-compose"
+        @submit.prevent="submitComment"
+      >
+        <span class="wb-card__gem" aria-hidden="true"></span>
+        <p v-if="authorName" class="wb-compose__as">
+          {{ commentCommentingAsText }} <strong>{{ authorName }}</strong>
         </p>
 
-        <!-- Public event, signed out -->
-        <div v-else-if="showLoginPrompt" class="wb-note-stack">
-          <p class="wb-note">{{ commentSigninPromptText }}</p>
-          <button type="button" class="wb-submit" @click="handleSignInClick">
-            {{ commentSigninButtonText }}
-          </button>
-        </div>
+        <textarea
+          ref="composerTextareaRef"
+          v-model="newComment.message"
+          class="wb-field"
+          :class="{
+            'is-khmer': isKhmer(newComment.message),
+            'is-invalid': !commentValidation.isValid,
+          }"
+          :placeholder="commentPlaceholderText"
+          :aria-label="commentPlaceholderText"
+          rows="3"
+          maxlength="500"
+          required
+          @input="handleCommentInput"
+          @blur="validateCommentOnBlur"
+        />
 
-        <!-- Already signed. One quiet line: their wish is at the top of the
-             list below, marked as theirs, so a padded block restating it is
-             chrome over an answer the page already gives. -->
-        <p v-else-if="hasAlreadyCommented" class="wb-note wb-note--done">
-          <Check class="wb-note__tick" aria-hidden="true" />
-          <span>{{ commentAlreadyCommentedText }}</span>
+        <!-- The count appears only once it is close enough to matter. -->
+        <p
+          v-if="!commentValidation.isValid && commentValidation.errors.length > 0"
+          class="wb-hint is-error"
+          role="alert"
+        >
+          {{ commentValidation.errors[0] }}
+        </p>
+        <p v-else-if="newComment.message.length >= 400" class="wb-hint">
+          {{ newComment.message.length }}/500
         </p>
 
-        <!-- Collapsed composer -->
-        <button v-else-if="composerCollapsed" type="button" class="wb-trigger" @click="openComposer">
-          <span class="wb-trigger__mark" aria-hidden="true">
-            <PenLine class="wb-trigger__pen" />
-          </span>
-          <span class="wb-trigger__label">{{ commentComposeCtaText }}</span>
-        </button>
-
-        <!-- Open composer -->
-        <form v-else-if="canShowCommentForm" class="wb-form" @submit.prevent="submitComment">
-          <p v-if="commentAuthMode === 'guest' && guestName" class="wb-form__as">
-            {{ commentCommentingAsText }} <strong>{{ guestName }}</strong>
-          </p>
-
-          <!-- Set in the size and leading the wish itself will be shown in, so
-               a guest writes into the shape they are about to appear in. -->
-          <textarea
-            ref="composerTextareaRef"
-            v-model="newComment.message"
-            class="wb-field"
-            :class="{
-              'is-khmer': isKhmer(newComment.message),
-              'is-invalid': !commentValidation.isValid,
-            }"
-            :placeholder="commentPlaceholderText"
-            rows="3"
-            maxlength="500"
-            required
-            @input="handleCommentInput"
-            @blur="validateCommentOnBlur"
-          />
-
-          <!-- The count appears only once it is close enough to matter. At
-               0/500 it is a rule the guest has not come near, printed under an
-               empty box. -->
-          <p
-            v-if="!commentValidation.isValid && commentValidation.errors.length > 0"
-            class="wb-form__hint is-error"
+        <div class="wb-actions">
+          <button
+            v-if="comments.length > 0"
+            type="button"
+            class="wb-btn wb-btn--ghost"
+            @click="closeComposer"
           >
-            {{ commentValidation.errors[0] }}
-          </p>
-          <p v-else-if="newComment.message.length >= 400" class="wb-form__hint">
-            {{ newComment.message.length }}/500
-          </p>
-
+            {{ commentCancelText }}
+          </button>
           <button
             type="submit"
-            class="wb-submit"
+            class="wb-btn wb-btn--solid wb-btn--grow"
             :disabled="
               isSubmittingComment || !newComment.message.trim() || !commentValidation.isValid
             "
           >
+            <span v-if="isSubmittingComment" class="wb-spinner" aria-hidden="true"></span>
             {{ isSubmittingComment ? commentPostingButtonText : commentPostButtonText }}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
 
-      <div class="wb-seam" aria-hidden="true"></div>
-
-      <!-- ── The wishes ─────────────────────────────────────────────────
+      <!-- ── The blessings ──────────────────────────────────────────────
            Flows with the page rather than scrolling inside itself: a fixed
-           overflow box is a third nested scroller on a phone, and it reserves
-           its height whether or not there is anything to put in it. Length is
-           handled where it comes from — the number of wishes. -->
+           overflow box would be a third nested scroller on a phone. Length is
+           handled where it comes from, the number of blessings. -->
       <div v-if="loadingComments" class="wb-quiet">
         <span class="wb-spinner" aria-hidden="true"></span>
         <span>{{ commentLoadingText }}</span>
       </div>
 
-      <div v-else-if="comments.length === 0" class="wb-empty">
-        <span class="wb-orn wb-orn--sm" aria-hidden="true">
-          <span class="wb-orn__rule"></span>
-          <span class="wb-orn__gem"></span>
-          <span class="wb-orn__rule"></span>
-        </span>
-        <p class="wb-empty__text">{{ commentNoCommentsText }}</p>
-      </div>
+      <p v-else-if="comments.length === 0" class="wb-empty">{{ commentNoCommentsText }}</p>
 
       <div v-else class="wb-list">
         <article
-          v-for="(comment, index) in visibleComments"
-          :key="comment.id"
-          class="wb-wish"
-          :class="{ 'is-mine': isUserCommentOwner(comment) }"
+          v-for="(wish, index) in visibleWishes"
+          :key="wish.comment.id"
+          class="wb-card wb-wish"
+          :class="{ 'is-mine': wish.mine }"
           :style="{ '--wish-index': index }"
         >
-          <!-- The wish is the loudest thing on the sheet: set larger than
-               anything around it and given its own leading, which is the only
-               emphasis it needs. Line breaks the guest typed are kept — a
-               blessing is often written in short lines. -->
+          <span class="wb-card__gem" aria-hidden="true"></span>
+
+          <!-- The guest's own card: "You" in one top corner, its two actions
+               behind the button in the other, both inside the frame. -->
+          <span v-if="wish.mine" class="wb-you">{{ commentYouBadgeText }}</span>
+          <button
+            v-if="wish.mine && editingCommentId !== wish.comment.id"
+            type="button"
+            class="wb-wish__more"
+            :aria-label="commentOptionsText"
+            :aria-expanded="actionsOpenId === wish.comment.id"
+            :aria-controls="`wb-actions-${wish.comment.id}`"
+            @click="toggleActions(wish.comment.id)"
+          >
+            <MoreHorizontal class="wb-wish__more-icon" aria-hidden="true" />
+          </button>
+
+          <!-- Line breaks the guest typed are kept: a blessing is often
+               written in short lines. Kept on one line here, because a
+               newline inside the tag would print under pre-line. -->
           <p
-            v-if="editingCommentId !== comment.id"
+            v-if="editingCommentId !== wish.comment.id"
             class="wb-wish__text"
-            :class="{ 'is-khmer': isKhmer(comment.comment_text) }"
-          >{{ capitalizeFirstLetter(comment.comment_text) }}</p>
+            :class="{ 'is-khmer': isKhmer(wish.comment.comment_text) }"
+          >{{ capitalizeFirstLetter(wish.comment.comment_text) }}</p>
 
           <div v-else class="wb-edit">
             <textarea
               v-model="editCommentText"
               class="wb-field"
               :class="{ 'is-khmer': isKhmer(editCommentText) }"
+              :aria-label="commentEditText"
               rows="3"
               maxlength="500"
               :placeholder="commentPlaceholderText"
             />
             <div class="wb-edit__foot">
               <span class="wb-edit__count">{{ editCommentText.length }}/500</span>
-              <span class="wb-edit__actions">
+              <span class="wb-actions">
                 <button
                   type="button"
-                  class="wb-ghost"
+                  class="wb-btn wb-btn--ghost wb-btn--sm"
                   :disabled="isUpdatingComment"
                   @click="cancelEditComment"
                 >
-                  Cancel
+                  {{ commentCancelText }}
                 </button>
                 <button
                   type="button"
-                  class="wb-solid"
+                  class="wb-btn wb-btn--solid wb-btn--sm"
                   :disabled="
                     isUpdatingComment ||
                     !editCommentText.trim() ||
-                    editCommentText === comment.comment_text
+                    editCommentText === wish.comment.comment_text
                   "
-                  @click="updateComment(comment.id)"
+                  @click="updateComment(wish.comment.id)"
                 >
-                  {{ isUpdatingComment ? 'Saving…' : 'Save' }}
+                  {{ isUpdatingComment ? commentSavingText : commentSaveText }}
                 </button>
               </span>
             </div>
           </div>
 
-          <!-- The signature. Right-aligned and dashed, the way a card is
-               signed rather than the way a comment is attributed — which is
-               what lets the avatar, the name row and the inner hairline all go
-               and gives the message its full measure back. -->
+          <!-- The signature: the guest's name between two short rules, in
+               the template's heading face, as a wish card is signed. -->
           <footer class="wb-sign">
-            <span class="wb-sign__name">— {{ getCommentDisplayName(comment) }}</span>
-            <span v-if="isUserCommentOwner(comment)" class="wb-sign__you">
-              {{ commentYouBadgeText }}
+            <span class="wb-sign__rule" aria-hidden="true"></span>
+            <span class="wb-sign__name" :class="fx('primary')">
+              <span class="tfx-ink">{{ wish.name }}</span>
             </span>
-            <span class="wb-sign__sep" aria-hidden="true">·</span>
-            <time class="wb-sign__time" :datetime="comment.created_at">
-              {{ formatCommentDate(comment.created_at) }}
-            </time>
-            <span
-              v-if="isUserCommentOwner(comment)"
-              :ref="(el) => setMenuButtonRef(el, comment.id)"
-              class="wb-sign__menu comment-options-menu"
-            >
-              <button
-                type="button"
-                class="wb-sign__menu-btn"
-                aria-label="Options"
-                @click.stop="toggleCommentMenu(comment.id)"
-              >
-                <MoreVertical class="wb-sign__menu-icon" />
-              </button>
-            </span>
+            <span class="wb-sign__rule" aria-hidden="true"></span>
           </footer>
+
+          <!-- The guest's own two actions, opened in place on their card. -->
+          <div
+            v-if="actionsOpenId === wish.comment.id && editingCommentId !== wish.comment.id"
+            :id="`wb-actions-${wish.comment.id}`"
+            class="wb-wish__actions"
+          >
+            <button
+              type="button"
+              class="wb-btn wb-btn--ghost wb-btn--sm"
+              @click="startEditComment(wish.comment)"
+            >
+              <Pencil class="wb-btn__icon" aria-hidden="true" />
+              {{ commentEditText }}
+            </button>
+            <button
+              type="button"
+              class="wb-btn wb-btn--ghost wb-btn--sm wb-btn--danger"
+              :disabled="isDeletingComment === wish.comment.id"
+              @click="requestDelete(wish)"
+            >
+              <Trash2 class="wb-btn__icon" aria-hidden="true" />
+              {{ commentDeleteText }}
+            </button>
+          </div>
         </article>
 
-        <!-- The list's own length control. An explicit ask is cheaper than
-             infinite scroll (nothing loads until a guest wants it) and honest
-             about how many wishes there are, which on a wedding is a number
-             the couple wants seen. -->
+        <!-- An explicit ask is cheaper than infinite scroll (nothing loads
+             until a guest wants it) and honest about how many blessings there
+             are, which on a wedding is a number the couple wants seen. -->
         <button v-if="canRevealMoreWishes" type="button" class="wb-more" @click="revealMoreWishes">
           <span class="wb-more__rule"></span>
           <span class="wb-more__label">{{ showAllWishesText }}</span>
@@ -245,9 +267,12 @@
           <span>{{ commentLoadingText }}</span>
         </div>
       </div>
-    </div>
 
-    <p v-if="errorMessage" class="wb-error" role="alert">{{ errorMessage }}</p>
+      <p v-if="errorMessage" class="wb-error" role="alert">
+        <AlertCircle class="wb-error__icon" aria-hidden="true" />
+        <span>{{ errorMessage }}</span>
+      </p>
+    </div>
   </div>
 
   <!-- Delete Confirmation Modal -->
@@ -268,51 +293,20 @@
       @authenticated="handleUserAuthenticated"
     />
   </Teleport>
-
-  <!-- Teleported Dropdown Menu (to escape overflow clipping) -->
-  <Teleport to="body">
-    <div
-      v-if="openMenuId !== null"
-      class="comment-dropdown-menu fixed py-1 rounded-lg shadow-xl min-w-[100px] z-[9999] backdrop-blur-sm"
-      :style="{
-        backgroundColor: backgroundColor,
-        border: `1px solid ${backgroundColor}80`,
-        top: `${dropdownPosition.top}px`,
-        left: `${dropdownPosition.left}px`,
-      }"
-    >
-      <button
-        @click="handleEditFromMenu(getCommentById(openMenuId))"
-        class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-        :style="{ color: '#ffffff' }"
-      >
-        <Edit class="w-3 h-3" />
-        Edit
-      </button>
-      <button
-        @click="handleDeleteFromMenu(getCommentById(openMenuId))"
-        class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-        :style="{ color: '#ffffff' }"
-        :disabled="isDeletingComment === openMenuId"
-      >
-        <Trash2 class="w-3 h-3" />
-        Delete
-      </button>
-    </div>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { useTextEffect } from '@/composables/showcase/useTextEffects'
-import { ref, computed, onMounted, nextTick, onUnmounted, watch, type ComponentPublicInstance } from 'vue'
-import { Check, Edit, Trash2, MoreVertical, PenLine } from 'lucide-vue-next'
+import { ref, computed, onMounted, nextTick, onUnmounted, watch } from 'vue'
+import { AlertCircle, Check, Lock, MoreHorizontal, PenLine, Pencil, Trash2 } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import AuthModal from '../AuthModal.vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import { showcaseRevealObserverInit } from '../../composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '../../composables/showcase/useScrollProgress'
 import { useAuthModal } from '../../composables/useAuthModal'
+import { wishSurface } from './wishSurface'
 import {
   sanitizeComment,
   sanitizePlainText,
@@ -343,6 +337,12 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string | null
+  /**
+   * The template's declared base colour (its `template` colour, else its
+   * `blur-effect` colour). The blessing cards are drawn in it when it is dark,
+   * see wishSurface.ts.
+   */
+  groundColor?: string | null
   /** Heading only. The wishes below set their own type - see the guestbook rule in the unscoped style block. */
   currentFont?: string
   primaryFont?: string
@@ -399,6 +399,12 @@ const getTextContent = (textType: string, fallback = ''): string => {
     comment_compose_cta: 'comment_compose_cta',
     comment_compose_cta_funeral: 'comment_compose_cta_funeral',
     comment_show_all: 'comment_show_all',
+    comment_options: 'comment_options',
+    comment_edit: 'comment_edit',
+    comment_delete: 'comment_delete',
+    comment_cancel: 'comment_cancel',
+    comment_save: 'comment_save',
+    comment_saving: 'comment_saving',
   }
 
   const translationKey = keyMap[textType]
@@ -425,11 +431,8 @@ const commentPlaceholderText = computed(() => {
 const commentSigninPromptText = computed(() =>
   getTextContent('comment_signin_prompt', 'Please sign in to leave a comment'),
 )
-const commentSigninButtonText = computed(() =>
-  getTextContent('comment_signin_button', 'Sign In to Comment'),
-)
-// The collapsed composer's label. Short enough to sit in one row beside its
-// mark at 390px, in both languages.
+// The blank note's label. Short enough to sit in one row beside its mark at
+// 390px, in both languages.
 const commentComposeCtaText = computed(() => {
   if (props.eventType?.toLowerCase() === 'funeral') {
     return getTextContent('comment_compose_cta_funeral', 'Leave a message')
@@ -457,6 +460,12 @@ const commentInviteOnlyPromptText = computed(() =>
 const commentCommentingAsText = computed(() =>
   getTextContent('comment_commenting_as', 'Commenting as'),
 )
+const commentOptionsText = computed(() => getTextContent('comment_options', 'Options'))
+const commentEditText = computed(() => getTextContent('comment_edit', 'Edit'))
+const commentDeleteText = computed(() => getTextContent('comment_delete', 'Delete'))
+const commentCancelText = computed(() => getTextContent('comment_cancel', 'Cancel'))
+const commentSaveText = computed(() => getTextContent('comment_save', 'Save'))
+const commentSavingText = computed(() => getTextContent('comment_saving', 'Saving…'))
 
 const authStore = useAuthStore()
 
@@ -479,12 +488,15 @@ const currentPage = ref(1)
 const commentsPerPage = 20 // Match API default
 const composerTextareaRef = ref<HTMLTextAreaElement | null>(null)
 
-// How many wishes are on the page. Three is what fits under the composer on a
+// How many wishes are on the page. Three is what fits under the blank note on a
 // 390px phone without the section running past a screen, which is the length
 // at which a guest still reads them rather than scrolls them.
 const WISHES_PER_REVEAL = 3
 const visibleWishCount = ref(WISHES_PER_REVEAL)
 const composerOpenedByGuest = ref(false)
+// Set when a signed-out guest taps the blank note: once they have signed in,
+// the note they asked for opens instead of making them tap it twice.
+const composeAfterSignIn = ref(false)
 const hasMoreComments = ref(true)
 const errorMessage = ref('')
 const hasAlreadyCommented = ref(false)
@@ -492,7 +504,7 @@ const hasAlreadyCommented = ref(false)
 // Edit/Delete state
 const editingCommentId = ref<number | null>(null)
 const editCommentText = ref('')
-const openMenuId = ref<number | null>(null)
+const actionsOpenId = ref<number | null>(null)
 const isUpdatingComment = ref(false)
 const isDeletingComment = ref<number | null>(null)
 
@@ -500,10 +512,6 @@ const isDeletingComment = ref<number | null>(null)
 const showDeleteModal = ref(false)
 const commentToDelete = ref<number | null>(null)
 const commentToDeleteName = ref<string>('')
-
-// Dropdown menu positioning for Teleport
-const menuButtonRefs = ref<Map<number, HTMLElement>>(new Map())
-const dropdownPosition = ref({ top: 0, left: 0 })
 
 // Auth modal using composable
 const {
@@ -513,8 +521,10 @@ const {
   onUserAuthenticated: handleUserAuthenticated,
 } = useAuthModal({
   onAuthenticated: () => {
-    // User successfully authenticated via modal
-    // Trigger scroll and highlight animation for comment form
+    if (composeAfterSignIn.value) {
+      composeAfterSignIn.value = false
+      composerOpenedByGuest.value = true
+    }
     nextTick(() => {
       scrollToCommentSection()
     })
@@ -528,19 +538,50 @@ const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments
 const backgroundColor = computed(() => props.backgroundColor || props.primaryColor)
 
 /**
- * The three colours the whole sheet is drawn from, published once on the root
- * rather than bound inline on every node.
+ * The cards' colours, fitted to the template (wishSurface.ts): a pale tint of
+ * the secondary on a light-based template, the template's own base deepened on
+ * a dark one, and the primary as the text on both, moved only as far as it
+ * needs to read.
  *
- * Every surface below is a `color-mix` of `--wb-tone` (the template's own
- * colour) so the glass carries the template rather than a neutral grey, and
- * every piece of copy is a mix of `--wb-ink`. Binding those per element is what
- * produced ~40 inline style objects here, several of them re-evaluated for each
- * wish in the list.
+ * Only what sits on the invitation's own ground (the heading, the quiet lines)
+ * uses the template's primary as is.
+ */
+const card = computed(() =>
+  wishSurface({
+    ink: props.primaryColor,
+    ground: props.groundColor,
+    tint: props.secondaryColor,
+  }),
+)
+
+/**
+ * The signature's face: the template's heading face, with Kantumruy Pro
+ * slotted in straight after it. Guests sign in Khmer as often as in English,
+ * and a Latin-only face would otherwise hand a Khmer name to whatever font the
+ * phone has, which is a different face on every platform.
+ */
+const signatureFont = computed(() => {
+  const [face, ...fallbacks] = (props.primaryFont || props.currentFont || '').split(',')
+  return [face, "'Kantumruy Pro'", ...fallbacks, 'sans-serif']
+    .map((family) => family.trim())
+    .filter(Boolean)
+    .join(', ')
+})
+
+/**
+ * Every colour the section draws with, published once on the root rather than
+ * bound inline on every node.
  */
 const wbVars = computed<Record<string, string>>(() => ({
   '--wb-ink': props.primaryColor,
   '--wb-tone': backgroundColor.value,
-  '--wb-accent': props.accentColor || props.primaryColor,
+  '--wb-surface': card.value.surface,
+  '--wb-card-ink': card.value.ink,
+  '--wb-card-muted': card.value.muted,
+  '--wb-frame': card.value.frame,
+  '--wb-signature-font': signatureFont.value,
+  // Error red that reads on the card: the usual red is 3:1 on a deep one.
+  '--wb-danger': card.value.tone === 'deep' ? '#fda29b' : '#b42318',
 }))
 
 /**
@@ -598,9 +639,32 @@ const commentAuthMode = computed<'guest' | 'user' | null>(() => {
 
 const canShowCommentForm = computed(() => commentAuthMode.value !== null)
 
-// The wishes actually on the page, and whether there are more to ask for -
-// either still in the buffer, or on a page the API has not been asked for yet.
-const visibleComments = computed(() => comments.value.slice(0, visibleWishCount.value))
+// The name a new wish will be signed with, said before the guest writes it.
+const authorName = computed(() => {
+  if (commentAuthMode.value === 'guest') return props.guestName || ''
+  if (commentAuthMode.value === 'user' && authStore.user) {
+    return (
+      buildFullName(authStore.user.first_name, authStore.user.last_name) ||
+      authStore.user.username ||
+      ''
+    )
+  }
+  return ''
+})
+
+// The wishes actually on the page, each with what its note needs resolved once
+// rather than per binding.
+const visibleWishes = computed(() =>
+  comments.value.slice(0, visibleWishCount.value).map((comment) => ({
+    comment,
+    name: getCommentDisplayName(comment),
+    mine: isUserCommentOwner(comment),
+  })),
+)
+type Wish = (typeof visibleWishes.value)[number]
+
+// Whether there are more to ask for - either still in the buffer, or on a page
+// the API has not been asked for yet.
 const canRevealMoreWishes = computed(
   () =>
     !loadingComments.value &&
@@ -614,12 +678,6 @@ const showAllWishesText = computed(() => {
 })
 
 // Collapsed unless the guest asked for it, or there is nothing else to do here.
-//
-// Guarded on the same conditions the <form> branch is, not just on
-// canShowCommentForm: the shell also carries the sign-in, invite-only and
-// already-commented notices, and those are one short paragraph each. Cropping
-// their padding to composer height reads as a clipped card, and there is
-// nothing to expand into anyway.
 const composerCollapsed = computed(
   () =>
     canShowCommentForm.value &&
@@ -632,6 +690,12 @@ const openComposer = async () => {
   composerOpenedByGuest.value = true
   await nextTick()
   composerTextareaRef.value?.focus()
+}
+
+// The draft is kept: a guest who closes the note by mistake gets it back.
+const closeComposer = () => {
+  composerOpenedByGuest.value = false
+  commentValidation.value = { isValid: true, sanitized: '', errors: [] }
 }
 
 // Reveals the next few from the buffer, and only asks the API for another page
@@ -658,10 +722,21 @@ const showsComposerNotice = computed(
   () => showInviteOnlyPrompt.value || showLoginPrompt.value || hasAlreadyCommented.value,
 )
 
+// The blank note: the way in, whether or not the guest is signed in yet.
+const showBlankNote = computed(() => showLoginPrompt.value || composerCollapsed.value)
+const blankNoteSubline = computed(() => {
+  if (showLoginPrompt.value) return commentSigninPromptText.value
+  return authorName.value ? `${commentCommentingAsText.value} ${authorName.value}` : ''
+})
+
 // Methods
-const handleSignInClick = () => {
-  // Open the authentication modal using composable
-  openAuthModal()
+const handleBlankNoteClick = () => {
+  if (showLoginPrompt.value) {
+    composeAfterSignIn.value = true
+    openAuthModal()
+    return
+  }
+  openComposer()
 }
 
 const buildFullName = (firstName?: string | null, lastName?: string | null): string => {
@@ -781,66 +856,20 @@ const validateCommentOnBlur = () => {
   }
 }
 
-// Menu toggle functions
-const toggleCommentMenu = (commentId: number) => {
-  if (openMenuId.value === commentId) {
-    openMenuId.value = null
-  } else {
-    openMenuId.value = commentId
-    // Calculate dropdown position after menu opens
-    nextTick(() => {
-      updateDropdownPosition(commentId)
-    })
-  }
-}
-
-const closeCommentMenu = () => {
-  openMenuId.value = null
-}
-
-// Set ref for menu button to calculate dropdown position
-const setMenuButtonRef = (el: Element | ComponentPublicInstance | null, commentId: number) => {
-  if (el) {
-    menuButtonRefs.value.set(commentId, el as HTMLElement)
-  } else {
-    menuButtonRefs.value.delete(commentId)
-  }
-}
-
-// Update dropdown position based on button location
-const updateDropdownPosition = (commentId: number) => {
-  const buttonEl = menuButtonRefs.value.get(commentId)
-  if (buttonEl) {
-    const rect = buttonEl.getBoundingClientRect()
-    dropdownPosition.value = {
-      top: rect.bottom + 4, // 4px gap below button
-      left: rect.right - 100, // Align right edge with button (100px is min-width)
-    }
-  }
-}
-
-// Get comment by ID for teleported dropdown
-const getCommentById = (commentId: number | null): EventComment | undefined => {
-  if (commentId === null) return undefined
-  return comments.value.find(c => c.id === commentId)
-}
-
-const handleEditFromMenu = (comment: EventComment | undefined) => {
-  if (!comment) return
-  closeCommentMenu()
-  startEditComment(comment)
-}
-
-const handleDeleteFromMenu = (comment: EventComment | undefined) => {
-  if (!comment) return
-  closeCommentMenu()
-  openDeleteModal(comment.id, getCommentDisplayName(comment) || 'this comment')
+const toggleActions = (commentId: number) => {
+  actionsOpenId.value = actionsOpenId.value === commentId ? null : commentId
 }
 
 const startEditComment = (comment: EventComment) => {
+  actionsOpenId.value = null
   editingCommentId.value = comment.id
   editCommentText.value = comment.comment_text
   errorMessage.value = ''
+}
+
+const requestDelete = (wish: Wish) => {
+  actionsOpenId.value = null
+  openDeleteModal(wish.comment.id, wish.name || 'this comment')
 }
 
 const cancelEditComment = () => {
@@ -942,30 +971,6 @@ const handleDeleteCancel = () => {
   showDeleteModal.value = false
   commentToDelete.value = null
   commentToDeleteName.value = ''
-}
-
-const formatCommentDate = (dateString: string): string => {
-  try {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-      return diffInMinutes < 1 ? 'Just now' : `${diffInMinutes} min ago`
-    } else if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24)
-      if (diffInDays < 7) {
-        return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`
-      } else {
-        return date.toLocaleDateString()
-      }
-    }
-  } catch {
-    return 'Recently'
-  }
 }
 
 const submitComment = async () => {
@@ -1163,6 +1168,7 @@ watch(
       hasAlreadyCommented.value = false
       newComment.value.message = ''
       errorMessage.value = ''
+      actionsOpenId.value = null
       cancelEditComment()
     }
   },
@@ -1207,18 +1213,15 @@ const checkForCommentRedirect = () => {
 }
 
 /**
- * The wishes settle in sequence when the sheet comes into view.
+ * The wishes settle in sequence when the book comes into view.
  *
- * One observer on the panel, not one per wish: the stagger is a CSS delay keyed
- * off each entry's own `--wish-index`, so the only thing JavaScript has to
- * decide is *when the page has been reached*. It replaced a per-element stagger
- * observer that wrote inline `opacity`/`transform` on every card while the CSS
- * keyframe animated the same two properties — two entrance systems on one
- * element, with the winner decided by which finished last.
+ * One observer on the book, not one per wish: the stagger is a CSS delay keyed
+ * off each note's own `--wish-index`, so the only thing JavaScript has to decide
+ * is *when the page has been reached*.
  *
- * `showcaseRevealObserverInit()` is the showcase's shared config; its root is
- * the liquid-glass card's own scroller, which is where all scrolling actually
- * happens.
+ * `createShowcaseRevealObserver()` is the showcase's shared observer; its root
+ * is the liquid-glass card's own scroller, which is where all scrolling
+ * actually happens, and under the scroll story it reports at the reading line.
  */
 const panelRef = ref<HTMLElement | null>(null)
 const isRevealed = ref(false)
@@ -1232,23 +1235,15 @@ const setupRevealObserver = () => {
     return
   }
 
-  revealObserver = new IntersectionObserver((entries) => {
+  revealObserver = createShowcaseRevealObserver((entries) => {
     if (entries.some((entry) => entry.isIntersecting)) {
       isRevealed.value = true
       revealObserver?.disconnect()
       revealObserver = null
     }
-  }, showcaseRevealObserverInit())
+  })
 
   revealObserver.observe(panelRef.value)
-}
-
-// Click outside handler to close menu
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  if (openMenuId.value !== null && !target.closest('.comment-options-menu')) {
-    closeCommentMenu()
-  }
 }
 
 // Lifecycle
@@ -1258,42 +1253,58 @@ onMounted(async () => {
   await loadComments()
   // Check if user should be redirected to comment section (after login)
   checkForCommentRedirect()
-
-  // Add click outside listener to close menus
-  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
   revealObserver?.disconnect()
   revealObserver = null
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
 <style scoped>
+/* Hallmark · component: guestbook (blessing cards) · genre: editorial
+ * theme: template-driven — colours fitted to the template's base (wishSurface.ts), not a catalog theme
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: card text is the primary moved only as far as 4.5:1 needs (wishSurface.ts)
+ */
+
 /* ===========================================================================
  * The guestbook
  *
- * One glass sheet, tinted in the template's own colour, with the wishes written
- * on it. Three custom properties come in from the component (`--wb-ink`,
- * `--wb-tone`, `--wb-accent`) and everything below is a mix of them, so a
- * template's palette reaches every surface without a single inline style.
+ * Two grounds, and every colour belongs to one of them:
  *
- * Sizing is mobile-first and scaled by ONE number, `--wb-s`. The showcase card
- * is 85vh, so on a 13–15" laptop every section has to render at roughly
- * two-thirds size; that used to be ~200 lines of `!important` overrides here,
- * one per element, drifting from the values they were meant to track. Now the
- * two laptop media queries set `--wb-s` and nothing else.
+ *   - the invitation's own ground, under the heading and the quiet lines.
+ *     That is where the template's primary was designed to sit, so it is used
+ *     as is (`--wb-ink`, `--wb-tone`).
+ *   - the card, under every blessing: `--wb-surface`, with `--wb-card-ink`,
+ *     `--wb-card-muted` and `--wb-frame` chosen against it in wishSurface.ts.
+ *
+ * Sizing is mobile-first and scaled by ONE number, `--wb-s`, which the two
+ * laptop media queries set and nothing else does.
  * ======================================================================== */
 
 .wb {
   --wb-s: 1;
   --wb-ease: cubic-bezier(0.23, 1, 0.32, 1);
   --wb-hair: color-mix(in srgb, var(--wb-tone) 24%, transparent);
-  --wb-hair-soft: color-mix(in srgb, var(--wb-tone) 13%, transparent);
+  --wb-card-radius: 0.5rem;
+  /* Where the inner frame sits inside the card's edge. */
+  --wb-frame-inset: 0.375rem;
+  --wb-card-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 14px 30px -20px rgb(0 0 0 / 0.4);
 
   color: var(--wb-ink);
   margin-bottom: calc(2rem * var(--wb-s));
+}
+
+/* A deep card is the template's own base a step darker: it needs more shadow
+   to leave the page at all, and a faint light edge to read as a surface. */
+.wb--deep {
+  --wb-card-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 1px 2px rgb(0 0 0 / 0.25),
+    0 16px 34px -18px rgb(0 0 0 / 0.65);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1302,7 +1313,7 @@ onUnmounted(() => {
 
 .wb-head {
   text-align: center;
-  margin-bottom: calc(1.125rem * var(--wb-s));
+  margin-bottom: calc(1.25rem * var(--wb-s));
 }
 
 .wb-title {
@@ -1314,9 +1325,6 @@ onUnmounted(() => {
   color: var(--wb-ink);
 }
 
-/* The section's one ornament, reused rather than reinvented: under the heading
-   at full width, and once more (shortened) in the empty state, which is the
-   only other place a mark is earned. */
 .wb-orn {
   display: flex;
   align-items: center;
@@ -1343,125 +1351,214 @@ onUnmounted(() => {
 }
 
 /* ---------------------------------------------------------------------------
- * The sheet
- *
- * The one element in this section that is really glass. It sits inside the
- * main content card, which is itself translucent — so the tint stays low and
- * the light top edge, not a border, is what makes it read as a material.
- *
- * The blur is not decorative: when a template turns the card's own glass off
- * (`display_liquid_glass_background: false`), this sheet is all that stands
- * between the wishes and a playing background video.
+ * The book: the blank card, then the blessings, one column
  * ------------------------------------------------------------------------ */
 
-.wb-panel {
+.wb-book,
+.wb-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.875rem * var(--wb-s));
+}
+
+/* A blessing card: the fitted surface, a hairline frame inset from its edge,
+   and a diamond set into the frame's top edge. The frame and the diamond are
+   the whole of the ornament; everything inside is the guest's. */
+.wb-card {
   position: relative;
-  overflow: hidden;
-  border-radius: 1.25rem;
-  padding: calc(0.875rem * var(--wb-s)) calc(1rem * var(--wb-s));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--wb-tone) 9%, transparent),
-    color-mix(in srgb, var(--wb-tone) 4%, transparent)
-  );
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 14%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 10px 30px -20px color-mix(in srgb, var(--wb-tone) 70%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  contain: layout style paint;
+  min-width: 0;
+  border-radius: var(--wb-card-radius);
+  padding: calc(1.625rem * var(--wb-s)) calc(1.375rem * var(--wb-s)) calc(1.375rem * var(--wb-s));
+  background: var(--wb-surface);
+  color: var(--wb-card-ink);
+  box-shadow: var(--wb-card-shadow);
+  text-align: center;
+}
+
+.wb-card::before {
+  content: '';
+  position: absolute;
+  inset: var(--wb-frame-inset);
+  border: 1px solid var(--wb-frame);
+  border-radius: calc(var(--wb-card-radius) - 0.1875rem);
+  pointer-events: none;
+}
+
+/* The diamond on the frame's top edge. The ring in the card's own colour is
+   what cuts the frame line either side of it. */
+.wb-card__gem {
+  position: absolute;
+  top: var(--wb-frame-inset);
+  left: 50%;
+  width: calc(0.4375rem * var(--wb-s));
+  height: calc(0.4375rem * var(--wb-s));
+  background: var(--wb-frame);
+  box-shadow: 0 0 0 calc(0.25rem * var(--wb-s)) var(--wb-surface);
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: none;
 }
 
 /* ---------------------------------------------------------------------------
- * Where a guest signs
+ * The blank card
+ *
+ * The same surface lying flat, its frame dashed rather than drawn: a card
+ * that has not been written yet. The written ones never carry the dash.
  * ------------------------------------------------------------------------ */
 
-.wb-trigger {
+.wb-blank {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  width: 100%;
-  /* 44px on a phone: this row is the only way into the composer, so it is a
-     touch target before it is a label. */
-  min-height: calc(2.75rem * var(--wb-s));
-  padding: 0;
-  background: none;
-  border: 0;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-  transition: transform 140ms var(--wb-ease);
-}
-
-.wb-trigger:active {
-  transform: scale(0.99);
-}
-
-.wb-trigger__mark {
-  flex: 0 0 auto;
-  display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: calc(1.875rem * var(--wb-s));
-  height: calc(1.875rem * var(--wb-s));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--wb-tone) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 20%, transparent);
-}
-
-.wb-trigger__pen {
-  width: calc(0.875rem * var(--wb-s));
-  height: calc(0.875rem * var(--wb-s));
-  opacity: 0.75;
-}
-
-.wb-trigger__label {
+  gap: 0.25rem;
+  width: 100%;
   min-width: 0;
+  min-height: calc(4rem * var(--wb-s));
+  padding: calc(0.875rem * var(--wb-s)) calc(1.25rem * var(--wb-s));
+  border: 0;
+  border-radius: var(--wb-card-radius);
+  background: var(--wb-surface);
+  color: var(--wb-card-ink);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 160ms var(--wb-ease);
+}
+
+.wb-blank::before {
+  content: '';
+  position: absolute;
+  inset: var(--wb-frame-inset);
+  border: 1px dashed var(--wb-frame);
+  border-radius: calc(var(--wb-card-radius) - 0.1875rem);
+  pointer-events: none;
+  transition: border-color 160ms ease;
+}
+
+.wb-blank.is-static {
+  flex-direction: row;
+  gap: 0.625rem;
+  cursor: default;
+}
+
+.wb-blank:not(.is-static):active {
+  transform: scale(0.985);
+}
+
+.wb-blank:focus-visible {
+  outline: 2px solid var(--wb-ink);
+  outline-offset: 3px;
+}
+
+/* One line: a button whose words wrap reads as two controls. */
+.wb-blank__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  font-size: calc(0.9375rem * var(--wb-s));
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.wb-blank__text,
+.wb-blank:not(.is-static) .wb-blank__sub {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: calc(0.875rem * var(--wb-s));
-  color: color-mix(in srgb, var(--wb-ink) 72%, transparent);
 }
 
-.wb-form__as {
-  margin-bottom: calc(0.5rem * var(--wb-s));
+.wb-blank__icon {
+  flex: 0 0 auto;
+  width: calc(1rem * var(--wb-s));
+  height: calc(1rem * var(--wb-s));
+}
+
+.wb-blank__sub {
   font-size: calc(0.75rem * var(--wb-s));
-  color: color-mix(in srgb, var(--wb-ink) 72%, transparent);
+  line-height: 1.5;
+  color: var(--wb-card-muted);
 }
 
-/* An inset well rather than another pane of glass: a translucent field on a
-   translucent sheet is where legibility collapses, and a well also says
-   "write here" without a label. */
+/* The invite-only card is prose, not a label, and may take two lines. */
+.wb-blank.is-static .wb-blank__sub {
+  font-size: calc(0.8125rem * var(--wb-s));
+  line-height: 1.6;
+  text-align: left;
+}
+
+.wb-blank.is-static .wb-blank__icon {
+  color: var(--wb-card-muted);
+}
+
+/* ---------------------------------------------------------------------------
+ * Already signed
+ * ------------------------------------------------------------------------ */
+
+.wb-done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-size: calc(0.8125rem * var(--wb-s));
+  line-height: 1.6;
+  text-align: center;
+  color: color-mix(in srgb, var(--wb-ink) 82%, transparent);
+}
+
+.wb-done__tick {
+  flex: 0 0 auto;
+  width: calc(0.875rem * var(--wb-s));
+  height: calc(0.875rem * var(--wb-s));
+}
+
+/* ---------------------------------------------------------------------------
+ * The card being written
+ * ------------------------------------------------------------------------ */
+
+.wb-compose__as {
+  margin-bottom: calc(0.625rem * var(--wb-s));
+  font-size: calc(0.75rem * var(--wb-s));
+  color: var(--wb-card-muted);
+  overflow-wrap: anywhere;
+}
+
+.wb-compose__as strong {
+  font-weight: 600;
+  color: var(--wb-card-ink);
+}
+
+/* A well pressed into the card rather than a box on it. Left-aligned: a
+   guest writes from the start of the line, even into a centred card. */
 .wb-field {
   display: block;
   width: 100%;
   border: 0;
-  border-radius: calc(0.875rem * var(--wb-s));
+  border-radius: 0.375rem;
   padding: calc(0.75rem * var(--wb-s));
   font-size: calc(0.9375rem * var(--wb-s));
-  line-height: 1.75;
-  color: var(--wb-ink);
-  background: color-mix(in srgb, var(--wb-tone) 7%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 16%, transparent);
+  line-height: 1.65;
+  text-align: left;
+  color: var(--wb-card-ink);
+  background: color-mix(in srgb, var(--wb-card-ink) 6%, var(--wb-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-card-ink) 18%, transparent);
   resize: none;
   transition: box-shadow 200ms ease;
 }
 
 .wb-field::placeholder {
-  color: color-mix(in srgb, var(--wb-ink) 42%, transparent);
+  color: var(--wb-card-muted);
 }
 
-/* Focus is said with light, not movement. The field used to lift and scale on
-   focus, which on a phone lands in the same frames as the keyboard's own
-   slide-up — the field moved twice at once — and a transform on a focused text
-   field resamples its glyphs, visible on Khmer diacritics at this size. */
+/* Focus is said with light, not movement: a field that moves on focus lands
+   in the same frames as the phone keyboard's own slide-up. */
 .wb-field:focus {
   outline: none;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 46%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--wb-tone) 12%, transparent);
+    inset 0 0 0 1.5px color-mix(in srgb, var(--wb-card-ink) 60%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--wb-card-ink) 14%, transparent);
 }
 
 .wb-field.is-khmer {
@@ -1470,95 +1567,255 @@ onUnmounted(() => {
 }
 
 .wb-field.is-invalid {
-  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.45);
+  box-shadow: inset 0 0 0 1.5px var(--wb-danger);
 }
 
-.wb-form__hint {
+.wb-hint {
   margin-top: calc(0.375rem * var(--wb-s));
-  font-size: calc(0.6875rem * var(--wb-s));
+  font-size: calc(0.75rem * var(--wb-s));
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--wb-ink) 50%, transparent);
+  color: var(--wb-card-muted);
 }
 
-.wb-form__hint.is-error {
+.wb-hint.is-error {
   text-align: left;
-  color: #dc2626;
+  color: var(--wb-danger);
 }
 
-.wb-submit {
-  display: block;
-  width: 100%;
+.wb-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(0.5rem * var(--wb-s));
+}
+
+.wb-compose .wb-actions {
   margin-top: calc(0.75rem * var(--wb-s));
+}
+
+/* ---------------------------------------------------------------------------
+ * Buttons on a card
+ *
+ * The solid one is the card's own text colour with the card as its label:
+ * whatever the template, the pair already reads at 4.5:1.
+ * ------------------------------------------------------------------------ */
+
+.wb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
   min-height: calc(2.75rem * var(--wb-s));
-  padding: calc(0.625rem * var(--wb-s)) 1rem;
+  padding: 0 calc(1.125rem * var(--wb-s));
   border: 0;
   border-radius: 999px;
-  background: var(--wb-tone);
-  color: #ffffff;
   font-size: calc(0.875rem * var(--wb-s));
   font-weight: 600;
-  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 8px 20px -12px color-mix(in srgb, var(--wb-tone) 90%, transparent);
   transition:
     transform 140ms var(--wb-ease),
+    background-color 160ms ease,
     opacity 160ms ease;
 }
 
-.wb-submit:active:not(:disabled) {
-  transform: scale(0.98);
+.wb-btn--grow {
+  flex: 1 1 auto;
 }
 
-.wb-submit:disabled {
+.wb-btn--solid {
+  background: var(--wb-card-ink);
+  color: var(--wb-surface);
+}
+
+.wb-btn--ghost {
+  background: transparent;
+  color: var(--wb-card-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-card-ink) 30%, transparent);
+}
+
+.wb-btn--danger {
+  color: var(--wb-danger);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-danger) 45%, transparent);
+}
+
+.wb-btn--sm {
+  min-height: calc(2.5rem * var(--wb-s));
+  padding: 0 calc(0.875rem * var(--wb-s));
+  font-size: calc(0.8125rem * var(--wb-s));
+}
+
+.wb-btn__icon {
+  width: calc(0.875rem * var(--wb-s));
+  height: calc(0.875rem * var(--wb-s));
+}
+
+.wb-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.wb-btn:focus-visible {
+  outline: 2px solid var(--wb-card-ink);
+  outline-offset: 2px;
+}
+
+.wb-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* ---------------------------------------------------------------------------
- * Notices — one line each, never a padded block
- * ------------------------------------------------------------------------ */
-
-.wb-note {
-  padding-block: calc(0.5rem * var(--wb-s));
-  font-size: calc(0.8125rem * var(--wb-s));
-  line-height: 1.7;
-  text-align: center;
-  color: color-mix(in srgb, var(--wb-ink) 75%, transparent);
+.wb-btn .wb-spinner {
+  border-color: color-mix(in srgb, currentColor 40%, transparent);
+  border-top-color: transparent;
 }
 
-.wb-note--done {
+/* ---------------------------------------------------------------------------
+ * A blessing
+ * ------------------------------------------------------------------------ */
+
+/* The guest's own card makes room above the message for the corner marks. */
+.wb-wish.is-mine {
+  padding-top: calc(2.75rem * var(--wb-s));
+}
+
+.wb-wish__text {
+  font-size: calc(0.9375rem * var(--wb-s));
+  line-height: 1.7;
+  overflow-wrap: break-word;
+  white-space: pre-line;
+}
+
+.wb-wish__text.is-khmer {
+  font-size: calc(0.875rem * var(--wb-s));
+  line-height: 2;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+.wb-sign {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: 0.625rem;
+  min-width: 0;
+  margin-top: calc(0.875rem * var(--wb-s));
 }
 
-.wb-note__tick {
+.wb-sign__rule {
   flex: 0 0 auto;
-  width: calc(0.875rem * var(--wb-s));
-  height: calc(0.875rem * var(--wb-s));
-  opacity: 0.7;
+  width: calc(1.25rem * var(--wb-s));
+  height: 1px;
+  background: var(--wb-frame);
 }
 
-.wb-note-stack .wb-note {
-  padding-bottom: 0;
+.wb-sign__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--wb-signature-font);
+  font-size: calc(0.9375rem * var(--wb-s));
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--wb-card-ink);
+}
+
+.wb-you {
+  position: absolute;
+  top: calc(0.9375rem * var(--wb-s));
+  left: calc(0.9375rem * var(--wb-s));
+  padding: 0.125em 0.5em;
+  border-radius: 999px;
+  background: var(--wb-card-ink);
+  color: var(--wb-surface);
+  font-size: calc(0.625rem * var(--wb-s));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/* 40px, tucked into the frame's top-right corner. */
+.wb-wish__more {
+  position: absolute;
+  top: calc(0.5rem * var(--wb-s));
+  right: calc(0.5rem * var(--wb-s));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(2.5rem * var(--wb-s));
+  height: calc(2.5rem * var(--wb-s));
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--wb-card-muted);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.wb-wish__more[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--wb-card-ink) 10%, transparent);
+  color: var(--wb-card-ink);
+}
+
+.wb-wish__more:focus-visible {
+  outline: 2px solid var(--wb-card-ink);
+  outline-offset: -2px;
+}
+
+.wb-wish__more-icon {
+  width: calc(1.125rem * var(--wb-s));
+  height: calc(1.125rem * var(--wb-s));
+}
+
+.wb-wish__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: calc(0.5rem * var(--wb-s));
+  margin-top: calc(0.875rem * var(--wb-s));
+  animation: wbActionsIn 180ms var(--wb-ease) both;
+}
+
+@keyframes wbActionsIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ---------------------------------------------------------------------------
- * Seams
+ * Editing your own blessing
  * ------------------------------------------------------------------------ */
 
-.wb-seam {
-  height: 1px;
-  margin-block: calc(0.75rem * var(--wb-s));
-  background: linear-gradient(90deg, transparent, var(--wb-hair), transparent);
+.wb-edit__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: calc(0.625rem * var(--wb-s));
+}
+
+.wb-edit__count {
+  font-size: calc(0.75rem * var(--wb-s));
+  font-variant-numeric: tabular-nums;
+  color: var(--wb-card-muted);
 }
 
 /* ---------------------------------------------------------------------------
- * Loading and empty
+ * On the invitation's ground: loading, empty
  * ------------------------------------------------------------------------ */
 
 .wb-quiet {
@@ -1568,11 +1825,11 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding-block: calc(1.25rem * var(--wb-s));
   font-size: calc(0.8125rem * var(--wb-s));
-  color: color-mix(in srgb, var(--wb-ink) 65%, transparent);
+  color: color-mix(in srgb, var(--wb-ink) 75%, transparent);
 }
 
 .wb-quiet--sm {
-  padding-block: calc(0.75rem * var(--wb-s));
+  padding-block: calc(0.5rem * var(--wb-s));
 }
 
 .wb-spinner {
@@ -1592,240 +1849,20 @@ onUnmounted(() => {
 }
 
 .wb-empty {
-  text-align: center;
-  padding-block: calc(0.75rem * var(--wb-s)) calc(1.25rem * var(--wb-s));
-}
-
-.wb-orn--sm {
-  margin-bottom: calc(0.625rem * var(--wb-s));
-}
-
-.wb-orn--sm .wb-orn__rule {
-  width: calc(1.75rem * var(--wb-s));
-}
-
-.wb-empty__text {
+  padding-block: calc(0.5rem * var(--wb-s));
   font-size: calc(0.8125rem * var(--wb-s));
   line-height: 1.7;
-  color: color-mix(in srgb, var(--wb-ink) 62%, transparent);
+  text-align: center;
+  color: color-mix(in srgb, var(--wb-ink) 78%, transparent);
 }
 
 /* ---------------------------------------------------------------------------
- * A wish
+ * "Read all"
  *
- * No box, no border, no avatar: an entry on a page, separated from the next by
- * a hairline that fades out at both ends the way the heading's ornament does.
- * Everything drawn here is taken out of the message — on a 390px phone a wish
- * has about 26 Khmer characters of line — so the only two things drawn are the
- * message and the signature.
- * ------------------------------------------------------------------------ */
-
-.wb-wish {
-  position: relative;
-  padding-block: calc(1rem * var(--wb-s));
-}
-
-.wb-wish:first-child {
-  padding-top: calc(0.25rem * var(--wb-s));
-}
-
-.wb-wish:last-child {
-  padding-bottom: calc(0.25rem * var(--wb-s));
-}
-
-.wb-wish + .wb-wish::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--wb-hair-soft) 18%,
-    var(--wb-hair-soft) 82%,
-    transparent
-  );
-}
-
-.wb-wish__text {
-  font-size: calc(0.9375rem * var(--wb-s));
-  line-height: 1.8;
-  color: var(--wb-ink);
-  overflow-wrap: break-word;
-  /* A blessing is often written in short lines. Keeping the guest's own breaks
-     costs nothing and is the difference between a verse and a paragraph. */
-  white-space: pre-line;
-}
-
-.wb-wish__text.is-khmer {
-  font-size: calc(0.875rem * var(--wb-s));
-  line-height: 2.05;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  hyphens: none;
-  -webkit-hyphens: none;
-}
-
-/* ---------------------------------------------------------------------------
- * The signature
- * ------------------------------------------------------------------------ */
-
-.wb-sign {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.125rem 0.375rem;
-  margin-top: calc(0.5rem * var(--wb-s));
-}
-
-.wb-sign__name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: calc(0.8125rem * var(--wb-s));
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: color-mix(in srgb, var(--wb-ink) 80%, transparent);
-}
-
-/* The guest's own wish is the only thing the accent is spent on in this
-   section, and it is spent on the name rather than on a tinted band — a band
-   would put the box back that this design just removed. */
-.wb-wish.is-mine .wb-sign__name {
-  color: var(--wb-accent);
-}
-
-.wb-sign__you {
-  flex: 0 0 auto;
-  padding: 0.1em 0.5em;
-  border-radius: 999px;
-  font-size: calc(0.625rem * var(--wb-s));
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--wb-accent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-accent) 38%, transparent);
-}
-
-.wb-sign__sep,
-.wb-sign__time {
-  flex: 0 0 auto;
-  color: color-mix(in srgb, var(--wb-ink) 46%, transparent);
-}
-
-.wb-sign__time {
-  font-size: calc(0.6875rem * var(--wb-s));
-  font-variant-numeric: tabular-nums;
-}
-
-/* At the trailing edge of the signature, not floating over the message: the
-   old top-right position cost every wish a 28px right inset whether or not the
-   guest owned it. */
-.wb-sign__menu {
-  flex: 0 0 auto;
-  display: inline-flex;
-  margin-right: calc(-0.5rem * var(--wb-s));
-}
-
-.wb-sign__menu-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: calc(2.25rem * var(--wb-s));
-  height: calc(2.25rem * var(--wb-s));
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  cursor: pointer;
-  color: color-mix(in srgb, var(--wb-ink) 55%, transparent);
-  transition:
-    background-color 160ms ease,
-    color 160ms ease;
-}
-
-.wb-sign__menu-icon {
-  width: calc(1rem * var(--wb-s));
-  height: calc(1rem * var(--wb-s));
-}
-
-/* Every hover state in this file is gated on a real pointer. On a touch screen
-   :hover latches after a tap and does not release until something else is
-   tapped, so an ungated one leaves a control lit for as long as the guest
-   keeps reading. */
-@media (hover: hover) and (pointer: fine) {
-  .wb-sign__menu-btn:hover {
-    background: color-mix(in srgb, var(--wb-tone) 12%, transparent);
-    color: var(--wb-ink);
-  }
-}
-
-/* ---------------------------------------------------------------------------
- * Editing your own wish
- * ------------------------------------------------------------------------ */
-
-.wb-edit__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-top: calc(0.5rem * var(--wb-s));
-}
-
-.wb-edit__count {
-  font-size: calc(0.6875rem * var(--wb-s));
-  font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--wb-ink) 46%, transparent);
-}
-
-.wb-edit__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.wb-ghost,
-.wb-solid {
-  border: 0;
-  border-radius: 999px;
-  padding: calc(0.4rem * var(--wb-s)) calc(0.875rem * var(--wb-s));
-  font-size: calc(0.75rem * var(--wb-s));
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    opacity 160ms ease,
-    transform 140ms var(--wb-ease);
-}
-
-.wb-ghost {
-  background: none;
-  color: color-mix(in srgb, var(--wb-ink) 65%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 22%, transparent);
-}
-
-.wb-solid {
-  background: var(--wb-tone);
-  color: #ffffff;
-}
-
-.wb-ghost:active:not(:disabled),
-.wb-solid:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.wb-ghost:disabled,
-.wb-solid:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* ---------------------------------------------------------------------------
- * "Read all wishes"
- *
- * A rule with a label in it rather than a button with a fill: it is a way to
- * continue reading, not a second action competing with Post.
+ * A rule with a label in it rather than a filled button: a way to keep
+ * reading, not a second action competing with Post. The label sits on a tab
+ * of the card's surface, because it is a control and the template's primary
+ * on its own ground can be pink on pink.
  * ------------------------------------------------------------------------ */
 
 .wb-more {
@@ -1833,14 +1870,22 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  margin-top: calc(0.25rem * var(--wb-s));
-  padding: calc(0.875rem * var(--wb-s)) 0.25rem calc(0.25rem * var(--wb-s));
+  min-height: calc(2.75rem * var(--wb-s));
+  padding: 0 0.25rem;
   background: none;
   border: 0;
   cursor: pointer;
-  color: var(--wb-ink);
-  font-size: calc(0.75rem * var(--wb-s));
+  font-size: calc(0.8125rem * var(--wb-s));
   transition: opacity 160ms ease;
+}
+
+.wb-more:focus-visible {
+  outline: none;
+}
+
+.wb-more:focus-visible .wb-more__label {
+  outline: 2px solid var(--wb-ink);
+  outline-offset: 2px;
 }
 
 .wb-more__rule {
@@ -1855,10 +1900,14 @@ onUnmounted(() => {
 }
 
 .wb-more__label {
+  padding: calc(0.4375rem * var(--wb-s)) calc(0.875rem * var(--wb-s));
+  border-radius: 999px;
+  background: var(--wb-surface);
+  color: var(--wb-card-ink);
+  box-shadow: inset 0 0 0 1px var(--wb-frame);
   white-space: nowrap;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  opacity: 0.78;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .wb-more:active {
@@ -1866,34 +1915,73 @@ onUnmounted(() => {
 }
 
 /* ---------------------------------------------------------------------------
- * Error
+ * Error — on the card's surface too, so it reads on every template
  * ------------------------------------------------------------------------ */
 
 .wb-error {
-  margin-top: calc(0.75rem * var(--wb-s));
-  padding: calc(0.625rem * var(--wb-s)) calc(0.875rem * var(--wb-s));
-  border-radius: calc(0.875rem * var(--wb-s));
-  background: rgba(220, 38, 38, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
-  color: #b91c1c;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: calc(0.75rem * var(--wb-s)) calc(0.875rem * var(--wb-s));
+  border-radius: var(--wb-card-radius);
+  background: var(--wb-surface);
+  color: var(--wb-card-ink);
+  box-shadow: var(--wb-card-shadow);
   font-size: calc(0.8125rem * var(--wb-s));
-  line-height: 1.6;
+  line-height: 1.55;
+}
+
+.wb-error__icon {
+  flex: 0 0 auto;
+  width: calc(1rem * var(--wb-s));
+  height: calc(1rem * var(--wb-s));
+  margin-top: 0.1em;
+  color: var(--wb-danger);
+}
+
+/* ---------------------------------------------------------------------------
+ * Hover — gated on a real pointer. On a touch screen :hover latches after a
+ * tap, so an ungated one leaves a control lit for as long as the guest reads.
+ * ------------------------------------------------------------------------ */
+
+@media (hover: hover) and (pointer: fine) {
+  .wb-blank:not(.is-static):hover::before {
+    border-color: var(--wb-card-ink);
+  }
+
+  .wb-btn--solid:hover:not(:disabled) {
+    opacity: 0.88;
+  }
+
+  .wb-btn--ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--wb-card-ink) 8%, transparent);
+  }
+
+  .wb-wish__more:hover {
+    background: color-mix(in srgb, var(--wb-card-ink) 10%, transparent);
+    color: var(--wb-card-ink);
+  }
+
+  .wb-more:hover .wb-more__label {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
 }
 
 /* ---------------------------------------------------------------------------
  * Arrival
  *
- * Wishes settle in sequence rather than all at once — a guestbook is read one
- * entry at a time, and 70ms is short enough that the last one is still arriving
- * as the eye reaches it. Capped at six steps: past that the delay stops reading
- * as rhythm and starts reading as lag.
+ * Cards settle in sequence rather than all at once: a guestbook is read one
+ * entry at a time, and 70ms is short enough that the last one is still
+ * arriving as the eye reaches it. Capped at six steps: past that the delay
+ * stops reading as rhythm and starts reading as lag.
  * ------------------------------------------------------------------------ */
 
-.wb-panel .wb-wish {
+.wb-book .wb-wish {
   opacity: 0;
 }
 
-.wb-panel.is-revealed .wb-wish {
+.wb-book.is-revealed .wb-wish {
   animation: wbWishIn 420ms var(--wb-ease) both;
   animation-delay: calc(min(var(--wish-index, 0), 6) * 70ms);
 }
@@ -1922,8 +2010,8 @@ onUnmounted(() => {
     width: calc(3.5rem * var(--wb-s));
   }
 
-  .wb-panel {
-    padding: calc(1.125rem * var(--wb-s)) calc(1.375rem * var(--wb-s));
+  .wb-card {
+    padding-inline: calc(1.75rem * var(--wb-s));
   }
 
   .wb-wish__text {
@@ -1933,13 +2021,9 @@ onUnmounted(() => {
   .wb-wish__text.is-khmer {
     font-size: calc(0.9375rem * var(--wb-s));
   }
-}
 
-@media (min-width: 1024px) {
-  /* Matches the event info card's shell radius above 1024px, so the sheet
-     reads as part of the same card system. */
-  .wb-panel {
-    border-radius: 1.5rem;
+  .wb-sign__name {
+    font-size: calc(1rem * var(--wb-s));
   }
 }
 
@@ -1967,18 +2051,20 @@ onUnmounted(() => {
  * Accessibility
  * ------------------------------------------------------------------------ */
 
-/* The wishes still fade in — that is what says one arrived — but they no
+/* The cards still fade in — that is what says one arrived — but they no
    longer travel, and they arrive together rather than in sequence. */
 @media (prefers-reduced-motion: reduce) {
-  .wb-panel.is-revealed .wb-wish {
-    animation: wbFadeIn 200ms ease-out both;
+  .wb-book.is-revealed .wb-wish {
+    animation: wbFadeIn 150ms ease-out both;
     animation-delay: 0ms;
   }
 
-  .wb-trigger:active,
-  .wb-submit:active,
-  .wb-ghost:active,
-  .wb-solid:active,
+  .wb-wish__actions {
+    animation: wbFadeIn 150ms ease-out both;
+  }
+
+  .wb-blank:active,
+  .wb-btn:active,
   .wb-more:active {
     transform: none;
   }
@@ -1993,25 +2079,22 @@ onUnmounted(() => {
   }
 }
 
-/* Frostier, not blurrier: the sheet keeps the template's colour but stops
-   being a window. */
-@media (prefers-reduced-transparency: reduce) {
-  .wb-panel {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: color-mix(in srgb, var(--wb-tone) 12%, #ffffff);
-  }
-}
-
 @media (prefers-contrast: more) {
-  .wb-panel {
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 55%, transparent);
+  .wb-card::before,
+  .wb-blank::before {
+    border-color: var(--wb-card-ink);
   }
 
-  .wb-sign__name,
-  .wb-sign__time,
-  .wb-note,
-  .wb-empty__text {
+  .wb-blank__sub,
+  .wb-hint,
+  .wb-edit__count,
+  .wb-compose__as {
+    color: var(--wb-card-ink);
+  }
+
+  .wb-done,
+  .wb-empty,
+  .wb-quiet {
     color: var(--wb-ink);
   }
 }
@@ -2035,71 +2118,13 @@ onUnmounted(() => {
  * showcase's own text voice rather than in a display face drawn for a name at
  * 40px.
  *
- * What this replaced: secondaryFont || currentFont on roughly thirty
- * elements here. A template whose secondary face is Latin-only (Great Vibes,
- * Cormorant) left every Khmer wish to the operating system - Khmer UI on
- * Windows, Noto Sans Khmer on Android, Khmer Sangam MN on iOS. One wish, three
- * faces, none of them chosen by anyone. A Khmer display face failed the same
- * way in reverse, and neither is drawn for a 300-character paragraph at 14px.
- *
  * The heading is deliberately NOT included. It is a sibling of the Agenda and
  * RSVP headings and keeps primaryFont through its own inline style, which
  * outranks this rule - making it the one section heading in a different face
  * would trade this inconsistency for a worse one.
- *
- * Unscoped for the same reason the menu rules below are: the options menu is
- * teleported to <body>, and the guest's own name renders inside it.
  * ------------------------------------------------------------------------- */
 #comment-section,
-#comment-section :is(input, textarea, button, select),
-.comment-dropdown-menu,
-.comment-dropdown-menu button {
+#comment-section :is(input, textarea, button, select) {
   font-family: 'Karla', 'Kantumruy Pro', system-ui, sans-serif;
-}
-
-/* Teleported dropdown menu styles - must be unscoped to affect teleported content */
-.comment-dropdown-menu {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* Small laptops dropdown sizing */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  .comment-dropdown-menu {
-    min-width: 70px !important;
-    padding: 0.25rem 0 !important;
-    border-radius: 0.5rem !important;
-  }
-
-  .comment-dropdown-menu button {
-    padding: 0.3rem 0.5rem !important;
-    font-size: 0.5rem !important;
-    gap: 0.25rem !important;
-  }
-
-  .comment-dropdown-menu button svg {
-    width: 0.5rem !important;
-    height: 0.5rem !important;
-  }
-}
-
-/* Medium laptops dropdown sizing */
-@media (min-width: 1366px) and (max-width: 1535px) {
-  .comment-dropdown-menu {
-    min-width: 75px !important;
-    padding: 0.28rem 0 !important;
-    border-radius: 0.56rem !important;
-  }
-
-  .comment-dropdown-menu button {
-    padding: 0.34rem 0.56rem !important;
-    font-size: 0.56rem !important;
-    gap: 0.28rem !important;
-  }
-
-  .comment-dropdown-menu button svg {
-    width: 0.56rem !important;
-    height: 0.56rem !important;
-  }
 }
 </style>

@@ -6,8 +6,12 @@
     class="agenda-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
     :class="{ 'animate-active': isVisible }"
   >
-    <!-- Header -->
-    <div class="text-center mb-4 sm:mb-5 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-6 desktop:mb-5">
+    <!-- Header. `story-title`: comes into focus with the scroll
+         (scroll-story.css), while its words write themselves at the reading
+         line. -->
+    <div
+      class="story-title text-center mb-4 sm:mb-5 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-6 desktop:mb-5"
+    >
       <h2
         :class="[
           // Size and leading come from `.agenda-header` below, on the one
@@ -201,7 +205,7 @@ import { useTextEffect, useTextEffectMarkInk } from '@/composables/showcase/useT
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '@/composables/showcase/useScrollProgress'
 import { useIconLibraryStore } from '@/stores/iconLibrary'
 import {
   splitToWords,
@@ -625,7 +629,9 @@ const requestDateChange = () => {
 
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 const WORD_ANIMATION_DURATION = 0.2
-const BOUNCE_ANIMATION_DURATION = 0.5
+// How far into the day tray's 0.5s bounce the list starts: once the tray has
+// visibly begun to land, so the two still read in order.
+const CARDS_AFTER_TABS = 0.15
 
 const containerRef = ref<HTMLElement | null>(null)
 const isVisible = ref(false)
@@ -633,11 +639,11 @@ let observer: IntersectionObserver | null = null
 
 const setupObserver = () => {
   observer?.disconnect()
-  observer = new IntersectionObserver((entries) => {
+  observer = createShowcaseRevealObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) isVisible.value = true
     })
-  }, showcaseRevealObserverInit())
+  })
   if (containerRef.value) observer.observe(containerRef.value)
 }
 
@@ -655,12 +661,18 @@ const animationDelays = computed(() => {
   const header = afterWords(headerWords.value)
   const subDescription = afterWords(subHeaderWords.value)
   const tabs = currentDelay
-  currentDelay += BOUNCE_ANIMATION_DURATION + ELEMENT_GAP
+  // The list follows the day tray in rather than waiting for it to settle.
+  // Waiting for the whole bounce held every item back ~1.4s after the section
+  // reached the reading line, so a guest scrolling at reading speed met a
+  // titled section with nothing under it — the one place the invitation read
+  // as unfinished rather than unfolding.
+  const cards = tabs + CARDS_AFTER_TABS
 
-  return { header, subDescription, tabs, cards: currentDelay, description: currentDelay }
+  return { header, subDescription, tabs, cards, description: cards }
 })
 
-// Gates the list so items only appear after the header and tabs have animated.
+// Gates the list so items only appear once the header has written itself and
+// the day tray has begun to land.
 const hasRevealed = ref(false)
 const isInitialReveal = ref(false)
 let revealTimer: number | null = null

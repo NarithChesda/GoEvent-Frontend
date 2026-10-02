@@ -2,9 +2,10 @@
   <div
     class="dress-code-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
   >
-    <!-- Header -->
+    <!-- Header. `story-*` classes: the scroll story's roles (scroll-story.css),
+         inert outside the showcase's scroller. -->
     <div
-      class="section-header text-center mb-5 sm:mb-6 laptop-sm:mb-3 laptop-md:mb-3 laptop-lg:mb-4 desktop:mb-4"
+      class="section-header story-title text-center mb-5 sm:mb-6 laptop-sm:mb-3 laptop-md:mb-3 laptop-lg:mb-4 desktop:mb-4"
     >
       <h2
         :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
@@ -27,18 +28,25 @@
          both apply to the guest reading this, so neither is hidden behind the
          other: the period is a heading, not a control. -->
     <div class="dress-code-body" :style="{ '--primary-color': primaryColor }">
-      <section v-for="period in timePeriodGroups" :key="period.timePeriod" class="dcd-band">
+      <!-- Each period is a scene of its own: it rises in as the guest reaches
+           it, its heading's rules drawing open, rather than arriving with the
+           section title a screen above it. -->
+      <section
+        v-for="period in timePeriodGroups"
+        :key="period.timePeriod"
+        class="dcd-band story-scene"
+      >
         <!-- Drawn only when there is more than one period. Over a single
              `All Day` band it would label the only thing on screen. -->
         <div v-if="timePeriodGroups.length > 1" class="dcd-band__head">
-          <span class="dcd-band__rule" aria-hidden="true" />
+          <span class="dcd-band__rule story-rule story-rule--lead" aria-hidden="true" />
           <span
             class="dcd-band__label"
             :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
           >
             {{ period.label }}
           </span>
-          <span class="dcd-band__rule" aria-hidden="true" />
+          <span class="dcd-band__rule story-rule story-rule--trail" aria-hidden="true" />
         </div>
 
         <component

@@ -1052,8 +1052,8 @@ export interface HostInfoDesignConfig {
  *                date designs, which are drawn in the same language — the glass
  *                panel reads as a different material stacked under them.
  * - `frosted`  — one translucent sheet in the template's own tone, drawn to the
- *                same recipe as the guestbook's `.wb-panel` and the gift page's
- *                `.pay-sheet`: a single blurred layer, hairline seams that fade
+ *                same recipe as the gift page's `.pay-sheet` (and the guestbook's
+ *                old `.wb-panel`): a single blurred layer, hairline seams that fade
  *                at both ends rather than drawn dividers, and ink rather than
  *                white type. `glass` predates both of those sections and is a
  *                heavier material than either — a 2px white border over a

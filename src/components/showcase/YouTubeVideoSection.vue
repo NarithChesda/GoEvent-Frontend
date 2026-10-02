@@ -1,7 +1,8 @@
 <template>
   <div v-if="youtubeEmbedLink" class="mb-8">
-    <!-- Video Header -->
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+    <!-- Video Header. `story-title`: comes into focus with the scroll
+         (scroll-story.css). -->
+    <div class="story-title text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
         :class="[
           'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize video-header',
