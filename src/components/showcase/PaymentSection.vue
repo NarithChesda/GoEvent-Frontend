@@ -509,10 +509,10 @@ onUnmounted(() => {
 /* ---------------------------------------------------------------------------
  * The sheet
  *
- * The one element in this section that is really glass — same recipe as the
- * guestbook's `.wb-panel`, deliberately identical rather than merely similar:
- * they sit two sections apart in the same scroller and any drift between them
- * reads as one of the two being wrong.
+ * The one element in this section that is really glass. It was drawn to the
+ * guestbook's old `.wb-panel` recipe, deliberately identical rather than merely
+ * similar; the guestbook has since become blessing cards (CommentSection.vue),
+ * and this recipe now lives on here and in EventInfo's `frosted` card.
  *
  * The blur is not decorative: when a template turns the card's own glass off
  * (`display_liquid_glass_background: false`), this sheet is all that stands

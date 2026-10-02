@@ -64,6 +64,7 @@
         :accent-color="accentColor"
         :background-color="backgroundColor"
         :template-color="templateColor"
+        :blur-effect-color="blurEffectColor"
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"

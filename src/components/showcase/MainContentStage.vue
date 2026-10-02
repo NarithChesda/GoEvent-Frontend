@@ -648,6 +648,7 @@
                     :secondary-color="secondaryColor"
                     :accent-color="accentColor"
                     :background-color="backgroundColor"
+                    :ground-color="templateColor || blurEffectColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
                     :event-texts="eventTexts"
@@ -856,6 +857,12 @@ interface Props {
   accentColor: string
   backgroundColor?: string
   templateColor?: string | null
+  /**
+   * The template's `blur-effect` colour. With `templateColor`, the only two
+   * colours that say what the template's base is (`backgroundColor` is
+   * usually the primary itself); the guestbook draws its cards in that base.
+   */
+  blurEffectColor?: string | null
   currentFont: string
   primaryFont?: string
   secondaryFont?: string

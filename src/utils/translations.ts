@@ -148,6 +148,12 @@ export const rsvpTranslations: Record<
     comment_compose_cta: string
     comment_compose_cta_funeral: string
     comment_show_all: string
+    comment_options: string
+    comment_edit: string
+    comment_delete: string
+    comment_cancel: string
+    comment_save: string
+    comment_saving: string
 
     // Payment section
     payment_wedding_gift: string
@@ -371,6 +377,12 @@ export const rsvpTranslations: Record<
     comment_compose_cta: 'Write your wish',
     comment_compose_cta_funeral: 'Leave a message',
     comment_show_all: 'Read all wishes',
+    comment_options: 'Options',
+    comment_edit: 'Edit',
+    comment_delete: 'Delete',
+    comment_cancel: 'Cancel',
+    comment_save: 'Save',
+    comment_saving: 'Saving…',
 
     // Payment section
     payment_wedding_gift: 'Wedding Gift',
@@ -592,6 +604,12 @@ export const rsvpTranslations: Record<
     comment_compose_cta: 'សរសេរសារជូនពរ',
     comment_compose_cta_funeral: 'ផ្ញើសាររំលែកទុក្ខ',
     comment_show_all: 'អានសារជូនពរទាំងអស់',
+    comment_options: 'ជម្រើស',
+    comment_edit: 'កែប្រែ',
+    comment_delete: 'លុប',
+    comment_cancel: 'បោះបង់',
+    comment_save: 'រក្សាទុក',
+    comment_saving: 'កំពុងរក្សាទុក…',
 
     // Payment section
     payment_wedding_gift: 'ចំណងដៃ',
@@ -813,6 +831,12 @@ export const rsvpTranslations: Record<
     comment_compose_cta: '写下您的祝福',
     comment_compose_cta_funeral: '留下悼念',
     comment_show_all: '阅读全部祝福',
+    comment_options: '选项',
+    comment_edit: '编辑',
+    comment_delete: '删除',
+    comment_cancel: '取消',
+    comment_save: '保存',
+    comment_saving: '保存中…',
 
     // Payment section
     payment_wedding_gift: '结婚礼品',

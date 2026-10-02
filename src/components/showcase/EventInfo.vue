@@ -4064,8 +4064,9 @@ const infoInnerStyle = computed(() => {
    showcase. It was drawn before the guestbook and the gift page
    were rebuilt, and it is heavier than either — a 2px solid
    white border around a 60%-alpha fill, with white type on it.
-   Those two sections now share one recipe (`.wb-panel`,
-   `.pay-sheet`): a single blurred layer tinted with the
+   Those two sections shared one recipe (`.pay-sheet`, and the
+   guestbook's `.wb-panel` until it became blessing cards): a
+   single blurred layer tinted with the
    template's own background, ink instead of white, and hairlines
    that fade out at both ends instead of drawn dividers. Scrolled
    past in one pass, the invitation therefore shows two different
