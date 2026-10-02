@@ -147,18 +147,11 @@
         that way) and a price they set themselves — so the promise here is
         wholesale and margin, never white-label.
 
-        The headline is a ladder rather than a price: free to start, better
-        the more you commit. It opens on the free events because cost is the
-        first objection a shop raises, and lands on the pack because that is
-        the upside. Everything else the old headline carried (your own price,
-        your logo, no account for the customer) is one step down, in the
-        subtitle and in "What you get".
-
-        It names the pack without pricing it, and that is fine: the packs still
-        exist, they are just quoted on `/credits` now. The clause that used to
-        end the paragraph — "which is also the order the pricing rail is built
-        in" — is what the rail's removal invalidated, and it is the only thing
-        here that had to change.
+        The headline is the offer in the order a partner meets it: two events
+        free, then 50% off every event after. It opens on the gift because cost
+        is the first objection a shop raises, and lands on the discount because
+        that is what keeps paying. Packs are not in it — they are the third
+        rung, and the page names them without a rate (see `PARTNER_OFFER`).
 
         Each of the two spans has to fit on ONE line, or the hero reads as a
         paragraph in display type. The budget is ~18 characters, not ~22: the
@@ -166,7 +159,7 @@
         max-w-6xl (~456px) — narrower than the whole of a 375px phone — which
         is why the 5xl step waits for `xl` and its 7/12 of a wider container.
       -->
-      <section class="relative overflow-hidden pt-8 sm:pt-12 lg:pt-16">
+      <section class="relative overflow-clip pt-8 sm:pt-12 lg:pt-16">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <div class="grid items-center gap-7 sm:gap-9 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-0">
             <div class="lg:col-span-6 lg:col-start-1 lg:row-start-1 xl:col-span-7">
@@ -348,27 +341,49 @@
                 <button
                   type="button"
                   class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-base"
-                  @click="scrollToSteps"
+                  @click="scrollToOffer"
                 >
                   {{ t('partners.hero.ctaSecondary') }}
                   <ArrowDown class="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
 
-              <!-- The three objections a shop owner raises before reading on,
-                   answered in one line each. A list, not chips: chips would be
-                   a fourth shape in a viewport that already has two buttons. -->
+              <!--
+                The offer, as three figures — the page's whole argument about
+                money, stated once at the size a glance reads, then shown in full
+                by the two sections under the hero (the gift, then pay as you
+                go). It replaced a tick list of the same facts in sentences, and
+                the change is the point: "2", "50%" and "$0" are what a shop
+                owner repeats to whoever they ask about this, so they are set as
+                figures rather than buried in a line each.
+
+                A ledger, not three stat cards: hairlines and type do the
+                grouping, so the hero still has exactly two objects in it — the
+                fan and the gradient button. The figures stay slate-900; colour
+                here would be a second gradient object in the first viewport.
+
+                Three columns at every width. The figures are one to three
+                characters, so they fit a 320px phone; only the labels wrap, and
+                they are allowed to.
+              -->
               <ul
                 data-reveal
-                class="hero-proof mt-7 max-w-xl space-y-2.5 border-t border-slate-200 pt-5 sm:mt-8 sm:pt-6"
+                class="hero-ledger mt-7 grid max-w-xl grid-cols-3 border-t border-slate-200 pt-5 sm:mt-8 sm:pt-6"
+                :aria-label="t('partners.hero.ledgerLabel')"
               >
                 <li
-                  v-for="key in HERO_PROOF"
+                  v-for="key in HERO_LEDGER"
                   :key="key"
-                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
+                  class="min-w-0 border-l border-slate-200 px-3 first:border-l-0 first:pl-0 sm:px-5"
                 >
-                  <Check class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2ecc71]" aria-hidden="true" />
-                  {{ t(`partners.hero.proof.${key}`) }}
+                  <span
+                    class="block text-2xl font-bold tabular-nums tracking-tight text-slate-900 sm:text-3xl"
+                  >
+                    {{ t(`partners.hero.ledger.${key}.figure`) }}
+                  </span>
+                  <span class="mt-1 block text-xs leading-snug text-slate-600 sm:text-sm">
+                    {{ t(`partners.hero.ledger.${key}.label`, offer) }}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -377,11 +392,294 @@
       </section>
 
       <!--
-        2. STEPS — three columns, no cards. Nothing here is a separable object,
+        2. THE GIFT — the two free events, presented as what they are.
+
+        A voucher, because that is the object a shop owner already knows a gift
+        by: a face value, a stub, a perforation. "Two free events" in a sentence
+        reads as a trial; the same offer printed on a gift card reads as
+        something handed over. It is also a genuinely separable object, which is
+        what earns it a shape of its own on a page that otherwise avoids cards.
+
+        It is this viewport's gradient object, so nothing else in the section is
+        coloured. The face value is the voucher's biggest type because a gift
+        card's denomination always is, and it says "up to" because $170 is two
+        events at the dearest plan a free event covers — `PARTNER_OFFER`, never
+        typed into the copy.
+
+        Centred, between the split hero above and the split price slip below: a
+        third split row in a row is how this page lost its joints before, and a
+        centred object between two of them reads as the pause it is.
+      -->
+      <section id="offer" ref="offerRef" class="scroll-mt-6 bg-slate-50 py-14 sm:py-20 lg:py-28">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
+          <header data-reveal class="mx-auto max-w-2xl text-center">
+            <h2
+              class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+            >
+              {{ t('partners.gift.title') }}
+            </h2>
+            <p class="mt-3 text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
+              {{ t('partners.gift.subtitle') }}
+            </p>
+          </header>
+
+          <!--
+            The voucher. Landscape at every width, because a gift card is — and
+            because that keeps the perforation vertical, where its position is
+            the stub's fixed width rather than a height the copy decides. The
+            notches are cut with a mask (see `.voucher`), so the shadow on the
+            wrapper follows them instead of drawing a rectangle behind two holes.
+          -->
+          <div
+            data-reveal
+            style="--reveal-delay: calc(var(--stagger) * 1); --reveal-lift: 24px"
+            class="voucher-lift mx-auto mt-10 max-w-xl sm:mt-12 lg:max-w-2xl"
+          >
+            <div
+              class="voucher relative isolate grid overflow-hidden bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white"
+            >
+              <div
+                class="cta-sheen pointer-events-none absolute inset-0 -z-10"
+                aria-hidden="true"
+              ></div>
+              <div
+                class="voucher__shine pointer-events-none absolute inset-y-0 left-0 -z-10"
+                aria-hidden="true"
+              ></div>
+
+              <div class="min-w-0 px-5 py-6 sm:px-8 sm:py-8">
+                <p class="flex items-center gap-2 text-sm font-semibold">
+                  <span
+                    class="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-white/20"
+                  >
+                    <Gift class="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  {{ t('partners.gift.voucher.label') }}
+                </p>
+                <p class="mt-6 sm:mt-8">
+                  <span class="block text-sm font-medium">
+                    {{ t('partners.gift.voucher.worth') }}
+                  </span>
+                  <span
+                    class="mt-1 block text-5xl font-bold leading-none tracking-tight tabular-nums sm:text-7xl lg:text-8xl"
+                  >
+                    {{ offer.worth }}
+                  </span>
+                </p>
+                <p class="mt-5 text-balance text-base font-semibold sm:text-lg">
+                  {{ t('partners.gift.voucher.title') }}
+                </p>
+                <p class="mt-1 text-sm font-medium leading-relaxed text-white/90">
+                  {{ t('partners.gift.voucher.note') }}
+                </p>
+              </div>
+
+              <div
+                class="voucher__stub relative flex flex-col items-center justify-center gap-1 px-3 text-center"
+              >
+                <span class="text-base font-bold sm:text-2xl">
+                  {{ t('partners.gift.voucher.count') }}
+                </span>
+                <span class="text-sm font-medium leading-snug">
+                  {{ t('partners.gift.voucher.each', offer) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!--
+            What the reader asks the moment they see a free offer — what is the
+            catch — answered in three facts. Ruled columns, not cards, so the
+            voucher stays the only object in the section. A row with its icon on
+            the leading edge on a phone, where three centred paragraphs stacked
+            would each start at a different x.
+          -->
+          <ul class="mx-auto mt-10 grid max-w-4xl gap-6 sm:mt-14 sm:grid-cols-3 sm:gap-0">
+            <li
+              v-for="(fact, i) in GIFT_FACTS"
+              :key="fact.key"
+              data-reveal
+              :style="{ '--reveal-delay': `calc(var(--stagger) * ${i})` }"
+              class="flex gap-3 sm:block sm:border-l sm:border-slate-200 sm:px-6 sm:text-center sm:first:border-l-0"
+            >
+              <component
+                :is="fact.icon"
+                class="mt-0.5 h-5 w-5 flex-none text-slate-400 sm:mx-auto sm:mt-0"
+                aria-hidden="true"
+              />
+              <div class="min-w-0">
+                <h3 class="text-base font-semibold text-slate-900 sm:mt-3">
+                  {{ t(`partners.gift.facts.${fact.key}.title`) }}
+                </h3>
+                <p class="mt-1 text-sm leading-relaxed text-slate-600">
+                  {{ t(`partners.gift.facts.${fact.key}.body`) }}
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!--
+        3. PAY AS YOU GO — the rung after the gift, and the reason a partner
+        never has to stock up before they have a customer.
+
+        The heading is the promise ("start without spending") and the slip is
+        the proof, drawn as the arithmetic a shop owner would otherwise do on
+        their phone's calculator: what the customer pays at our retail price,
+        and the two halves it splits into once a partner activates it at 50%.
+        The halving is the one animation in the section and it is not
+        decoration — the bar arrives at full price and visibly drops to half,
+        which IS the claim.
+
+        A worked example rather than a rate card: one plan, named, at its real
+        retail price (`PARTNER_OFFER`). Packs get a sentence and no figure — their
+        rates are bespoke and stay behind `is_partner` on /credits, which this
+        page must not link to (the e2e suite pins that).
+
+        No gradient object here: the voucher above is one, and on a tall screen
+        the two can share a viewport. The sticker is slate-900, the page's
+        quiet "look here", and the "you keep" half is a brand tint, which reads
+        as texture rather than as a second object.
+
+        DOM order is the phone's — heading, slip, packs — and explicit grid
+        placement at `lg` puts the slip in the right column across both rows,
+        the same technique the product section uses.
+      -->
+      <section class="py-14 sm:py-20 lg:py-28">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
+          <div class="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-8 xl:gap-x-16">
+            <header data-reveal class="max-w-xl lg:col-span-5 lg:row-start-1 lg:self-end">
+              <h2
+                class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              >
+                {{ t('partners.payg.title') }}
+              </h2>
+              <p class="mt-4 text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
+                {{ t('partners.payg.body') }}
+              </p>
+            </header>
+
+            <div
+              data-reveal
+              style="--reveal-delay: calc(var(--stagger) * 1); --reveal-lift: 20px"
+              class="slip-slot lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1 lg:self-center"
+            >
+              <figure
+                class="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-8"
+              >
+                <!-- The figure says 50% in words beside it; this is its stamp. -->
+                <span class="slip__sticker" aria-hidden="true">
+                  <span class="text-2xl font-bold leading-none tabular-nums sm:text-3xl">
+                    {{ t('partners.hero.ledger.payg.figure') }}
+                  </span>
+                  <span class="mt-1 text-xs font-semibold leading-none">
+                    {{ t('partners.payg.slip.sticker') }}
+                  </span>
+                </span>
+
+                <figcaption class="pr-20 sm:pr-28">
+                  <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {{ t('partners.payg.slip.label') }}
+                  </span>
+                  <span class="mt-1 block text-sm leading-snug text-slate-600">
+                    {{ t('partners.payg.slip.example') }}
+                  </span>
+                </figcaption>
+
+                <dl class="mt-8 flex items-end justify-between gap-4">
+                  <dt class="min-w-0">
+                    <span class="block text-sm font-medium text-slate-700">
+                      {{ t('partners.payg.slip.customerPays') }}
+                    </span>
+                    <span class="block text-xs leading-snug text-slate-500">
+                      {{ t('partners.payg.slip.atRetail') }}
+                    </span>
+                  </dt>
+                  <dd class="text-xl font-semibold tabular-nums text-slate-900 sm:text-2xl">
+                    {{ offer.retail }}
+                  </dd>
+                </dl>
+                <div class="mt-3 h-3 rounded-full bg-slate-200" aria-hidden="true"></div>
+
+                <!-- Two halves of one price, so two equal columns: the dashed
+                     rule between them lands exactly on the bar's split below. -->
+                <dl class="mt-8 grid grid-cols-2">
+                  <div class="min-w-0 pr-3">
+                    <dt class="text-sm font-medium text-slate-700">
+                      {{ t('partners.payg.slip.youPay') }}
+                    </dt>
+                    <dd
+                      class="mt-1 text-3xl font-bold tracking-tight tabular-nums text-slate-900 sm:text-4xl"
+                    >
+                      {{ offer.partnerPrice }}
+                    </dd>
+                  </div>
+                  <div
+                    class="slip__keep min-w-0 border-l border-dashed border-slate-300 pl-3 sm:pl-5"
+                  >
+                    <dt class="text-sm font-medium text-slate-700">
+                      {{ t('partners.payg.slip.youKeep') }}
+                    </dt>
+                    <dd
+                      class="mt-1 text-3xl font-bold tracking-tight tabular-nums text-slate-900 sm:text-4xl"
+                    >
+                      {{ offer.partnerPrice }}
+                    </dd>
+                  </div>
+                </dl>
+                <div
+                  class="relative mt-3 h-3 overflow-hidden rounded-full bg-gradient-to-r from-[#2ecc71]/25 to-[#1e90ff]/25"
+                  aria-hidden="true"
+                >
+                  <div class="slip__pay absolute inset-0 rounded-full bg-slate-900"></div>
+                </div>
+                <p class="mt-3 text-xs leading-relaxed text-slate-500 sm:text-sm">
+                  {{ t('partners.payg.margin') }}
+                </p>
+
+                <dl class="mt-7 grid grid-cols-2 border-t border-slate-200 pt-5">
+                  <div class="min-w-0 pr-3">
+                    <dt class="text-xs text-slate-500 sm:text-sm">
+                      {{ t('partners.payg.slip.upfront') }}
+                    </dt>
+                    <dd class="mt-0.5 text-lg font-semibold tabular-nums text-slate-900">
+                      {{ t('partners.payg.slip.zero') }}
+                    </dd>
+                  </div>
+                  <div class="min-w-0 border-l border-slate-200 pl-3 sm:pl-5">
+                    <dt class="text-xs text-slate-500 sm:text-sm">
+                      {{ t('partners.payg.slip.monthly') }}
+                    </dt>
+                    <dd class="mt-0.5 text-lg font-semibold tabular-nums text-slate-900">
+                      {{ t('partners.payg.slip.zero') }}
+                    </dd>
+                  </div>
+                </dl>
+              </figure>
+            </div>
+
+            <div
+              data-reveal
+              class="max-w-xl border-t border-slate-200 pt-6 lg:col-span-5 lg:col-start-1 lg:row-start-2 lg:self-start"
+            >
+              <h3 class="text-base font-semibold text-slate-900 sm:text-lg">
+                {{ t('partners.payg.packs.title') }}
+              </h3>
+              <p class="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
+                {{ t('partners.payg.packs.body') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--
+        4. STEPS — three columns, no cards. Nothing here is a separable object,
         so a card would be chrome; the oversized slate-200 numerals and a single
         hairline carry the sequence instead.
       -->
-      <section id="how-it-works" ref="stepsRef" class="scroll-mt-20 py-12 sm:py-20 lg:py-28">
+      <section id="how-it-works" class="scroll-mt-20 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
             <h2
@@ -394,7 +692,7 @@
             </p>
           </header>
 
-          <div class="relative mt-12 sm:mt-14">
+          <div class="steps-track relative mt-12 sm:mt-14">
             <!-- The thread the three steps hang from — a sibling of the list, not
                a member of it: an empty <li> here is announced as a fourth step.
                Faded at both ends rather than inset by a computed percentage, so
@@ -411,7 +709,7 @@
                that left three pale slate-300 numerals floating in a column with
                nothing joining them, which reads as three unrelated cards. -->
             <div
-              class="pointer-events-none absolute inset-x-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent md:block"
+              class="steps-thread pointer-events-none absolute inset-x-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent md:block"
               aria-hidden="true"
             ></div>
 
@@ -420,7 +718,7 @@
                 v-for="(key, i) in STEPS"
                 :key="key"
                 data-reveal
-                :style="{ '--reveal-delay': `calc(var(--stagger) * ${i})` }"
+                :style="{ '--reveal-delay': `calc(var(--stagger) * ${i})`, '--step': i }"
                 class="relative flex gap-4 md:block"
               >
                 <!-- The stacked thread's own segment: numeral to numeral, drawn
@@ -429,7 +727,7 @@
                      next marker rather than stopping in the white. -->
                 <span
                   v-if="i < STEPS.length - 1"
-                  class="absolute left-[1.375rem] top-11 bottom-[-1.75rem] w-px bg-slate-200 md:hidden"
+                  class="steps-seg absolute left-[1.375rem] top-11 bottom-[-1.75rem] w-px bg-slate-200 md:hidden"
                   aria-hidden="true"
                 ></span>
 
@@ -440,40 +738,32 @@
                    beside text that wants every pixel, and without it a Khmer
                    heading squeezes the circle into an ellipse. -->
                 <span
-                  class="relative z-10 flex h-11 w-11 flex-none items-center justify-center rounded-full bg-white text-xl font-bold tabular-nums text-slate-300 ring-1 ring-slate-200 md:h-14 md:w-14 md:text-2xl"
+                  class="steps-num relative z-10 flex h-11 w-11 flex-none items-center justify-center rounded-full bg-white text-xl font-bold tabular-nums text-slate-300 ring-1 ring-slate-200 md:h-14 md:w-14 md:text-2xl"
                 >
                   {{ i + 1 }}
                 </span>
 
                 <div class="min-w-0 flex-1 md:contents">
-                  <!-- Heading and, on the one step that has one, how long it
-                   takes — on the same line, because the number *is* the claim
-                   about that step and reading the paragraph should not be the
-                   price of finding it.
-
-                   Inverted to `bg-slate-900` rather than tinted: this section
-                   has no colour at all, and a dark fill is the page's quietest
-                   way of saying "look here". A pill is the loudest thing
-                   available in this section and it is spent once, on the page's
-                   best fact about the work.
-
-                   `flex-wrap` + `gap-y-2` because the row is two languages
-                   wide: at `md` the column is ~260px and the Khmer heading and
-                   label are both longer, so the pill drops under the heading
-                   instead of squeezing it. `whitespace-nowrap` keeps the pill
-                   itself from ever breaking across two lines. -->
-                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2 md:mt-5 md:pt-0">
-                    <h3 class="text-lg font-semibold text-slate-900 sm:text-xl">
-                      {{ t(`partners.steps.${key}.title`) }}
-                    </h3>
-                    <span
-                      v-if="stepTimingKey(key)"
-                      class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold leading-5 tabular-nums text-white"
-                    >
-                      <Clock class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                      {{ t(stepTimingKey(key)) }}
-                    </span>
-                  </div>
+                  <!-- Heading, then what the step costs the partner: money for
+                   the two that cost money, minutes for the one that costs time.
+                   It used to be a dark pill on the build step alone — the
+                   page's best fact about the work. Now that the offer has a
+                   figure for every step it is one quiet line on each, because
+                   three dark pills in a row would be a label pattern and stop
+                   meaning "look here". -->
+                  <h3 class="pt-2 text-lg font-semibold text-slate-900 sm:text-xl md:mt-5 md:pt-0">
+                    {{ t(`partners.steps.${key}.title`) }}
+                  </h3>
+                  <p
+                    class="mt-1.5 flex items-center gap-1.5 text-sm font-semibold tabular-nums text-slate-700"
+                  >
+                    <component
+                      :is="STEP_META[key].icon"
+                      class="h-4 w-4 flex-none text-slate-400"
+                      aria-hidden="true"
+                    />
+                    {{ t(STEP_META[key].label) }}
+                  </p>
 
                   <p class="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
                     {{ t(`partners.steps.${key}.body`) }}
@@ -486,222 +776,71 @@
       </section>
 
       <!--
-        3. PRODUCT — what the partner is actually reselling, and therefore the
-        justification for the retail column above.
+        5. PRODUCT — what the partner is actually reselling, and therefore the
+        justification for the retail price the slip above is worked out from.
 
-        This section used to be eight icons in gradient discs with a paragraph
-        under each: about 170 words describing an invitation, on a page whose
-        one job is to make someone want to sell that invitation. A drawing of a
-        film reel is a placeholder for a picture of the thing. So the argument
-        is now made by three real screenshots of a real invitation, and the
-        features are demoted to the checklist under them — their existing
-        titles, which were already short, with the paragraphs deleted. Show,
-        then list; never list what you have just shown.
+        A SPEC PLATE: the invitation in the middle, what it does on either side.
+        The features are set around it as what they are — properties of that
+        object, in two groups the reader tells apart at a glance: what every
+        guest sees ON the invitation, and what the customer gets BEHIND it. The
+        hairline leaders pointing in at the centre are what make two lists read
+        as one diagram.
 
-        Only one screenshot is on screen at a time, in one phone, rather than
-        three phones side by side: three phones make the reader compare three
-        designs, and these are three parts of the *same* invitation.
+        The centre is three floating pieces of the interface — the link, the
+        reply, the wish (PartnerInvitationMoments) — where it was a phone with
+        three screenshots behind a segmented control. The screenshots were the
+        real thing, but at phone scale the reply form and the wishes were 11px
+        gold type on ivory, and two of the three sat behind a press most readers
+        never made. As cards they are all in view at once, legible, and in both
+        languages; the link carries the one real photograph, because the
+        photograph is what a guest actually sees first in the chat.
+
+        DOM order is the phone's — the cards, then the two groups — and the
+        plate's grid areas move the groups out to the flanks from `lg`.
       -->
-      <section class="bg-slate-50 py-12 sm:py-20 lg:py-28">
+      <section class="bg-slate-50 py-14 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
-          <!--
-            Three blocks, placed explicitly, so the desktop grid and the mobile
-            stack can want different orders without fighting each other.
+          <header data-reveal class="mx-auto max-w-2xl text-center">
+            <h2
+              class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+            >
+              {{ t('partners.product.title') }}
+            </h2>
+            <p class="mt-3 text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
+              {{ t('partners.product.subtitle') }}
+            </p>
+          </header>
 
-            A phone is 2.16 times taller than it is wide, so the picture is
-            ~570px tall while three picker rows are ~190px. Beside the picker
-            alone that left roughly 400px of nothing next to the invitation, and
-            the section read as a screenshot with a little text stranded beside
-            it. The fix is to give that column more to hold rather than to
-            shrink the phone: header, picker and the feature list stack down
-            the left in two grid rows while the phone spans both on the right,
-            which brings the two sides within a few pixels of each other.
-
-            **DOM order is the mobile order, and it is header → phone → picker.**
-            Stacked, the desktop source order would put the picker under the
-            feature list — 230px below the thing it controls, so pressing
-            "The day" changes nothing you can see. Explicit `col-start` /
-            `row-start` at `lg` means the source can be ordered for the phone
-            without `order` utilities having to undo it.
-
-            `grid-cols-1` IS LOAD-BEARING AND MUST NOT BE DROPPED as "the
-            default anyway". A bare `grid` below `lg` has one *auto* track,
-            which is sized to the widest child's min-content and cannot shrink
-            below it — and grid items carry `min-width: auto` besides. The
-            picker column contains the chip rail, whose min-content is the three
-            chips laid end to end because they are `nowrap` and `flex-none`:
-            332px. On a 360px phone the container is 328, so the track came out
-            at 332 and, with the section's own `px-4`, the whole document became
-            364px wide and the page scrolled sideways by four pixels.
-
-            The rail being `overflow-x: auto` did not save it, which is the part
-            worth remembering: a scroll container zeroes its *automatic minimum
-            size* only where that applies to itself — as a flex or grid item.
-            Here it is a plain block child one level down, so its min-content
-            propagates up through the wrapper and lands on the grid item, where
-            `min-width: auto` adopts it. `grid-cols-1` is `minmax(0, 1fr)`,
-            which pins the track's floor at zero and lets the rail do what it
-            was built to do: scroll.
-          -->
-          <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
-            <header data-reveal class="lg:col-span-6 lg:col-start-1 lg:row-start-1">
-              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {{ t('partners.product.eyebrow') }}
-              </p>
-              <h2
-                class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
-              >
-                {{ t('partners.product.title') }}
-              </h2>
-              <p class="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">
-                {{ t('partners.product.subtitle') }}
-              </p>
-            </header>
-
-            <!--
-              All three screenshots are mounted and crossfaded rather than one
-              image element whose source is swapped: swapping the source shows
-              white until the new file decodes, and the first press of every
-              button would flash. Blur carries the fade because without it the
-              eye sees two invitations overlapping rather than one changing.
-            -->
-            <div data-reveal class="lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1">
-              <div class="device mx-auto">
-                <div class="device__screen">
-                  <img
-                    v-for="screen in SCREENS"
-                    :key="screen.key"
-                    :src="screen.src"
-                    :alt="
-                      activeScreen === screen.key
-                        ? t(`partners.product.screens.${screen.key}.body`)
-                        : ''
-                    "
-                    :aria-hidden="activeScreen !== screen.key ? 'true' : undefined"
-                    class="device__shot"
-                    :class="{ 'is-active': activeScreen === screen.key }"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              </div>
+          <div class="plate mt-12 sm:mt-14 lg:mt-16">
+            <div data-reveal style="--reveal-lift: 24px" class="plate__moments min-w-0">
+              <PartnerInvitationMoments />
             </div>
 
-            <div class="lg:col-span-6 lg:col-start-1 lg:row-start-2">
-              <!--
-                The picker, and the caption for whatever is on the glass.
-
-                ONE MARKUP, TWO SHAPES. From `sm` up it is three rows, each
-                carrying its own body line — the desktop design, unchanged, and
-                the right one for a column that has 400px of height to spend
-                beside a phone. Below `sm` the same three become a chip rail and
-                the body line moves out to a single caption underneath.
-
-                The reason is not width, it is height and honesty. Three
-                two-line cards are 230px of a 812px screen spent restating a
-                choice, and only one of those three bodies is ever true of what
-                is on the glass — the other two describe screens the reader
-                cannot see. Stacked, that is three captions for one picture. As
-                a chip rail with one caption it is a control and its answer,
-                which is what it always was.
-
-                The rail bleeds to the viewport edge and pays the padding back
-                inside — a negative margin on the scroller, repaid as its own
-                horizontal padding — so a fourth screen
-                added later scrolls off the edge rather than wrapping into a
-                ragged second row. Three fit a 375px phone in English today and
-                scroll in Khmer, which is exactly the behaviour we want and not
-                a case anyone has to remember to check.
-
-                The state is a `data-active` attribute read by scoped CSS, not
-                two conditional class strings: the chip's chosen state is a
-                filled dark pill and the card's is a white card with a dark
-                border and a filled disc, and those cannot be expressed as one
-                Tailwind ternary that also has to change at a breakpoint.
-
-                Buttons with `aria-pressed`, not a tablist: a tablist owes the
-                reader roving arrow-key focus and a labelled panel, and this is
-                three toggles over one picture — Tab reaches each of them, the
-                pressed state is announced, and nothing is hidden behind a key
-                nobody thinks to press.
-
-                `data-reveal` is on the list, not on each button. Three rows
-                stacked 10px apart cascading one after another is motion nobody
-                can read as a sequence, and the reveal is the wrong thing to
-                hang off an element whose class Vue rewrites on every press.
-              -->
-              <ul
-                data-reveal
-                style="--reveal-delay: calc(var(--stagger) * 1)"
-                class="screen-pick scrollbar-hide -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:block sm:space-y-2 sm:overflow-visible sm:px-0"
-                :aria-label="t('partners.product.screensLabel')"
-              >
-                <li v-for="screen in SCREENS" :key="screen.key" class="flex-none sm:flex-auto">
-                  <button
-                    type="button"
-                    class="screen-pick__btn"
-                    :data-active="activeScreen === screen.key"
-                    :aria-pressed="activeScreen === screen.key"
-                    @click="activeScreen = screen.key"
-                  >
-                    <span class="screen-pick__head">
-                      <!-- The marker is a filled disc rather than a tick: a tick
-                           says "done", and nothing here is completed — one of
-                           three is simply the one on the glass. It is dropped on
-                           the chip, where the whole pill fills instead and a
-                           disc inside it would be the same fact said twice in
-                           24px. -->
-                      <span class="screen-pick__disc" aria-hidden="true">
-                        <component :is="screen.icon" class="h-2.5 w-2.5" />
-                      </span>
-                      <span class="screen-pick__label">
-                        {{ t(`partners.product.screens.${screen.key}.label`) }}
-                      </span>
-                    </span>
-                    <span class="screen-pick__body">
-                      {{ t(`partners.product.screens.${screen.key}.body`) }}
-                    </span>
-                  </button>
-                </li>
-              </ul>
-
-              <!--
-                The chip rail's answer. `min-height` holds two lines so the
-                feature list below never shifts as the caption changes under a
-                reader's own thumb — the caption is the one part of this section
-                that changes on press, and it must not move anything else.
-
-                `aria-live` is deliberately absent: the button already announces
-                its pressed state, and a live region would read the same change
-                a second time.
-              -->
-              <p class="mt-3 min-h-[2.5rem] text-[0.8125rem] leading-snug text-slate-600 sm:hidden">
-                {{ t(`partners.product.screens.${activeScreen}.body`) }}
-              </p>
-
-              <!--
-                The nine features, as a list under the picker rather than nine
-                tiles of their own. No gradient discs: the page's gradient
-                objects are its three "Request partner access" CTAs, and nine
-                more in one grid spent the brand's one saturated colour on a
-                caption.
-              -->
-              <ul
-                data-reveal
-                style="--reveal-delay: calc(var(--stagger) * 2)"
-                class="mt-8 grid gap-x-6 gap-y-2.5 border-t border-slate-200 pt-6 sm:grid-cols-2"
-              >
+            <div
+              v-for="(group, g) in FEATURE_GROUPS"
+              :key="group.key"
+              data-reveal
+              :style="{ '--reveal-delay': `calc(var(--stagger) * ${g + 1})` }"
+              class="plate__group min-w-0"
+              :class="`plate__group--${group.key}`"
+            >
+              <h3 class="plate__heading text-sm font-semibold text-slate-900">
+                {{ t(`partners.product.groups.${group.key}`) }}
+              </h3>
+              <ul class="mt-4 space-y-3 lg:space-y-4">
                 <li
-                  v-for="item in PRODUCT_FEATURES"
+                  v-for="(item, i) in group.items"
                   :key="item.key"
-                  class="flex items-start gap-2 text-[0.8125rem] leading-relaxed text-slate-700"
+                  class="plate__item"
+                  :style="{ '--i': i }"
                 >
-                  <component
-                    :is="item.icon"
-                    class="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400"
-                    aria-hidden="true"
-                  />
-                  {{ t(`partners.product.${item.key}.title`) }}
+                  <span class="plate__disc" aria-hidden="true">
+                    <component :is="item.icon" class="h-4 w-4" />
+                  </span>
+                  <span class="plate__label">
+                    {{ t(`partners.product.${item.key}.title`) }}
+                  </span>
+                  <span class="plate__leader" aria-hidden="true"></span>
                 </li>
               </ul>
             </div>
@@ -716,16 +855,14 @@
             whose job is to make an argument, and it earns its own page instead
             (/partners/templates).
 
-            IT IS CENTRED, AND IT HAS NO RULE ACROSS THE CONTAINER. It had one,
-            and that was the whole problem: a full-bleed hairline is the
-            strongest "new topic" signal a page owns, so the rule said "this is
-            a section" while the shared slate ground said "this is the same
-            one" — and a reader resolves that contradiction as one badly-centred
-            section. It is not a section, so it does not get a section's
-            furniture. Space separates it, and it resolves on the container's
-            own centre line, which is an axis the two-column grid above never
-            uses. A change of alignment is what makes a coda read as a coda, and
-            it costs no ink.
+            IT HAS NO RULE ACROSS THE CONTAINER. It had one, and that was the
+            whole problem: a full-bleed hairline is the strongest "new topic"
+            signal a page owns, so the rule said "this is a section" while the
+            shared slate ground said "this is the same one" — and a reader
+            resolves that contradiction as one badly-centred section. It is not
+            a section, so it does not get a section's furniture: space separates
+            it, and it shares the plate's centre line, so the section reads top
+            to bottom as one column — heading, the invitation, every design.
 
             Nor does it get an eyebrow or a heading of its own. One band, one
             heading; a second one here would be the same claim to sectionhood in
@@ -738,10 +875,11 @@
             on the button rather than on its caption leaves the last thing in
             the section as the thing to do.
 
-            Slate on the button, not the brand gradient: the gradient object in
-            this neighbourhood is the CTA in the next section. Centring it gives
-            it prominence by position, which is the cheaper of the two ways to
-            promote a control and the one that does not spend the brand colour.
+            Slate on the button, not the brand gradient: this is a way to look,
+            not the page's ask, and on a phone the ask is already on screen in
+            the action pill. Centring gives it prominence by position, which is
+            the cheaper way to promote a control and does not spend the brand
+            colour.
           -->
           <div
             data-reveal
@@ -773,7 +911,7 @@
       </section>
 
       <!--
-        4. THE DAY ITSELF — the other half of what a credit buys, and the half
+        6. THE DAY ITSELF — the other half of what a credit buys, and the half
         no screenshot of an invitation can carry.
 
         Pictures, not sentences. A shop owner selling a wedding does not want to
@@ -1048,7 +1186,7 @@
         </div>
       </section>
       <!--
-        5. PARTNER BENEFITS — a spec sheet, not a feature grid: each item is
+        7. PARTNER BENEFITS — a spec sheet, not a feature grid: each item is
         ruled off at the top and carries no icon disc, so it reads as terms
         rather than as marketing, which is the register a business audience
         trusts at this point in the page.
@@ -1077,11 +1215,8 @@
       <section class="py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {{ t('partners.partner.eyebrow') }}
-            </p>
             <h2
-              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.partner.title') }}
             </h2>
@@ -1114,39 +1249,26 @@
       </section>
 
       <!--
-        6. WHAT SHOPS SAY — the proof for the claims directly above it, and it
+        8. WHAT SHOPS SAY — the proof for the claims directly above it, and it
         sits between them and the questions because a reader who has just been
         told what they get is exactly the reader asking who else already has it.
 
-        No cards, and now for a plainer reason than before. The pricing section
-        used to hold the page's only card set, and this one stayed cardless so a
-        wall of shadowed white boxes could not quietly demote it to one card set
-        among several. That section is gone, the FAQ panel below is the last card
-        on the page, and a quote was never a separable object anyway. Each is
-        separated the way the benefits above it are, with a hairline and a
-        column.
+        One review on a stage, every shop on a roster beside it — see
+        PartnerTestimonials.vue. The stage is the one card here, because a
+        review is the one thing in the section a reader is asked to stop and
+        read; the roster is what a shop owner scans for (anyone like me, near
+        me?) and is also the control.
 
-        And no aggregate strip, because a "180 shops on the programme" line
-        would be a second numbers section arguing with the quotes' own figures —
-        which, now that the wholesale rail is gone, are the only numbers this
-        page prints at all. The quotes carry them (a sell price, a card count)
-        inside the sentence that earns them.
-
-        No star rows either. Stars are marketplace furniture: five amber glyphs
-        over every quote is the visual language of a listing with reviews
-        attached, and there were thirty of them on screen at once. What makes a
-        testimonial land is one shop's sentence read properly, which is why the
-        section leads with a single quote at pull-quote size and demotes the
-        rest — see PartnerTestimonials.vue for the rest of the reasoning.
+        No aggregate strip, because a "180 shops on the programme" line would
+        be a figure nobody has given us, and no star rows: stars are
+        marketplace furniture, and what makes a testimonial land is one shop's
+        sentence read properly.
       -->
       <section class="bg-slate-50 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="mb-12 max-w-2xl lg:mb-16">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {{ t('partners.testimonials.eyebrow') }}
-            </p>
             <h2
-              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.testimonials.title') }}
             </h2>
@@ -1160,7 +1282,7 @@
       </section>
 
       <!--
-        7. FAQ — the last informative section and the only interactive one, so
+        9. FAQ — the last informative section and the only interactive one, so
         it earns a shape of its own: a single panel lifted off the page's tinted
         ground, with full-bleed rows inside it.
 
@@ -1189,11 +1311,8 @@
       <section class="border-t border-slate-200 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <header data-reveal class="text-center">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {{ t('partners.faq.eyebrow') }}
-            </p>
             <h2
-              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.faq.title') }}
             </h2>
@@ -1267,7 +1386,7 @@
                     <p
                       class="pb-5 pl-5 pr-6 text-sm leading-relaxed text-slate-600 sm:pb-6 sm:pl-6 sm:pr-20 sm:text-base"
                     >
-                      {{ t(`partners.faq.${key}.a`) }}
+                      {{ t(`partners.faq.${key}.a`, offer) }}
                     </p>
                   </div>
                 </div>
@@ -1278,66 +1397,93 @@
       </section>
 
       <!--
-        8. CLOSING — the page's third and last gradient object, and now also its
-        end. `AppFooter` is gone from here for the reason the top bar is: its
-        nav, its social row and its "explore the app" link all belong to a
-        product this reader has no account for, and on a page that is a pitch
-        they are five ways to leave before the ask. So everything the reader
-        still needs lands in this section or nowhere — the ask, a person to talk
-        to, and the way back.
+        10. CLOSING — the ask, said once more where the decision is made, and
+        also the page's end. `AppFooter` is gone from here for the reason the
+        top bar is: its nav, its social row and its "explore the app" link all
+        belong to a product this reader has no account for, and on a page that
+        is a pitch they are five ways to leave before the ask. So everything the
+        reader still needs lands in this section or nowhere — the ask, a person
+        to talk to, and the way back.
+
+        ON THE PAGE'S OWN GROUND, NOT IN A GRADIENT SLAB. It was a full-width
+        rounded panel of the brand gradient with white type centred on it — the
+        most recognisable close a generated page has — and on this page it
+        broke in two ways. The subtitle was regular-weight white at 90% on the
+        gradient's green end, about 2:1, where DESIGN.md §8 keeps white on the
+        gradient for medium weight and up. And it turned the primary action
+        white: the one button the page exists for was the only "Request partner
+        access" on it not drawn in the brand gradient. The landing page's close
+        was rebuilt the same way for the same reasons, so the two marketing
+        pages now end in one voice.
+
+        The gradient is spent once, on the button — the gradient's first claim
+        anyway — and the phone action pill withdraws as this section arrives,
+        so there is still one gradient object on screen. The two buttons are
+        the hero's pair, class for class: the page asks the same question in
+        the same words at both ends.
+
+        White, not a slate-50 band: below `lg` the layout pads the page's foot
+        by the action pill's inset, and a tinted band would end on a white
+        strip of that height under the last link.
       -->
-      <section ref="closingRef" class="px-4 pb-12 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
-        <div class="mx-auto max-w-4xl lg:max-w-6xl 2xl:max-w-7xl">
+      <section
+        ref="closingRef"
+        class="px-4 pb-12 pt-4 sm:px-6 sm:pb-20 sm:pt-6 lg:px-8 lg:pb-24 lg:pt-8"
+      >
+        <div class="mx-auto flex max-w-2xl flex-col items-center text-center">
+          <!-- The voucher's face value, carried down to the ask: the reader
+               who skimmed past the gift section still learns what the free
+               events are worth in the one place they decide. The hero
+               eyebrow's tinted chip, so it reads as a mark and not a button. -->
+          <p
+            data-reveal
+            class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 px-3.5 py-1.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-900/5"
+          >
+            <Gift class="h-4 w-4 text-slate-500" aria-hidden="true" />
+            {{ t('partners.closing.badge', offer) }}
+          </p>
+          <h2
+            data-reveal
+            style="--reveal-delay: var(--stagger)"
+            class="type-display-sm mt-5 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+          >
+            {{ t('partners.closing.title') }}
+          </h2>
+          <p
+            data-reveal
+            style="--reveal-delay: calc(var(--stagger) * 2)"
+            class="mt-4 max-w-xl text-pretty text-base leading-relaxed text-slate-600 sm:text-lg"
+          >
+            {{ t('partners.closing.subtitle') }}
+          </p>
+
           <div
             data-reveal
-            class="relative isolate overflow-hidden rounded-3xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-14 text-center shadow-xl shadow-slate-900/10 sm:px-10 sm:py-16 lg:py-20"
+            style="--reveal-delay: calc(var(--stagger) * 3)"
+            class="mt-9 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center"
           >
-            <!-- Light inside the one gradient object rather than a second one:
-                 two soft radial washes give the band a lit corner and a shaded
-                 one, so at this size it reads as a surface and not a swatch. -->
-            <div class="cta-sheen pointer-events-none absolute inset-0" aria-hidden="true"></div>
+            <RouterLink
+              to="/partners/apply"
+              class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-[transform,box-shadow,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-xl hover:shadow-emerald-600/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
+            >
+              {{ t('partners.closing.cta') }}
+              <ArrowRight
+                class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </RouterLink>
 
-            <div class="relative">
-              <h2
-                class="type-display-sm mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl"
-              >
-                {{ t('partners.closing.title') }}
-              </h2>
-              <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
-                {{ t('partners.closing.subtitle') }}
-              </p>
-
-              <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <RouterLink
-                  to="/partners/apply"
-                  class="group inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
-                >
-                  {{ t('partners.closing.cta') }}
-                  <ArrowRight
-                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </RouterLink>
-
-                <!--
-                  Given a shape, because it was a ghost: white-on-gradient text
-                  with no edge is the weakest thing in the panel, and this is
-                  the one control for a shop owner who would rather ask a person
-                  than fill in a form. It stays quieter than the primary by fill
-                  — a translucent wash against solid white — rather than by
-                  having no outline at all.
-                -->
-                <a
-                  :href="TELEGRAM_URL"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 py-3.5 text-sm font-medium text-white backdrop-blur-sm transition-[transform,background-color,border-color] duration-200 ease-out hover:border-white/60 hover:bg-white/20 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
-                >
-                  <MessageCircle class="h-4 w-4" aria-hidden="true" />
-                  {{ t('partners.closing.telegram') }}
-                </a>
-              </div>
-            </div>
+            <!-- The one control for a shop owner who would rather ask a person
+                 than fill in a form: the hero's secondary, a slate fill. -->
+            <a
+              :href="TELEGRAM_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-base"
+            >
+              <MessageCircle class="h-4 w-4" aria-hidden="true" />
+              {{ t('partners.closing.telegram') }}
+            </a>
           </div>
 
           <!--
@@ -1347,18 +1493,18 @@
             One link on the page's own ground, deliberately not a bar with a
             rule over it — that would be the footer again, rebuilt by hand.
           -->
-          <div data-reveal class="mt-8 flex justify-center sm:mt-10">
-            <RouterLink
-              to="/events"
-              class="group inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-sm font-medium text-slate-500 transition-colors duration-200 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            >
-              <ArrowLeft
-                class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
-                aria-hidden="true"
-              />
-              {{ t('partners.backToEvents') }}
-            </RouterLink>
-          </div>
+          <RouterLink
+            data-reveal
+            style="--reveal-delay: calc(var(--stagger) * 4)"
+            to="/events"
+            class="group mt-10 inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-sm font-medium text-slate-500 transition-colors duration-200 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:mt-12"
+          >
+            <ArrowLeft
+              class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+              aria-hidden="true"
+            />
+            {{ t('partners.backToEvents') }}
+          </RouterLink>
         </div>
       </section>
     </div>
@@ -1369,22 +1515,21 @@
 /**
  * The partner offer, as a page a salesperson can send or present.
  *
- * WHY IT PRINTS NO PRICES. It used to. The credit-pack catalogue went public in
- * August 2026 and this page rendered a wholesale rail off it — which was a
- * mistake of audience rather than of plumbing: a wholesale rate at a public URL
- * is a rate the partner's own customer can read before they walk into the shop,
- * and the margin printed beside it is that partner's markup shown to the person
- * paying it. The whole ladder therefore moved to `/credits`, behind
- * `is_partner`, and this page argues the offer without quoting a figure. So it
- * now fetches nothing at all: no catalogue call, no `usePartnerPricingTiers`
- * (deleted with the rail), and every string it renders comes from
- * `partners.json`.
+ * WHICH PRICES IT PRINTS, AND WHICH IT NEVER WILL. The offer is a ladder with
+ * three rungs, and the page names the first two in figures: two free events
+ * worth up to $170, then pay-as-you-go at 50% off retail. Those are the owner's
+ * decision of October 2026 — the gift and the discount ARE the pitch, and a
+ * shop owner weighs them before applying, not after. The third rung, packs,
+ * gets a sentence and no rate: pack prices are bespoke and stay on `/credits`
+ * behind `is_partner`, for the reason a wholesale rail was taken off this page
+ * in September (a rate at a public URL is a rate the partner's own customer can
+ * read).
  *
- * A "What it costs to start" section briefly stood where the rail had been —
- * three facts (two free events, no monthly fee, your price) over a CTA. It was
- * removed as redundant: the hero's proof list already makes all three points,
- * and step 1 of "How it works" already says the first two events are free. What
- * a prospect needs about money is said twice on this page, not four times.
+ * Every figure comes from `PARTNER_OFFER` (src/constants/partnerOffer.ts),
+ * interpolated into `partners.json` — never typed into the copy — so the page
+ * and its prerendered body cannot quote different numbers, and a reprice of
+ * the plan the gift is measured against fails a test instead of a promise. The
+ * page still fetches nothing.
  *
  * Every CTA points at `/partners/apply`, and used to point at `/credits`. That
  * was one link serving the signed-out prospect, the applicant and the approved
@@ -1400,7 +1545,7 @@
  * public page now and the account is asked for at its submit, so the ask on this
  * page leads to the thing it names.
  */
-import { computed, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount, type Component } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   ArrowDown,
@@ -1408,6 +1553,7 @@ import {
   ArrowRight,
   BadgeCheck,
   BellRing,
+  CalendarCheck,
   CalendarDays,
   Check,
   ChevronDown,
@@ -1423,16 +1569,20 @@ import {
   MessageCircle,
   Palette,
   QrCode,
-  Sparkles,
+  ShieldCheck,
   Store,
+  Tag,
   UserCheck,
   Users,
+  Wallet,
   Wrench,
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
+import PartnerInvitationMoments from '@/components/PartnerInvitationMoments.vue'
 import PartnerTestimonials from '@/components/PartnerTestimonials.vue'
 import testimonialsData from '@/assets/testimonials.json'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { partnerOfferFigures } from '@/constants/partnerOffer'
 /**
  * Real screenshots of a real invitation and a real guest list, captured from
  * the app itself rather than drawn. They are checked in rather than fetched
@@ -1447,9 +1597,6 @@ import HeroFanLeftImg from '@/assets/partners/invite-cover-khmer.webp'
 import HeroFanLeadImg from '@/assets/partners/invite-cover-blush.webp'
 import HeroFanRightImg from '@/assets/partners/invite-cover-crimson.webp'
 import CoverRoyalImg from '@/assets/partners/invite-cover-royal.webp'
-import ScreenOpeningImg from '@/assets/partners/the-opening.webp'
-import ScreenRsvpImg from '@/assets/partners/invite-rsvp.webp'
-import ScreenWishImg from '@/assets/partners/invite-wish.webp'
 import DashboardGuestsImg from '@/assets/partners/dashboard-guests.webp'
 import DashboardGuestsPhoneImg from '@/assets/partners/dashboard-guests-phone.webp'
 import DashboardRsvpImg from '@/assets/partners/dashboard-rsvp.webp'
@@ -1477,26 +1624,46 @@ const toggleLanguage = () => setLocale(nextLocale.value.code)
 
 const TELEGRAM_URL = 'https://t.me/goeventkh'
 
-const HERO_PROOF = ['payg', 'fee', 'review'] as const
+/**
+ * `{worth}`, `{retail}` and `{partnerPrice}` for every string that quotes the
+ * offer. Computed once — the figures are constants, and only the words around
+ * them change with the language.
+ */
+const offer = partnerOfferFigures()
+
+const HERO_LEDGER = ['free', 'payg', 'upfront'] as const
 const STEPS = ['open', 'build', 'sell'] as const
 
 /**
- * How long a step takes, where that is worth saying — which is exactly one of
- * them. A shop owner weighing this up is really asking how much of their day
- * each customer costs, and the honest answer to that is the middle step's:
- * setting an invitation up is a quarter of an hour's work, an hour for a big
- * wedding with a long guest list. The other two have no useful number — step 1
- * waits on our review, step 3 is a click — so they carry none rather than a
- * padded one. That is also what lets the badge be loud: one dark pill in the
- * row is a fact, three would be a label pattern and would say nothing.
+ * What each step costs the partner. The build step's is time (a quarter of an
+ * hour, an hour for a big wedding with a long guest list) because that is what a
+ * shop owner is really asking about the work; the other two are the offer
+ * itself, said where it applies — opening the account is free, and sending is
+ * free twice and then half price.
  */
-const STEP_TIMINGS: Partial<Record<(typeof STEPS)[number], string>> = {
-  build: 'partners.steps.build.time',
+const STEP_META: Record<(typeof STEPS)[number], { label: string; icon: Component }> = {
+  open: { label: 'partners.steps.open.cost', icon: Gift },
+  build: { label: 'partners.steps.build.time', icon: Clock },
+  sell: { label: 'partners.steps.sell.cost', icon: Tag },
 }
 
-const stepTimingKey = (key: (typeof STEPS)[number]) => STEP_TIMINGS[key] ?? ''
+/** The three answers to "what's the catch" under the voucher. */
+const GIFT_FACTS = [
+  { key: 'real', icon: CalendarCheck },
+  { key: 'keep', icon: Wallet },
+  { key: 'nocard', icon: ShieldCheck },
+] as const
 
+/**
+ * The two questions the offer raises go first, and the first of them is open on
+ * arrival — a reader who has just seen "free" and "50% off" is asking about
+ * exactly those, and the old opener (what if I do not sell them all) is a
+ * question about packs, which are now the offer's last rung rather than its
+ * first.
+ */
 const FAQ_KEYS = [
+  'gift',
+  'payg',
   'unsold',
   'future',
   'price',
@@ -1509,30 +1676,6 @@ const FAQ_KEYS = [
   'names',
   'apply',
 ] as const
-
-/**
- * The three screens the invitation is judged on, in the order a guest meets
- * them: the link they are sent, the reply it asks for, the wish they leave
- * afterwards. The arc is the guest's, not the product's — it starts before the
- * invitation is open and ends after it is answered.
- *
- * The opening is deliberately a *messaging app*, not the cover itself. The
- * cover is already the hero's fan and the design strip below; showing it a
- * third time argues nothing new, whereas the thread does the one job neither
- * can — it answers "how does this reach my customer's guests?" with the
- * ordinary chat they already send everything else through, no app to install.
- *
- * Three and not eight. Every extra screen costs a file the reader downloads and
- * a decision they have to make, and the fourth-best screenshot of an invitation
- * argues less well than the third-best one does on its own.
- */
-const SCREENS = [
-  { key: 'cover', icon: Sparkles, src: ScreenOpeningImg },
-  { key: 'rsvp', icon: ClipboardCheck, src: ScreenRsvpImg },
-  { key: 'wishes', icon: MessageCircle, src: ScreenWishImg },
-] as const
-
-const activeScreen = ref<(typeof SCREENS)[number]['key']>('cover')
 
 /**
  * Evidence for "browse every design", not decoration: four covers that share
@@ -1591,25 +1734,39 @@ const RUN_DAY_SHOTS = [
  * approximate with a poster and a group chat: the guest list issues a link per
  * guest, the name is already written on the invitation when it opens, and the
  * reply that comes back is attached to that guest rather than to a stranger who
- * typed a name into a form. The screenshot above it has always shown this —
- * two chat messages, two links, two different names — and until now nothing
- * said so.
+ * typed a name into a form. The link card in the middle of the plate shows
+ * exactly this — the guest's own name in the preview's title.
  *
  * Nine and not ten: the wishes line is gone, because the wishes are already
- * the third screenshot on the glass beside this list — a tick that repeats a
- * picture in view argues nothing the picture has not already made. `agenda`
- * stays; it is a real part of the invitation the list had never mentioned.
+ * the third card beside this list — a tick that repeats a picture in view
+ * argues nothing the picture has not already made. `agenda` stays; it is a
+ * real part of the invitation the list had never mentioned.
+ *
+ * Split by who meets the feature, because that is the question the plate's two
+ * flanks answer: the guest sees the left one on the invitation, the customer
+ * runs their event from the right one. Five and four, so the two flanks stand
+ * within a row of each other beside the cards.
  */
-const PRODUCT_FEATURES = [
-  { key: 'personal', icon: UserCheck },
-  { key: 'cinematic', icon: Film },
-  { key: 'bilingual', icon: Languages },
-  { key: 'rsvp', icon: ClipboardCheck },
-  { key: 'notify', icon: BellRing },
-  { key: 'guests', icon: Users },
-  { key: 'checkin', icon: QrCode },
-  { key: 'agenda', icon: CalendarDays },
-  { key: 'media', icon: Images },
+const FEATURE_GROUPS = [
+  {
+    key: 'guest',
+    items: [
+      { key: 'personal', icon: UserCheck },
+      { key: 'cinematic', icon: Film },
+      { key: 'bilingual', icon: Languages },
+      { key: 'agenda', icon: CalendarDays },
+      { key: 'media', icon: Images },
+    ],
+  },
+  {
+    key: 'host',
+    items: [
+      { key: 'rsvp', icon: ClipboardCheck },
+      { key: 'notify', icon: BellRing },
+      { key: 'guests', icon: Users },
+      { key: 'checkin', icon: QrCode },
+    ],
+  },
 ] as const
 
 /**
@@ -1617,10 +1774,10 @@ const PRODUCT_FEATURES = [
  * first row is what the partner's own name gets out of this, the second pairs
  * the job they hand back to the customer with the one they can take on
  * themselves, and the third is what we carry so the shop does not have to — the
- * platform and the person behind it. The count is deliberately odd — `freeStart`
- * is left alone on the last row, where an orphan reads as the offer the closing
- * section repeats rather than as a gap. Adding one more item closes that row and
- * turns the orphan back into a hole; add them two at a time.
+ * platform and the person behind it. Six, so three full rows: `freeStart` used
+ * to sit alone on a fourth, and left with the gift section, which says it with
+ * a voucher instead of a line. Add items two at a time, or an orphan opens a
+ * hole in the last row.
  */
 /*
   Placeholder quotes for now — a generated set, in Khmer, which is the
@@ -1636,7 +1793,6 @@ const PARTNER_BENEFITS = [
   { key: 'studio', icon: Palette },
   { key: 'upkeep', icon: Wrench },
   { key: 'support', icon: LifeBuoy },
-  { key: 'freeStart', icon: Gift },
 ] as const
 
 /**
@@ -1658,9 +1814,9 @@ const toggleFaq = (key: string) => {
   openFaqs.value = next
 }
 
-const stepsRef = ref<HTMLElement | null>(null)
-const scrollToSteps = () => {
-  stepsRef.value?.scrollIntoView({
+const offerRef = ref<HTMLElement | null>(null)
+const scrollToOffer = () => {
+  offerRef.value?.scrollIntoView({
     behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     block: 'start',
   })
@@ -1855,6 +2011,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Hallmark · macrostructure: Offer Ladder (gift voucher → price slip, under a split hero) · tone: generous, plain-spoken
+ * design-system: DESIGN.md (slate · brand gradient · Figtree / Noto Serif Khmer) · studied: no */
+
 /*
   ---------------------------------------------------------------------------
   The page's motion vocabulary, in four numbers
@@ -1987,7 +2146,7 @@ onBeforeUnmount(() => {
   --reveal-delay: calc(var(--stagger) * 4);
 }
 
-.hero-proof {
+.hero-ledger {
   --reveal-delay: calc(var(--stagger) * 5);
 }
 
@@ -2000,7 +2159,7 @@ onBeforeUnmount(() => {
     --reveal-delay: calc(var(--stagger) * 3);
   }
 
-  .hero-proof {
+  .hero-ledger {
     --reveal-delay: calc(var(--stagger) * 4);
   }
 
@@ -2122,20 +2281,188 @@ onBeforeUnmount(() => {
 }
 
 /*
-  The closing panel's inner light. Two radial washes over the brand gradient,
-  not a second gradient object: white at low alpha, so whatever the band's own
+  The gift voucher's inner light (it was the closing panel's too, until that
+  panel came off its gradient). Two radial washes over the brand gradient, not
+  a second gradient object: white at low alpha, so whatever the voucher's own
   colour is underneath, this only lifts it. Authored here rather than as two
   arbitrary `bg-[radial-gradient(...)]` values because the commas and spaces a
   two-stop radial needs are exactly what Tailwind's arbitrary-value parser
   makes unreadable.
 
   Painted, not blurred: a `blur-3xl` disc would be the same picture at the cost
-  of a 64px filter pass over a full-width panel on every paint.
+  of a 64px filter pass over the whole voucher on every paint.
 */
 .cta-sheen {
   background:
     radial-gradient(58% 78% at 12% 0%, rgb(255 255 255 / 0.22), transparent 68%),
     radial-gradient(52% 72% at 92% 100%, rgb(255 255 255 / 0.14), transparent 70%);
+}
+
+/*
+  ---------------------------------------------------------------------------
+  The gift voucher
+  ---------------------------------------------------------------------------
+  One gradient element with a fixed-width stub as its second column, so the
+  perforation sits at a position CSS already knows — `100% - var(--stub-w)` —
+  and the two notches can be cut there with a mask. Cut, not painted: a circle
+  of the section's own grey laid over each edge would stop matching the moment
+  the ground changes, and the drop shadow would run straight past it. A mask
+  takes the pixels out, so the shadow — which is why it lives on the wrapper as
+  a `drop-shadow` filter rather than a `box-shadow` here — follows the notches.
+
+  Two mask layers, each just over half the height, each with one hole: the top
+  layer's at the top edge, the bottom layer's at the bottom. The 0.5px ramp at
+  the hole's rim is the anti-aliasing.
+
+  The stub is sized for its two short lines in Khmer, which run longer: 6.5rem
+  holds "២ កម្មវិធី" on one line at 320px and lets "× up to $85 each" wrap
+  under it, which it is allowed to.
+*/
+.voucher-lift {
+  filter: drop-shadow(0 1.25rem 1.5rem rgb(30 144 255 / 0.2))
+    drop-shadow(0 0.125rem 0.375rem rgb(15 23 42 / 0.08));
+}
+
+.voucher {
+  --notch: 0.75rem;
+  --stub-w: 6.5rem;
+  --cut: calc(100% - var(--stub-w));
+
+  grid-template-columns: minmax(0, 1fr) var(--stub-w);
+  border-radius: 1.25rem;
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at var(--cut) 0, #0000 calc(100% - 0.5px), #000) top / 100%
+      51% no-repeat,
+    radial-gradient(circle var(--notch) at var(--cut) 100%, #0000 calc(100% - 0.5px), #000) bottom /
+      100% 51% no-repeat;
+  mask:
+    radial-gradient(circle var(--notch) at var(--cut) 0, #0000 calc(100% - 0.5px), #000) top / 100%
+      51% no-repeat,
+    radial-gradient(circle var(--notch) at var(--cut) 100%, #0000 calc(100% - 0.5px), #000) bottom /
+      100% 51% no-repeat;
+}
+
+@media (min-width: 640px) {
+  .voucher {
+    --notch: 0.875rem;
+    --stub-w: 9.5rem;
+
+    border-radius: 1.5rem;
+  }
+}
+
+/* The perforation: a dashed rule on the stub's leading edge, stopping short of
+   both notches so no dash runs into a hole. */
+.voucher__stub::before {
+  content: '';
+  position: absolute;
+  inset-block: calc(var(--notch) + 0.5rem);
+  inset-inline-start: -1px;
+  border-inline-start: 2px dashed rgb(255 255 255 / 0.55);
+}
+
+/*
+  One pass of light across the voucher as it lands, the way a gift card catches
+  it when it is handed over. Decoration, and allowed for the reason the hero's
+  fan is: it happens once, on arrival, and never again. A transition keyed off
+  the reveal rather than a keyframe, so it cannot replay.
+*/
+.voucher__shine {
+  width: 45%;
+  background: linear-gradient(105deg, transparent 20%, rgb(255 255 255 / 0.3) 50%, transparent 80%);
+  transform: translateX(-110%);
+}
+
+[data-reveal='in'] .voucher__shine {
+  transform: translateX(340%);
+  transition: transform 1100ms var(--ease-out) 450ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voucher__shine {
+    display: none;
+  }
+}
+
+/*
+  ---------------------------------------------------------------------------
+  The price slip's three beats
+  ---------------------------------------------------------------------------
+  The slip arrives with the page's reveal; then, in order: the 50% sticker is
+  stamped on (450ms), the "you pay" bar drops from full price to half (750ms),
+  and the "you keep" column it uncovers fades in (1250ms). Each beat is the one
+  before it explained, which is why they are sequenced rather than staggered.
+
+  The bar is clipped, not scaled: `scaleX(0.5)` would squash its rounded end
+  into an ellipse, and `clip-path` with `round` keeps a true pill at any width.
+  The sticker lands from slightly larger and further turned, pressed down into
+  place — never from nothing.
+
+  Reduced motion gets the end state with no transitions, which the reveal
+  machinery already provides by setting every element to `in` on mount.
+*/
+.slip__sticker {
+  position: absolute;
+  top: -1.25rem;
+  right: 1rem;
+  display: flex;
+  height: 4.5rem;
+  width: 4.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgb(15 23 42);
+  color: #fff;
+  box-shadow: 0 0.75rem 1.5rem -0.75rem rgb(15 23 42 / 0.6);
+  opacity: 0;
+  transform: rotate(-22deg) scale(1.18);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 380ms var(--ease-out);
+}
+
+@media (min-width: 640px) {
+  .slip__sticker {
+    top: -1.75rem;
+    right: 1.75rem;
+    height: 6rem;
+    width: 6rem;
+  }
+}
+
+[data-reveal='in'] .slip__sticker {
+  opacity: 1;
+  transform: rotate(-10deg) scale(1);
+  transition-delay: 450ms;
+}
+
+.slip__pay {
+  clip-path: inset(0 0 0 0 round 9999px);
+  transition: clip-path 900ms var(--ease-out);
+}
+
+[data-reveal='in'] .slip__pay {
+  clip-path: inset(0 50% 0 0 round 9999px);
+  transition-delay: 750ms;
+}
+
+.slip__keep {
+  opacity: 0;
+  transition: opacity 400ms var(--ease-out);
+}
+
+[data-reveal='in'] .slip__keep {
+  opacity: 1;
+  transition-delay: 1250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slip__sticker,
+  .slip__pay,
+  .slip__keep {
+    transition: none;
+  }
 }
 
 /*
@@ -2171,9 +2498,13 @@ onBeforeUnmount(() => {
   tall enough (>1100px) to miss the 75% root-font rule. One percentage closes
   both without anyone having to enumerate them.
 
-  `overflow-hidden` on the section is for the ground, and nothing here leans on
-  it — which is the point, because it hides this class of mistake by cutting a
-  card in half rather than scrolling the page.
+  The section clips for the ground, and nothing here leans on it — which is the
+  point, because it hides this class of mistake by cutting a card in half rather
+  than scrolling the page. It is `overflow: clip`, NOT `hidden`, and that is
+  load-bearing: `hidden` makes the section a scroll container, so the cards'
+  scroll-driven depth (`animation-timeline: view()`, see "Scroll-driven motion")
+  would bind to a box that never scrolls and sit frozen on its first frame.
+  `clip` cuts the same pixels without becoming a scroller.
 
   The cards start stacked and spread on reveal. It is the one piece of motion on
   the page that is decoration rather than orientation, and it is affordable for
@@ -2327,266 +2658,192 @@ onBeforeUnmount(() => {
 
 /*
   ---------------------------------------------------------------------------
-  The phone, and the screen inside it
+  The spec plate
   ---------------------------------------------------------------------------
-  A drawn bezel rather than a photographed device: a photographed one dates the
-  page the year its model is replaced, and it is another company's industrial
-  design sitting inside our brand. Two radii and a dark gradient are enough to
-  say "phone"; a notch and a speaker grille would be a costume.
+  Grid areas, so the DOM stays in the phone's order — the cards, then the
+  guest group, then the host group — while the desktop flanks the cards with
+  the two groups. Every track is `minmax(0, 1fr)` or a fixed size: a flank
+  holds Khmer, which must wrap inside its track rather than widen it.
 
-  `aspect-ratio` on the screen holds the box at the size the captures were taken
-  (390 x 844), so the section does not jump when a lazily-loaded shot decodes.
+  Two columns from `sm`, under the cards: a tablet is too narrow to flank a
+  tall cluster with two lists, and too wide to stack nine short lines in one
+  column. The centre track is the cluster's own width (23rem, its max) at
+  `xl`, and two rem under it at `lg`, where the cards simply take what is
+  there. Wider than the phone's was, because the cards carry text to be read
+  where the phone carried a picture.
 */
-.device {
-  position: relative;
-  width: 100%;
-  max-width: 16rem;
-  padding: 0.5rem;
-  border-radius: 2.25rem;
-  background: linear-gradient(160deg, #334155, #0f172a 55%, #1e293b);
-  box-shadow:
-    0 30px 60px -25px rgb(15 23 42 / 0.5),
-    0 0 0 1px rgb(15 23 42 / 0.06);
+.plate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'moments'
+    'guest'
+    'host';
+  gap: 2.75rem;
+}
+
+.plate__moments {
+  grid-area: moments;
+}
+
+.plate__group--guest {
+  grid-area: guest;
+}
+
+.plate__group--host {
+  grid-area: host;
 }
 
 @media (min-width: 640px) {
-  .device {
-    max-width: 18rem;
-    border-radius: 2.5rem;
+  .plate {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'moments moments'
+      'guest host';
+    gap: 3rem 2.5rem;
   }
 }
 
-/* From `lg` the phone shares the row with a column that now carries the
-   header, the picker and the feature list. 17rem is the size at which its own
-   height lands within ~50px of that column's — big enough to read the
-   invitation, small enough that neither side is waiting for the other. */
 @media (min-width: 1024px) {
-  .device {
-    max-width: 17rem;
+  .plate {
+    grid-template-columns: minmax(0, 1fr) 21rem minmax(0, 1fr);
+    grid-template-areas: 'guest moments host';
+    align-items: center;
+    gap: 0 3rem;
   }
 }
 
-.device__screen {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1.75rem;
-  background: #fff;
-  aspect-ratio: 390 / 844;
-}
-
-@media (min-width: 640px) {
-  .device__screen {
-    border-radius: 2rem;
+@media (min-width: 1280px) {
+  .plate {
+    grid-template-columns: minmax(0, 1fr) 23rem minmax(0, 1fr);
+    column-gap: 4rem;
   }
 }
 
-/*
-  All three shots are stacked and crossfaded. Blur is what makes it read as one
-  invitation changing rather than two invitations overlapping — without it the
-  eye resolves both images for the length of the fade and sees a double
-  exposure. 6px, well under the 20px where the filter starts costing real time
-  on a full-width element in Safari.
-
-  Transitions, not keyframes: the three buttons can be pressed as fast as
-  someone can move a finger, and a transition retargets from wherever it is
-  while a keyframe animation restarts from zero.
-
-  `width`/`height` are set explicitly alongside `object-fit` because Tailwind's
-  preflight puts `max-width: 100%` on every `img`, which silently distorts an
-  image sized any other way inside a fixed-ratio box.
-*/
-.device__shot {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transform: scale(1.015);
-  filter: blur(6px);
-  transition:
-    opacity 260ms ease,
-    transform 260ms ease,
-    filter 260ms ease;
+.plate__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.device__shot.is-active {
-  opacity: 1;
-  transform: none;
-  filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .device__shot {
-    transform: none;
-    filter: none;
-    transition: opacity 160ms ease;
-  }
-}
-
-/*
-  ---------------------------------------------------------------------------
-  The screen picker, in its two shapes
-  ---------------------------------------------------------------------------
-  Below `sm` it is a chip: a pill with a label and nothing else, chosen by
-  filling it. From `sm` up it is the card it has always been: a rounded box
-  with a marker disc, the label, and its own body line, chosen by a dark border
-  and a filled disc on a white ground.
-
-  Authored here rather than as Tailwind ternaries because the chosen state is a
-  *different design* in the two shapes — dark fill against white fill — and a
-  class binding cannot say "this ternary, but only above 640px". The markup
-  carries `data-active` and this file decides what that looks like, which also
-  keeps the button's template down to the four elements it actually has.
-
-  Everything the chip does not use is `display: none` rather than absent from
-  the markup, so there is exactly one button in the DOM at any width and the
-  pressed state, the focus ring and the tab order can never differ between the
-  two shapes.
-*/
-.screen-pick__btn {
-  display: block;
-  width: 100%;
-  border: 1px solid rgb(226 232 240);
+/* White discs on the section's grey: the icon is a marker, not a colour, and
+ * the brand gradient is not spent on nine captions. */
+.plate__disc {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
   border-radius: 9999px;
-  background: rgb(255 255 255 / 0.6);
-  /*
-    THE CHIP'S PADDING IS SIZED SO THAT THREE OF THEM FIT A REAL PHONE, and
-    that is the whole of the reasoning. Measured with the English labels, which
-    are the long ones — Khmer's fit at every width including 320 — the set needs
-    the row it is given from 344px up at 12px of padding and 6px of gap, and
-    overflows by 22px at 320.
-
-    Those two numbers were picked over the roomier 15px/8px for one reason: the
-    roomier pair overflowed by FOUR pixels at 360 and two at 344, and four
-    pixels of a clipped pill at the edge of the screen does not read as a rail
-    that continues — it reads as a bug. An overflow is either comfortably
-    invisible or comfortably obvious; the sizes here put every current phone in
-    the first case and the 320px stragglers in the second, where the rail bleeds
-    to the viewport edge and a 22px slice of the third chip says what it should.
-
-    Both values are mobile-only by construction — the `sm` block below resets
-    the padding for the card shape, and the gap lives on a flex row that becomes
-    `display: block` at the same breakpoint.
-  */
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  white-space: nowrap;
-  transition:
-    background-color 200ms var(--ease-out),
-    border-color 200ms var(--ease-out),
-    box-shadow 200ms var(--ease-out),
-    transform 200ms var(--ease-out);
+  background: #fff;
+  color: rgb(100 116 139);
+  box-shadow: inset 0 0 0 1px rgb(226 232 240);
 }
 
-/* The press is a real one on the chip — a 44px pill can afford 3% — and stays
-   the old hairline on the card, where a full-width row scaling by 3% would
-   visibly shove its neighbours. */
-.screen-pick__btn:active {
-  transform: scale(0.97);
+/* Balanced, because a flank is narrow enough that a label wraps, and an
+ * unbalanced wrap leaves one word ("it", "name") alone under a full line. */
+.plate__label {
+  min-width: 0;
+  text-wrap: balance;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgb(30 41 59);
 }
 
-.screen-pick__btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px rgb(125 211 252);
-}
-
-.screen-pick__btn[data-active='true'] {
-  border-color: rgb(15 23 42);
-  background: rgb(15 23 42);
-}
-
-.screen-pick__label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgb(15 23 42);
-  transition: color 200ms var(--ease-out);
-}
-
-.screen-pick__btn[data-active='true'] .screen-pick__label {
-  color: #fff;
-}
-
-/* The card's two extra parts, off in the chip. */
-.screen-pick__disc,
-.screen-pick__body {
+.plate__leader {
   display: none;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .screen-pick__btn:not([data-active='true']):hover {
-    border-color: rgb(203 213 225);
-    background: #fff;
+/*
+  Desktop: each flank is set toward the cards — the guest group right-aligned
+  with its discs on the inner edge, the host group mirrored — and every row ends
+  in a hairline leader reaching across the gutter. The leaders are what turn two
+  lists into a diagram of one object.
+
+  They draw outward from the disc as their group arrives, one after another down
+  the column — once, keyed off the page's own reveal, and not at all under
+  reduced motion. `order` does the mirroring so the markup stays disc, label,
+  leader for both flanks and for a phone.
+*/
+@media (min-width: 1024px) {
+  .plate__group--guest {
+    text-align: right;
+  }
+
+  .plate__group--guest .plate__item {
+    justify-content: flex-end;
+  }
+
+  .plate__group--guest .plate__label {
+    order: 1;
+  }
+
+  .plate__group--guest .plate__disc {
+    order: 2;
+  }
+
+  .plate__leader {
+    display: block;
+    height: 1px;
+    width: 3rem;
+    flex: none;
+    background: rgb(203 213 225);
+    transform: scaleX(0);
+    transition: transform 500ms var(--ease-out);
+    transition-delay: calc(250ms + var(--i, 0) * 60ms);
+  }
+
+  /*
+    The leader spends all but 0.25rem of itself in the gutter (the negative
+    margin), so it ends ~1.25rem short of the centre track at both widths below,
+    and each disc's outer edge sits 1rem inside the flank. The headings are
+    padded by that same 1rem so they stand over the discs rather than a disc's
+    width outside them.
+  */
+  .plate__group--guest .plate__leader {
+    order: 3;
+    margin-inline-end: -2.75rem;
+    transform-origin: left center;
+  }
+
+  .plate__group--host .plate__leader {
+    order: -1;
+    margin-inline-start: -2.75rem;
+    transform-origin: right center;
+  }
+
+  .plate__group--guest .plate__heading {
+    padding-inline-end: 1rem;
+  }
+
+  .plate__group--host .plate__heading {
+    padding-inline-start: 1rem;
+  }
+
+  [data-reveal='in'] .plate__leader {
+    transform: none;
   }
 }
 
-@media (min-width: 640px) {
-  .screen-pick__btn {
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    white-space: normal;
+/* The gutter widens by 1rem at `xl`, and the leader with it. */
+@media (min-width: 1280px) {
+  .plate__leader {
+    width: 4rem;
   }
 
-  .screen-pick__btn:active {
-    transform: scale(0.99);
+  .plate__group--guest .plate__leader {
+    margin-inline-end: -3.75rem;
   }
 
-  .screen-pick__btn[data-active='true'] {
-    border-color: rgb(15 23 42);
-    background: #fff;
-    box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05);
-  }
-
-  .screen-pick__head {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-  }
-
-  .screen-pick__disc {
-    display: flex;
-    height: 1.25rem;
-    width: 1.25rem;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    border: 1px solid rgb(203 213 225);
-    background: #fff;
-    color: rgb(148 163 184);
-    transition:
-      background-color 200ms var(--ease-out),
-      border-color 200ms var(--ease-out),
-      color 200ms var(--ease-out);
-  }
-
-  .screen-pick__btn[data-active='true'] .screen-pick__disc {
-    border-color: rgb(15 23 42);
-    background: rgb(15 23 42);
-    color: #fff;
-  }
-
-  .screen-pick__label {
-    font-size: 0.9375rem;
-  }
-
-  .screen-pick__btn[data-active='true'] .screen-pick__label {
-    color: rgb(15 23 42);
-  }
-
-  .screen-pick__body {
-    display: block;
-    margin-top: 0.25rem;
-    padding-left: 1.875rem;
-    font-size: 0.8125rem;
-    line-height: 1.375;
-    color: rgb(71 85 105);
+  .plate__group--host .plate__leader {
+    margin-inline-start: -3.75rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .screen-pick__btn:active {
-    transform: none;
+  .plate__leader {
+    transition: none;
   }
 }
 
@@ -2816,6 +3073,194 @@ onBeforeUnmount(() => {
   .collapse-enter-active,
   .collapse-leave-active {
     transition: none;
+  }
+}
+
+/*
+  ---------------------------------------------------------------------------
+  Scroll-driven motion
+  ---------------------------------------------------------------------------
+  Four things move with the reader's own scroll, each because the motion says
+  something the still frame cannot:
+
+  1. The hero's deck comes apart in depth as the hero leaves — the front card
+     rises faster than the page, the two behind it lag and part — so the first
+     scroll on the page feels like moving past real objects.
+  2. The gift voucher is handed over: it arrives turned and a little low, and
+     straightens into place as it comes up the screen.
+  3. The invitation's three cards gather: they come up the screen spread apart
+     and settle into one cluster at its middle, the front card travelling
+     furthest. Its rules live in PartnerInvitationMoments.vue, beside the cards
+     they move, and follow every rule set out here.
+  4. The steps' thread draws itself across as the row comes into view, and each
+     numeral inks as the thread reaches it: the sequence explained by motion.
+
+  CSS scroll timelines, not a scroll listener: no rAF loop and nothing to tear
+  down when the route changes (this is a SPA view, and the scroll-world engine's
+  missing teardown is exactly the hazard this avoids). It also runs off the
+  main thread. A browser without `animation-timeline` gets the finished state,
+  because every animation here ends on the element's own resting style — so
+  does `prefers-reduced-motion`.
+
+  None of it sits on a `[data-reveal]` element: those own `transform` and
+  `opacity` for the arrival. Each lands on a child, and where that child already
+  has a `transform` (the fan cards' spread) it moves with the independent
+  `translate` property instead, which composes with it rather than replacing it.
+
+  LONGHANDS ONLY. The `animation` shorthand resets `animation-timeline` to
+  `auto`, so a shorthand written after a timeline silently turns a scroll-driven
+  animation back into a 0s time-based one.
+
+  Timing: `linear`, all four. A scrubbed animation's easing is the reader's own
+  scroll — it slows when they slow — so a curve on top of it is a second easing
+  fighting the first. It was measured, not assumed: on the page's strong
+  `--ease-out` the phone that stood where the cards are now was 99.8% upright
+  when it had barely entered the screen, and on a 1440x900 laptop the voucher had finished turning before it
+  was in view. The settle each one needs comes from where its range ends (the
+  middle of the screen), not from a curve.
+*/
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* 1. One timeline for the whole deck, so the three cards part together. */
+    .hero-fan {
+      view-timeline-name: --fan;
+    }
+
+    .hero-fan__card {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --fan;
+      animation-range: exit 0% exit 100%;
+    }
+
+    .hero-fan__card--lead {
+      animation-name: fanDepthLead;
+    }
+
+    .hero-fan__card--left {
+      animation-name: fanDepthLeft;
+    }
+
+    .hero-fan__card--right {
+      animation-name: fanDepthRight;
+    }
+
+    /* 2. */
+    .voucher {
+      animation-name: voucherHandOver;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 50%;
+    }
+
+    /* 4. The row's thread, and on a phone each step's own segment downward. */
+    .steps-track {
+      view-timeline-name: --steps;
+    }
+
+    .steps-thread {
+      transform-origin: left center;
+      animation-name: threadDraw;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --steps;
+      animation-range: cover 20% cover 50%;
+    }
+
+    .steps-seg {
+      transform-origin: top center;
+      animation-name: segDraw;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: cover 25% cover 55%;
+    }
+
+    /* Stacked, a numeral inks as it passes the upper half of the screen. */
+    .steps-num {
+      animation-name: stepInk;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: cover 35% cover 45%;
+    }
+
+    /*
+      In a row, each numeral inks as the thread reaches it. The numerals sit at
+      roughly 0, 0.36 and 0.72 of the thread's length, and the thread draws over
+      cover 20%–50%, so step n inks around 20% + n × 10%. `--step` is set on its
+      list item.
+    */
+    @media (min-width: 768px) {
+      .steps-num {
+        animation-timeline: --steps;
+        animation-range: cover calc(18% + var(--step, 0) * 10%) cover
+          calc(23% + var(--step, 0) * 10%);
+      }
+    }
+  }
+}
+
+@keyframes fanDepthLead {
+  to {
+    translate: 0 -8%;
+  }
+}
+
+@keyframes fanDepthLeft {
+  to {
+    translate: -6% 10%;
+  }
+}
+
+@keyframes fanDepthRight {
+  to {
+    translate: 6% 10%;
+  }
+}
+
+@keyframes voucherHandOver {
+  from {
+    rotate: -6deg;
+    translate: 0 1.5rem;
+    scale: 0.94;
+  }
+
+  to {
+    rotate: 0deg;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes threadDraw {
+  from {
+    scale: 0 1;
+  }
+
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes segDraw {
+  from {
+    scale: 1 0;
+  }
+
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes stepInk {
+  from {
+    color: rgb(203 213 225);
+  }
+
+  to {
+    color: rgb(15 23 42);
   }
 }
 </style>

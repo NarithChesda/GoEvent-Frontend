@@ -26,6 +26,13 @@ import {
   type LegalBlock,
 } from '../src/components/legal/privacyPolicyContent'
 import { FALLBACK_PRICING_PLANS } from '../src/constants/pricingFallback'
+import { partnerOfferFigures } from '../src/constants/partnerOffer'
+import {
+  DESIGN_STEP,
+  FAQ,
+  FEATURE_GROUPS,
+  STEPS,
+} from '../src/components/landing/landingContent'
 
 type Lang = 'en' | 'kh'
 type Tree = { [key: string]: string | Tree }
@@ -114,21 +121,33 @@ export function createBodyRenderer(root: string) {
       tag('p', k('subtitle')),
       `<p>${link('/explore', k('secondaryCta'))}</p>`,
 
+      // Same structure as LandingFeatures / LandingSteps, from the same
+      // landingContent.ts: features by who they are for, and the designs
+      // inside the step that chooses one.
       tag('h2', k('features.title')),
       tag('p', k('features.subtitle')),
-      `<ul>${entries(kh, 'events.landing.features', 'title', 'body')
-        .map((item) => `<li>${tag('h3', item.title!)}${tag('p', item.body!)}</li>`)
-        .join('')}</ul>`,
+      FEATURE_GROUPS.map(
+        (group) =>
+          `${tag('h3', k(`features.groups.${group.key}`))}<ul>${group.features
+            .map(
+              (key) =>
+                `<li>${tag('h4', k(`features.${key}.title`))}${tag('p', k(`features.${key}.body`))}</li>`,
+            )
+            .join('')}</ul>`,
+      ).join(''),
 
       tag('h2', k('steps.title')),
-      `<ol>${entries(kh, 'events.landing.steps', 'title', 'body')
-        .map((item) => `<li>${tag('h3', item.title!)}${tag('p', item.body!)}</li>`)
-        .join('')}</ol>`,
-
-      tag('h2', k('designs.title')),
-      tag('p', k('designs.body')),
-      `<p>${link('/partners/templates', k('designs.cta'))}</p>`,
-      `<p>${esc(k('designs.partner'))} ${link('/partners', k('designs.partnerCta'))}</p>`,
+      `<ol>${STEPS.map((step) => {
+        const designs =
+          step === DESIGN_STEP
+            ? [
+                tag('p', k('designs.body')),
+                `<p>${link('/partners/templates', k('designs.cta'))}</p>`,
+                `<p>${esc(k('designs.partner'))} ${link('/partners', k('designs.partnerCta'))}</p>`,
+              ].join('')
+            : ''
+        return `<li>${tag('h3', k(`steps.${step}.title`))}${tag('p', k(`steps.${step}.body`))}${designs}</li>`
+      }).join('')}</ol>`,
 
       // The page's own pricing comes from the API; this is the committed copy
       // of the same plans (src/constants/pricingFallback.ts), which is also
@@ -143,9 +162,10 @@ export function createBodyRenderer(root: string) {
         .join('')}</ul>`,
 
       tag('h2', k('faq.title')),
-      entries(kh, 'events.landing.faq', 'q', 'a')
-        .map((item) => `${tag('h3', item.q!)}${tag('p', item.a!)}`)
-        .join(''),
+      FAQ.map((item) => `${tag('h3', k(`faq.${item}.q`))}${tag('p', k(`faq.${item}.a`))}`).join(''),
+
+      // The close: pricing's sentence again, and the call to start.
+      tag('p', k('pricing.subtitle')),
     ].join('')
   }
 
@@ -201,15 +221,41 @@ export function createBodyRenderer(root: string) {
 
   const partners = () => {
     const kh: Lang = 'kh'
-    const p = (key: string) => t(kh, `partners.${key}`)
+    // The page interpolates the offer's figures into its copy; so does this, from
+    // the same constants, or crawlers would read `{worth}` where people read $170.
+    const figures = partnerOfferFigures()
+    const fill = (text: string) =>
+      text.replace(/\{(\w+)\}/g, (match, name: string) =>
+        name in figures ? figures[name as keyof typeof figures] : match,
+      )
+    const p = (key: string) => fill(t(kh, `partners.${key}`))
     const titled = (key: string) =>
       entries(kh, `partners.${key}`, 'title')
-        .map((item) => `<li>${tag('h3', item.title!)}${item.body ? tag('p', item.body) : ''}</li>`)
+        .map(
+          (item) =>
+            `<li>${tag('h3', fill(item.title!))}${item.body ? tag('p', fill(item.body)) : ''}</li>`,
+        )
         .join('')
     return [
       `<h1>${esc(p('hero.titleLead'))} ${esc(p('hero.titleAccent'))}</h1>`,
       tag('p', p('hero.subtitle')),
       `<p>${link('/partners/apply', p('hero.ctaPrimary'))}</p>`,
+      tag('h2', p('gift.title')),
+      tag('p', p('gift.subtitle')),
+      tag(
+        'p',
+        `${p('gift.voucher.title')} — ${p('gift.voucher.worth')} ${figures.worth} (${p('gift.voucher.count')} ${p('gift.voucher.each')})`,
+      ),
+      `<ul>${titled('gift.facts')}</ul>`,
+      tag('h2', p('payg.title')),
+      tag('p', p('payg.body')),
+      tag(
+        'p',
+        `${p('payg.slip.example')} — ${p('payg.slip.customerPays')} ${figures.retail} · ${p('payg.slip.youPay')} ${figures.partnerPrice} · ${p('payg.slip.youKeep')} ${figures.partnerPrice}`,
+      ),
+      tag('p', p('payg.margin')),
+      tag('h3', p('payg.packs.title')),
+      tag('p', p('payg.packs.body')),
       tag('h2', p('steps.title')),
       tag('p', p('steps.subtitle')),
       `<ol>${titled('steps')}</ol>`,
@@ -221,8 +267,9 @@ export function createBodyRenderer(root: string) {
       `<ul>${titled('partner')}</ul>`,
       tag('h2', p('faq.title')),
       entries(kh, 'partners.faq', 'q', 'a')
-        .map((item) => `${tag('h3', item.q!)}${tag('p', item.a!)}`)
+        .map((item) => `${tag('h3', fill(item.q!))}${tag('p', fill(item.a!))}`)
         .join(''),
+      tag('p', p('closing.badge')),
       tag('h2', p('closing.title')),
       tag('p', p('closing.subtitle')),
       `<p>${link('/partners/apply', p('closing.cta'))}</p>`,

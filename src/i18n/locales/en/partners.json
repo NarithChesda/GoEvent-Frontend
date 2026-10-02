@@ -4,24 +4,82 @@
   "switchLanguage": "Switch to {lang}",
   "hero": {
     "eyebrow": "Partner programme",
-    "titleLead": "Free to start.",
-    "titleAccent": "Profit more in a pack.",
-    "subtitle": "You build the invitation for your customer and set your own price. Your first two events are free. After that, pay for each event — or buy a pack and pay less.",
+    "titleLead": "Two events free.",
+    "titleAccent": "Then 50% off.",
+    "subtitle": "Make digital invitations for your customers and charge what you like. Your first two are our gift — after that, every event costs you half our retail price.",
     "ctaPrimary": "Request partner access",
-    "ctaSecondary": "How it works",
-    "proof": {
-      "payg": "Your first two events are free — you buy nothing to try it",
-      "fee": "No monthly fee, and we take no share of what you charge",
-      "review": "We read every request ourselves, usually within two working days"
+    "ctaSecondary": "See the offer",
+    "ledgerLabel": "The offer at a glance",
+    "ledger": {
+      "free": {
+        "figure": "2",
+        "label": "free events, worth up to {worth}"
+      },
+      "payg": {
+        "figure": "50%",
+        "label": "off every event after that"
+      },
+      "upfront": {
+        "figure": "$0",
+        "label": "up front, and no monthly fee"
+      }
     },
     "imageAlt": "Three GoEvent invitations open on phones: a gold Khmer design, a soft pink one, and a deep red one"
+  },
+  "gift": {
+    "title": "Your first two events are our gift",
+    "subtitle": "Two complete events for two paying customers — and whatever they pay you, you keep.",
+    "voucher": {
+      "label": "Partner welcome gift",
+      "worth": "Worth up to",
+      "title": "Two invitations, on us",
+      "note": "Waiting in your account the day you are approved.",
+      "count": "2 events",
+      "each": "× up to {retail} each"
+    },
+    "facts": {
+      "real": {
+        "title": "Real events, not a demo",
+        "body": "Use them for paying customers. It is the same invitation and guest list you will sell afterwards."
+      },
+      "keep": {
+        "title": "What they pay is yours",
+        "body": "You set the price. We take no share of it — on these two or on any event after."
+      },
+      "nocard": {
+        "title": "No card, no deposit",
+        "body": "Opening your account costs nothing, and there is nothing to cancel later."
+      }
+    }
+  },
+  "payg": {
+    "title": "Start without paying up front",
+    "body": "After your two free events there is still no pack to buy. Each time you have a customer, activate their invitation at half our retail price — then charge them whatever you like.",
+    "slip": {
+      "label": "Pay as you go",
+      "example": "Example: one Basic Plus wedding invitation",
+      "customerPays": "Your customer pays",
+      "atRetail": "at our retail price",
+      "youPay": "You pay us",
+      "youKeep": "You keep",
+      "sticker": "off",
+      "upfront": "Paid up front",
+      "monthly": "Monthly fee",
+      "zero": "$0"
+    },
+    "margin": "Charge more than our retail price and you keep the difference too.",
+    "packs": {
+      "title": "Steady work? Buy a pack.",
+      "body": "Credits bought in a pack cost less per event than paying as you go. Partners see the pack prices in their account."
+    }
   },
   "steps": {
     "title": "How it works",
     "subtitle": "Three steps, in this order. The middle one is the only real work — and it is done in one sitting.",
     "open": {
       "title": "Open your partner account",
-      "body": "Tell us about your shop. Once you are approved, your first two events are free. After that, pay for each event or buy a pack."
+      "cost": "Free",
+      "body": "Tell us about your shop. Once you are approved, your two free events are waiting in your account."
     },
     "build": {
       "title": "Build the invitation",
@@ -30,11 +88,11 @@
     },
     "sell": {
       "title": "Send it out",
-      "body": "Pick a design and use one credit — the invitation is live the same minute. Send your customer the link for their guests list, and they can start inviting immediately."
+      "cost": "Free ×2, then 50% off",
+      "body": "Pick a design and activate it — the invitation is live the same minute. Send your customer the link for their guest list, and they can start inviting immediately."
     }
   },
   "product": {
-    "eyebrow": "What you are selling",
     "title": "An invitation your customer could not make themselves",
     "subtitle": "This is what their guests see — each one opens a link of their own, with their name already on the invitation.",
     "personal": {
@@ -66,20 +124,16 @@
     },
     "previewCta": "Browse every design",
     "previewHint": "Pick a design and read the whole invitation it makes.",
-    "screensLabel": "Which screen to show",
-    "screens": {
-      "cover": {
-        "label": "The personal link",
-        "body": "One per guest, with their name on it — sent in the chat app they already use."
-      },
-      "rsvp": {
-        "label": "The reply",
-        "body": "Countdown, reply button and gift details — nothing to install."
-      },
-      "wishes": {
-        "label": "The wishes",
-        "body": "The messages guests leave, collected as they come in."
-      }
+    "cardsLabel": "What a guest sees: the link to their own invitation, with their name in it; the reply they send from it in one tap; and the wish they leave for the couple.",
+    "cards": {
+      "linkTitle": "✨ Sophea & Vichea ✨ - Welcome Mr. Dara Sok",
+      "linkDescription": "Join us as we celebrate the start of our life together.",
+      "wishName": "Bopha Lim",
+      "wishBody": "Congratulations to you both! Wishing you a lifetime of love and happiness."
+    },
+    "groups": {
+      "guest": "On every invitation",
+      "host": "Behind it, for your customer"
     }
   },
   "templates": {
@@ -107,8 +161,7 @@
     "browseLabel": "Browse designs"
   },
   "partner": {
-    "eyebrow": "What you get",
-    "title": "Your name, your customer, your credits",
+    "title": "What else comes with being a partner",
     "branding": {
       "title": "Your logo on every invitation",
       "body": "Your logo sits next to ours at the bottom of every invitation you make."
@@ -132,20 +185,23 @@
     "support": {
       "title": "A real person, in Khmer",
       "body": "Message us on Telegram when you are stuck — setting an event up, or the night before one. You get someone who knows the platform, not a form."
-    },
-    "freeStart": {
-      "title": "It costs nothing to start",
-      "body": "Your first two invitations are free. Buy a pack only once the work is steady."
     }
   },
   "testimonials": {
-    "eyebrow": "What shops say",
     "title": "The shops already selling it",
-    "subtitle": "In their own words — including what one of them would still like us to fix."
+    "subtitle": "In their own words — including what one of them would still like us to fix.",
+    "rosterLabel": "Choose a shop to read its review"
   },
   "faq": {
-    "eyebrow": "Before you ask",
     "title": "The questions shops actually ask",
+    "gift": {
+      "q": "Is there a catch with the two free events?",
+      "a": "No. They are complete events for real customers — the same invitation, guest list and back office you will sell afterwards. Each one is worth up to {retail} at our retail price, and we ask for no card and no deposit to use them."
+    },
+    "payg": {
+      "q": "How does pay-as-you-go work?",
+      "a": "After your free events, you pay for an event when you activate its invitation — at half our retail price. There is no pack to buy first, no minimum and no monthly fee. If the work gets steady, a pack brings the price per event down further."
+    },
     "unsold": {
       "q": "What happens if I do not sell them all?",
       "a": "Your credits stay in your account until you use them. Each pack has its own expiry date, shown on your credits page. If you are not sure how many events you will get, use your two free events, pay per event for a while, and buy a pack once the work is steady."
@@ -192,13 +248,14 @@
     }
   },
   "closing": {
+    "badge": "Worth up to {worth}",
     "title": "Your first two invitations are on us",
-    "subtitle": "Tell us about your shop. If it is a good fit we will open your account, and you can make two real invitations before you pay us anything.",
+    "subtitle": "Tell us about your shop. If it is a good fit we will open your account, and you can make two real invitations before you pay us anything — then half price, for as long as you sell.",
     "cta": "Request partner access",
     "telegram": "Message us on Telegram"
   },
   "runday": {
-    "eyebrow": "And the day itself",
+    "eyebrow": "Included with every event",
     "title": "Your whole guest list, and the totals that come with it",
     "subtitle": "One place for the guest list, the replies and the Cash Gift Journal. No spreadsheet, and no counting the same gift twice.",
     "imageAlt": "The GoEvent guest list, showing each guest with their group, reply, cash gift and table",

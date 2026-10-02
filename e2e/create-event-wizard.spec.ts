@@ -185,7 +185,8 @@ test.describe('create event wizard', () => {
     await page.goto('/')
     await waitForAppMount(page)
 
-    await page.getByRole('button', { name: 'Create Your First Event' }).click()
+    // The hero's; the page's close carries a second, identical one.
+    await page.getByRole('button', { name: 'Create Your First Event' }).first().click()
 
     // No sign-in wall first, and no trip away from the landing.
     const wizard = page.getByRole('dialog', { name: 'Create New Event' })

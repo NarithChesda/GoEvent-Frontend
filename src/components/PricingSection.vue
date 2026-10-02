@@ -3,51 +3,51 @@
        anchor the footer's Pricing link lands on. Its heading matches the
        sections around it rather than being a headline of its own: the page's
        one gradient headline is the hero's. -->
+  <!-- No backdrop of its own. It used to float two blurred colour blobs behind
+       the cards, which read as decoration standing in for hierarchy. -->
   <section
     id="pricing"
     aria-labelledby="pricing-title"
-    class="py-[clamp(3.5rem,9vh,6rem)] relative overflow-hidden scroll-animate"
+    class="py-[clamp(4rem,10vh,6.5rem)] relative"
   >
-    <!-- Background elements -->
-    <div class="absolute inset-0">
-      <div
-        class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 lg:w-72 lg:h-72 2xl:w-96 2xl:h-96 bg-emerald-100/20 rounded-full blur-3xl"
-      ></div>
-      <div class="absolute bottom-0 right-0 w-72 h-72 lg:w-54 lg:h-54 2xl:w-72 2xl:h-72 bg-sky-100/20 rounded-full blur-3xl"></div>
-    </div>
-
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div class="mb-10 sm:mb-12">
         <h2
           id="pricing-title"
-          class="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug tracking-tight"
+          class="type-display-sm text-[clamp(1.75rem,1.3rem+1.6vw,2.5rem)] font-bold tracking-tight text-slate-900"
         >
           {{ t('events.landing.pricing.title') }}
         </h2>
-        <p class="mt-3 max-w-xl text-base text-slate-600 leading-relaxed">
+        <p class="mt-4 max-w-[34rem] text-base sm:text-lg text-slate-600 leading-relaxed">
           {{ t('events.landing.pricing.subtitle') }}
         </p>
 
-        <!-- Category Toggle (Personal/Business) -->
-        <div class="mt-8" v-if="Object.keys(categorizedPlans).length > 1">
+        <!-- Event-type toggle. Dark solid, not the gradient, for the chosen
+             type: the best-seller card's call to action is this screen's one
+             gradient object, and a picker shouting as loud as the purchase
+             leaves the reader to work out which one matters. Scrolls sideways
+             rather than wrapping when the types outgrow a phone. -->
+        <div class="mt-8 -mx-4 px-4 overflow-x-auto scrollbar-hide" v-if="Object.keys(categorizedPlans).length > 1">
           <div class="flex">
-            <div class="inline-flex bg-white rounded-full p-1 lg:p-0.5 2xl:p-1 border-2 lg:border 2xl:border-2 border-slate-200">
+            <div
+              role="group"
+              :aria-label="t('events.landing.pricing.title')"
+              class="inline-flex flex-shrink-0 bg-white rounded-full p-1 lg:p-0.5 2xl:p-1 border border-slate-200"
+            >
               <button
                 v-for="categoryName in Object.keys(categorizedPlans)"
                 :key="categoryName"
+                type="button"
+                :aria-pressed="activeCategory === categoryName"
                 @click="activeCategory = categoryName"
-                class="px-6 py-2.5 lg:px-4.5 lg:py-2 2xl:px-6 2xl:py-2.5 rounded-full font-medium text-sm lg:text-xs 2xl:text-sm transition-all duration-300 relative overflow-hidden"
+                class="px-5 py-2.5 lg:px-4 lg:py-2 2xl:px-5 2xl:py-2.5 min-h-[40px] lg:min-h-0 rounded-full font-medium text-sm lg:text-xs 2xl:text-sm whitespace-nowrap transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
                 :class="
                   activeCategory === categoryName
-                    ? 'text-white shadow-md'
-                    : 'text-slate-700 hover:bg-slate-50'
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 "
               >
-                <span
-                  v-if="activeCategory === categoryName"
-                  class="absolute inset-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full"
-                ></span>
-                <span class="relative z-10">{{ categoryName }}</span>
+                {{ categoryLabel(categoryName) }}
               </button>
             </div>
           </div>
@@ -92,7 +92,7 @@
               class="absolute -top-3 sm:-top-4 lg:-top-2.5 2xl:-top-4 left-1/2 transform -translate-x-1/2 z-20"
             >
               <div
-                class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white px-4 py-2 lg:px-3 lg:py-1.5 2xl:px-4 2xl:py-2 rounded-full flex items-center gap-2 lg:gap-1.5 2xl:gap-2"
+                class="bg-slate-900 text-white px-4 py-2 lg:px-3 lg:py-1.5 2xl:px-4 2xl:py-2 rounded-full flex items-center gap-2 lg:gap-1.5 2xl:gap-2 shadow-md"
               >
                 <svg class="w-4 h-4 lg:w-3 lg:h-3 2xl:w-4 2xl:h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -112,19 +112,19 @@
             >
               <!-- Plan name and price -->
               <div class="mb-4 lg:mb-3 2xl:mb-4">
-                <h4 class="text-2xl md:text-3xl lg:text-2xl 2xl:text-3xl font-bold text-slate-900 mb-4 lg:mb-3 2xl:mb-4">
+                <h3 class="text-2xl md:text-3xl lg:text-2xl 2xl:text-3xl font-bold text-slate-900 mb-4 lg:mb-3 2xl:mb-4">
                   {{ plan.name }}
-                </h4>
+                </h3>
                 <div class="mb-2 lg:mb-1.5 2xl:mb-2">
+                  <!-- One ink for every price: a gradient figure decorates a
+                       number the reader is comparing, and makes the cheaper
+                       plans beside it look like the lesser option before they
+                       have been read. The card's border and badge already
+                       say which one sells. -->
                   <div class="flex items-baseline gap-1 lg:gap-0.5 2xl:gap-1">
                     <span class="text-lg lg:text-base 2xl:text-lg font-normal text-slate-600">$</span>
                     <span
-                      class="text-5xl md:text-6xl lg:text-[45px] 2xl:text-6xl font-normal leading-none"
-                      :class="
-                        plan.is_best_seller
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
-                          : 'text-slate-900'
-                      "
+                      class="text-5xl md:text-6xl lg:text-[45px] 2xl:text-6xl font-normal leading-none tabular-nums text-slate-900"
                     >
                       {{ parseFloat(plan.price).toFixed(0) }}
                     </span>
@@ -255,8 +255,22 @@ import { Check, ChevronDown } from 'lucide-vue-next'
 import { FALLBACK_PRICING_PLANS, type PricingPlan } from '@/constants/pricingFallback'
 import { parsePlanFeature, type PlanFeature } from '@/utils/planFeatures'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 
 const { t } = useAppLanguage()
+const { translateEventCategory } = useCategoryTranslation()
+
+/**
+ * The tab for plans with no event category. A plan saved without one used to
+ * get a tab named `Category null`, on the public homepage. Kept rather than
+ * dropped: the plan is live and sold, it just needs its category set in
+ * Admin → Pricing Plans, after which it moves to that category's tab.
+ */
+const OTHER_CATEGORY = '__other'
+
+/** The tab label: the event type in the reader's language. */
+const categoryLabel = (key: string) =>
+  key === OTHER_CATEGORY ? t('events.landing.pricing.otherCategory') : translateEventCategory(key)
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -306,12 +320,10 @@ const categorizedPlans = computed(() => {
   pricingPlans.value
     .filter((plan) => plan.is_active)
     .forEach((plan) => {
-      let categoryName: string
-      if (typeof plan.category === 'object' && plan.category !== null && plan.category.name) {
-        categoryName = plan.category.name
-      } else {
-        categoryName = `Category ${plan.category}`
-      }
+      const categoryName =
+        typeof plan.category === 'object' && plan.category !== null && plan.category.name
+          ? plan.category.name
+          : OTHER_CATEGORY
 
       if (!categories[categoryName]) {
         categories[categoryName] = []
@@ -335,12 +347,15 @@ const categorizedPlans = computed(() => {
     }
   })
 
-  // Add any remaining categories
+  // Add any remaining categories, the uncategorized plans last
   Object.keys(categories).forEach(cat => {
-    if (!categoryOrder.includes(cat)) {
+    if (!categoryOrder.includes(cat) && cat !== OTHER_CATEGORY) {
       sortedCategories[cat] = categories[cat]
     }
   })
+  if (categories[OTHER_CATEGORY]) {
+    sortedCategories[OTHER_CATEGORY] = categories[OTHER_CATEGORY]
+  }
 
   return sortedCategories
 })
