@@ -1,5 +1,8 @@
 import { onBeforeUnmount, ref } from 'vue'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import {
+  createShowcaseRevealObserver,
+  showcaseRevealObserverInit,
+} from '@/composables/showcase/useScrollProgress'
 
 export interface GalleryRevealOptions {
   /**
@@ -25,8 +28,9 @@ export interface GalleryRevealOptions {
  *   it measures against the window, and the photographs are clipped by the
  *   card's scroller, so a lazy image below the card's fold only starts loading
  *   once it is already on screen.
- * - **revealed** — the shared showcase reveal config (threshold 0, 60px in;
- *   see `showcaseRevealObserverInit` for why the threshold must be 0).
+ * - **revealed** — the shared showcase reveal observer (threshold 0, at the
+ *   reading line; see `showcaseRevealObserverInit` for why the threshold must
+ *   be 0, and `createShowcaseRevealObserver` for the opening screen).
  *
  * Keyed by string, not by index, so the studio re-ordering or removing a
  * photograph doesn't hand one photo's arrival to its neighbour.
@@ -83,7 +87,7 @@ export function useGalleryReveal({ step, cap = 0.6 }: GalleryRevealOptions) {
   const ensureObservers = () => {
     if (revealObserver || unsupported) return
     const init = showcaseRevealObserverInit()
-    revealObserver = new IntersectionObserver(onReveal, init)
+    revealObserver = createShowcaseRevealObserver(onReveal)
     nearObserver = new IntersectionObserver(onNear, {
       root: init.root,
       threshold: 0,

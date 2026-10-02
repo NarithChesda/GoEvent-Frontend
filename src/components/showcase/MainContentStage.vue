@@ -159,13 +159,16 @@
                  Without it, reaching the end of the invitation chains scroll to
                  the outer container and the whole glass card slides — a visible
                  break in the middle of the primary gesture. -->
+            <!-- `story` + its tone: the scroll story (scroll-story.css), the
+                 invitation assembling as it is read. -->
             <div
               ref="stageScrollRef"
-              class="stage-scroll relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar"
+              class="stage-scroll story relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar"
               :class="{
                 'stage-scroll--playing': isAutoScrolling,
                 'stage-scroll--ink-edge': inkEdge,
               }"
+              :data-story-tone="storyTone"
             >
               <div
                 :class="[contentPaddingClasses, { 'stage-scroll__content--full': screenBackdrop }]"
@@ -758,7 +761,10 @@ import type {
 import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import type {} from '../../utils/translations'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import {
+  createShowcaseRevealObserver,
+  storyScrollActive,
+} from '@/composables/showcase/useScrollProgress'
 import { useCinematicScroll } from '@/composables/showcase/useCinematicScroll'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
@@ -769,6 +775,7 @@ import {
 } from '../../composables/showcase/useCoverStageLayout'
 import type { CoverHostNamesBinding } from './cover/coverDetails'
 import { resolveGlassTone } from './glassTone'
+import { resolveStoryTone } from './scrollStory'
 import { resolveContentBackdrop, stageBackdropLook, stageBackdropVars } from './stageBackdrop'
 import type {
   AgendaDesignConfig,
@@ -1030,6 +1037,9 @@ const eventType = computed(() => {
   return props.event.category_details?.name || props.event.category_name || 'default'
 })
 
+// How much the scroll story moves for this occasion (scrollStory.ts).
+const storyTone = computed(() => resolveStoryTone(eventType.value))
+
 // A photo set to appear as a band leaves the gallery, and so do the one in the
 // cover's photo frame and the one the countdown's strips are cut from, while the
 // design draws them: the invitation never shows the same photograph twice.
@@ -1226,11 +1236,11 @@ onMounted(async () => {
   // Shared config — see showcaseRevealObserverInit(). All scrolling happens
   // inside the liquid-glass card's own container, so that is the observer root
   // on every screen size; root:null would report every section as intersecting
-  // at mount and fire them all at once instead of on scroll.
-  const observerConfig = showcaseRevealObserverInit()
-
-  // Create the IntersectionObserver directly
-  revealObserver.value = new IntersectionObserver((entries) => {
+  // at mount and fire them all at once instead of on scroll. Under the scroll
+  // story, sections already on screen at mount still reveal in this first
+  // batch (createShowcaseRevealObserver), so the opening screen composes as it
+  // always did.
+  revealObserver.value = createShowcaseRevealObserver((entries) => {
     // IntersectionObserver does NOT guarantee entries in document order, so a
     // batch has to be sorted before it can be staggered — otherwise the cascade
     // can run bottom-to-top on first paint.
@@ -1255,7 +1265,7 @@ onMounted(async () => {
         observedElements.value.delete(entry.target)
       }
     })
-  }, observerConfig)
+  })
 
   // Initialize animations with the properly configured observer
   initializeRevealAnimations()
@@ -1392,8 +1402,18 @@ const { isPlaying: isAutoScrolling } = useCinematicScroll({
  * `will-change` is applied for the duration of the transition and dropped on
  * completion. Leaving it in the stylesheet promoted all 12 sections to their own
  * compositor layer for the whole session, on top of the card's backdrop-filter.
+ *
+ * Under the scroll story there is no transition: the section has been rising
+ * with the scroll all along, and `is-visible` only tells what is inside it
+ * (EventInfo's own entrance, the footer's lockup) that it has reached the
+ * reading line. Nothing would ever end to drop a `will-change` set here.
  */
 const revealSection = (el: HTMLElement, staggerDelay: number) => {
+  if (storyScrollActive()) {
+    el.classList.add('is-visible')
+    return
+  }
+
   el.style.willChange = 'opacity, transform'
   el.style.transitionDelay = staggerDelay > 0 ? `${staggerDelay}ms` : ''
 
@@ -1755,6 +1775,11 @@ onUnmounted(() => {
   videoResourceManager.value = null
 })
 </script>
+
+<!-- Unscoped, once: the scroll story's roles are given by the sections'
+     own components (a title, a hairline, an ornament), which carry no scope
+     attribute of this one. Every selector is under `.story`. -->
+<style src="./scroll-story.css"></style>
 
 <style scoped>
 /* Manage-page preview edit chrome: add-video affordance shown when the event
@@ -2251,6 +2276,47 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .animate-reveal {
     transform: translateY(16px);
+  }
+}
+
+/* The scroll story's chapters (scroll-story.css has the rest of it). Where the
+   browser can drive animation by scroll position, a section no longer waits
+   off-screen at opacity 0 for a one-shot reveal: it is there as it enters, and
+   rises into place over the first stretch of its travel, tied to the guest's
+   finger — a section that arrives a little behind the scroll and catches up,
+   which is what makes the card read as a page being lifted rather than a
+   document sliding past. `is-visible` still arrives, at the reading line, for
+   what is inside the section to start its own entrance by.
+
+   Transform only, never opacity. A section can hold a glass pane (the gift
+   sheet, the reply glass, a frosted info card), and an ancestor below opacity
+   1 is a backdrop root: the pane would blur nothing but its own section for as
+   long as the guest rested mid-entrance, then snap into focus. No scale either:
+   the photo bands, the countdown strips, the gallery and the footer bleed to
+   the card's edges, and a scaled section would draw them short of the edge.
+
+   `translate`, not `transform`: the resting `translateY(0)` above stays, so a
+   section is still the containing block it always was. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-reveal,
+    .animate-reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: none;
+      animation: storyChapter linear backwards;
+      animation-timeline: view();
+      animation-range: cover 0% cover var(--story-reach, 30vh);
+    }
+  }
+}
+
+@keyframes storyChapter {
+  from {
+    translate: 0 var(--story-rise, 40px);
+  }
+  to {
+    translate: 0 0;
   }
 }
 

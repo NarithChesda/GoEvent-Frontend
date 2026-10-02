@@ -127,3 +127,114 @@ describe('registerScrollProgress', () => {
     expect(progressOf(second.item)).toBeGreaterThan(0)
   })
 })
+
+describe('createShowcaseRevealObserver', () => {
+  /** Captures what each observer was built with, and lets a case report to it. */
+  class FakeObserver {
+    static made: FakeObserver[] = []
+    constructor(
+      public callback: IntersectionObserverCallback,
+      public init: IntersectionObserverInit,
+    ) {
+      FakeObserver.made.push(this)
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return []
+    }
+    report(entries: Array<{ target: Element; top: number; isIntersecting: boolean }>) {
+      this.callback(
+        entries.map(
+          ({ target, top, isIntersecting }) =>
+            ({
+              target,
+              isIntersecting,
+              boundingClientRect: { top, bottom: top + 120 } as DOMRect,
+              intersectionRatio: isIntersecting ? 0.5 : 0,
+              intersectionRect: {} as DOMRect,
+              rootBounds: null,
+              time: 0,
+            }) as IntersectionObserverEntry,
+        ),
+        this as unknown as IntersectionObserver,
+      )
+    }
+  }
+
+  /** The browser's answers to "scroll timelines?" and "reduced motion?". */
+  const browser = ({ timelines, reducedMotion }: { timelines: boolean; reducedMotion: boolean }) => {
+    vi.stubGlobal('CSS', { supports: (query: string) => timelines && query.includes('animation-timeline') })
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: reducedMotion && query.includes('reduce') }))
+  }
+
+  beforeEach(() => {
+    FakeObserver.made = []
+    vi.stubGlobal('IntersectionObserver', FakeObserver)
+  })
+
+  const revealed = (callback: ReturnType<typeof vi.fn>) =>
+    (callback.mock.calls.at(-1)?.[0] as IntersectionObserverEntry[]).map((e) => e.isIntersecting)
+
+  it('is a plain observer on the 60px line without scroll timelines', () => {
+    browser({ timelines: false, reducedMotion: false })
+    const { item } = mountStage(500)
+    const callback = vi.fn()
+    registry.createShowcaseRevealObserver(callback)
+    const observer = FakeObserver.made[0]
+
+    expect(observer.init.rootMargin).toBe('0px 0px -60px 0px')
+    expect(observer.init.threshold).toBe(0)
+    observer.report([{ target: item, top: 500, isIntersecting: false }])
+    expect(revealed(callback)).toEqual([false])
+  })
+
+  it('keeps the 60px line under reduced motion', () => {
+    browser({ timelines: true, reducedMotion: true })
+    mountStage(500)
+    registry.createShowcaseRevealObserver(vi.fn())
+
+    expect(registry.storyScrollActive()).toBe(false)
+    expect(FakeObserver.made[0].init.rootMargin).toBe('0px 0px -60px 0px')
+  })
+
+  it('reports at the reading line under the scroll story', () => {
+    browser({ timelines: true, reducedMotion: false })
+    const { scroller } = mountStage(500)
+    registry.createShowcaseRevealObserver(vi.fn())
+
+    expect(registry.storyScrollActive()).toBe(true)
+    expect(FakeObserver.made[0].init.rootMargin).toBe(
+      `0px 0px -${registry.STORY_READING_LINE} 0px`,
+    )
+    expect(FakeObserver.made[0].init.root).toBe(scroller)
+  })
+
+  /**
+   * The reading line is for content the guest scrolls to. What is already on
+   * screen when it is first observed (the scroller is 700px tall here, so on
+   * screen is anything starting above 640px) must not sit blank until the
+   * first scroll.
+   */
+  it('reveals what is already on screen at its first report, and only then', () => {
+    browser({ timelines: true, reducedMotion: false })
+    const { scroller } = mountStage(500)
+    const onScreen = document.createElement('div')
+    const belowFold = document.createElement('div')
+    scroller.append(onScreen, belowFold)
+    const callback = vi.fn()
+    registry.createShowcaseRevealObserver(callback)
+    const observer = FakeObserver.made[0]
+
+    observer.report([
+      { target: onScreen, top: 500, isIntersecting: false },
+      { target: belowFold, top: 660, isIntersecting: false },
+    ])
+    expect(revealed(callback)).toEqual([true, false])
+
+    // A later report is the reading line's alone.
+    observer.report([{ target: onScreen, top: 500, isIntersecting: false }])
+    expect(revealed(callback)).toEqual([false])
+  })
+})

@@ -1,0 +1,183 @@
+/* =============================================================================
+   The scroll story — the invitation assembling as it is read.
+
+   Loaded unscoped, once, from MainContentStage, which puts `.story` and the
+   occasion's `data-story-tone` on the card's scroller. Every selector is under
+   `.story`, so a component rendered anywhere else ignores these classes.
+
+   The principle: motion happens where the guest is reading, and at the speed
+   of their finger. Each piece animates against its OWN position in the
+   scroller (a view timeline), so a chapter assembles in reading order — the
+   title before the line under it, before the scene under that — as a stagger
+   made of space rather than of time. Scroll faster and it assembles faster;
+   stop and it holds; scroll back and it rewinds. The one-shot reveals this
+   replaced fired 60px above the bottom edge, under most templates' bottom
+   ornament, and were over before the content reached the reading zone, so the
+   invitation read as a document sliding past rather than a story unfolding.
+
+   The roles a component can give an element (and what each one does):
+
+     story-title   a chapter's heading group: rises and comes into focus.
+     story-scene   a block inside a chapter: rises and fades in.
+     story-rule    a hairline: draws itself outward from the ornament it
+                   flanks. `--lead` is the left one (grows leftward from its
+                   right end), `--trail` the right one.
+     story-gem     the ornament between two rules: opens with a turn.
+
+   The chapters themselves (MainContentStage's section wrappers) only RISE —
+   transform, no opacity — because a section can hold a glass pane, and an
+   ancestor below opacity 1 is a backdrop root: the pane would blur nothing
+   but its own section until the fade ended, then snap. That rule is in
+   MainContentStage's own stylesheet, next to the reveal it replaces.
+
+   Give a role only to an element that has no `animation` of its own: the
+   shorthand here would replace it, and a fill-mode value would hold over
+   whatever it was animating. Everything animates the individual `translate`,
+   `scale` and `rotate` properties, so an element's own `transform` composes
+   with the motion rather than being overwritten — and opacity only where the
+   element holds no opacity state of its own.
+
+   Fill is `backwards` throughout: before its range an element holds its
+   first frame, after it the element is simply its own style again, which is
+   the last frame. Nothing keeps an animated value once a piece has arrived.
+
+   Gated twice, on the same two conditions as `storyScrollActive()` (which
+   moves every section's own reveal up to the reading line to match): a
+   browser without scroll timelines, or a guest who asked for less motion,
+   gets the one-shot reveals exactly as before.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   Tone: how far and how fast (scrollStory.ts picks it from the category).
+   Lengths of scroll are in vh rather than in % of the cover range, which
+   would make a tall chapter take longer to arrive than a short one; the card
+   is 85dvh of the screen, so 30vh is about a third of what the guest sees.
+   ----------------------------------------------------------------------------- */
+
+/* Weddings, housewarmings and the default: a soft rise and a focus pull. */
+.story {
+  --story-rise: 40px;
+  --story-reach: 30vh;
+  --story-title-rise: 16px;
+  --story-title-focus: 5px;
+  --story-title-tilt: 0deg;
+  --story-scene-rise: 26px;
+  --story-gem-turn: -90deg;
+}
+
+/* Birthdays: more travel, titles land with a slight tilt, and arrive crisp
+   rather than out of focus — a tag swinging into place, not a lens. */
+.story[data-story-tone='playful'] {
+  --story-rise: 64px;
+  --story-reach: 26vh;
+  --story-title-rise: 26px;
+  --story-title-focus: 0px;
+  --story-title-tilt: -2.5deg;
+  --story-scene-rise: 40px;
+  --story-gem-turn: -180deg;
+}
+
+/* Funerals and ceremonies: almost no travel. Things arrive by coming into
+   focus, slowly, over more of the scroll. */
+.story[data-story-tone='solemn'] {
+  --story-rise: 12px;
+  --story-reach: 38vh;
+  --story-title-rise: 6px;
+  --story-title-focus: 8px;
+  --story-title-tilt: 0deg;
+  --story-scene-rise: 10px;
+  --story-gem-turn: 0deg;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* A chapter's title starts once it is clear of the bottom ornament (~9%
+       of the card) and lands a little after its chapter has, just above the
+       middle of the screen: the moment it is read. The blur sits on the
+       heading GROUP, never on the heading — a heading with a metallic finish
+       draws its relief as a `filter` of its own, and a filter animation on it
+       would replace that relief for good. Filtered from outside, the two
+       compose. */
+    .story .story-title {
+      animation: storyTitle linear backwards;
+      animation-timeline: view();
+      animation-range: cover 8vh cover calc(var(--story-reach) + 4vh);
+    }
+
+    .story .story-scene {
+      animation: storyScene linear backwards;
+      animation-timeline: view();
+      animation-range: cover 4vh cover var(--story-reach);
+    }
+
+    /* The hairlines draw just after their ornament has opened, and finish
+       with the title they frame. */
+    .story .story-rule {
+      animation: storyRule linear backwards;
+      animation-timeline: view();
+      animation-range: cover 10vh cover calc(var(--story-reach) + 2vh);
+    }
+
+    .story .story-rule--lead {
+      transform-origin: 100% 50%;
+    }
+
+    .story .story-rule--trail {
+      transform-origin: 0% 50%;
+    }
+
+    .story .story-gem {
+      animation: storyGem linear backwards;
+      animation-timeline: view();
+      animation-range: cover 7vh cover 20vh;
+    }
+  }
+}
+
+@keyframes storyTitle {
+  from {
+    opacity: 0;
+    translate: 0 var(--story-title-rise);
+    rotate: var(--story-title-tilt);
+    filter: blur(var(--story-title-focus));
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
+    filter: none;
+  }
+}
+
+@keyframes storyScene {
+  from {
+    opacity: 0;
+    translate: 0 var(--story-scene-rise);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes storyRule {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes storyGem {
+  from {
+    opacity: 0;
+    scale: 0.4;
+    rotate: var(--story-gem-turn);
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}

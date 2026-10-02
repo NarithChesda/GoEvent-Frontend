@@ -1,8 +1,9 @@
 import { onMounted, onUnmounted, watch, type Ref } from 'vue'
 
 /**
- * Shared scroll-progress registry for the showcase's scroll-driven reveals
- * (agenda cards, gallery photos).
+ * Shared scroll-progress registry for the showcase's JS-measured scroll reveals
+ * (agenda cards, gallery photos), plus the one IntersectionObserver config every
+ * section reveal uses. The CSS-driven chapter entrances live in scroll-story.css.
  *
  * One scroll listener and one rAF for every registered element, with all
  * `getBoundingClientRect()` reads batched ahead of all style writes.
@@ -14,6 +15,33 @@ import { onMounted, onUnmounted, watch, type Ref } from 'vue'
  */
 
 const SCROLL_ROOT_SELECTOR = '.liquid-glass-card .custom-scrollbar'
+
+/**
+ * How far above the scroller's bottom edge a section's own entrance plays
+ * under the scroll story: a share of the scroller, so it sits the same
+ * distance into the visible card on every phone. 22% clears the deepest
+ * bottom ornaments the templates draw (~10% of the card) with room for a line
+ * of text, and is still low enough that a guest scrolling at reading speed
+ * meets each performance as it starts rather than finished.
+ */
+export const STORY_READING_LINE = '22%'
+
+/** "On screen": 60px clear of the scroller's bottom edge. */
+const ON_SCREEN_LINE_PX = 60
+
+/**
+ * Whether the scroll story runs: the browser can drive animations by scroll
+ * position (CSS scroll-driven animations — Chromium 115+, Safari 26+) and the
+ * guest hasn't asked for less motion. The stylesheets gate on exactly the same
+ * two conditions (`@supports (animation-timeline: view())` inside
+ * `prefers-reduced-motion: no-preference`), so the reading line below and the
+ * scrubbed entrances can never disagree about which mode the page is in.
+ */
+export function storyScrollActive(): boolean {
+  if (typeof window === 'undefined' || typeof CSS === 'undefined' || !CSS.supports) return false
+  if (!CSS.supports('animation-timeline: view()')) return false
+  return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+}
 
 /**
  * The one IntersectionObserver config every showcase section reveal uses.
@@ -43,14 +71,79 @@ const SCROLL_ROOT_SELECTOR = '.liquid-glass-card .custom-scrollbar'
  * bottom `rootMargin` instead, which states it in pixels: the section reveals
  * once 60px of it has entered the scroller, whatever its height. For the ~600px
  * sections the 0.1 was tuned against that is the same moment as before.
+ *
+ * Under the scroll story (`storyScrollActive`) the line moves up to
+ * `STORY_READING_LINE`. 60px is under most templates' bottom ornament, so every
+ * section's own performance (words writing themselves, the circled day, the
+ * countdown's wipe, the wishes dropping in) played where nobody could see it
+ * and was over before the section reached the reading zone. That was tolerable
+ * only because the section itself was invisible until then. With the story on,
+ * a section is visible as it rises (scroll-scrubbed, scroll-story.css), so the
+ * performance waits for it to be somewhere the guest is looking. Without scroll
+ * timelines, or with reduced motion, nothing changes: the section is hidden
+ * until it reveals, so revealing late would only leave a blank band.
  */
 export function showcaseRevealObserverInit(): IntersectionObserverInit {
   return {
     threshold: 0,
-    rootMargin: '0px 0px -60px 0px',
+    rootMargin: storyScrollActive()
+      ? `0px 0px -${STORY_READING_LINE} 0px`
+      : `0px 0px -${ON_SCREEN_LINE_PX}px 0px`,
     root: document.querySelector(SCROLL_ROOT_SELECTOR),
   }
 }
+
+/**
+ * `new IntersectionObserver(callback, showcaseRevealObserverInit())`, plus the
+ * one rule the scroll story's reading line needs: an element that is already
+ * on screen when it is first observed counts as revealed at once.
+ *
+ * The reading line is for content the guest scrolls TO. The opening screen —
+ * whatever is in view when the invitation appears, or a section that mounts
+ * where the guest is already looking — was never scrolled to, and nothing will
+ * carry it up to the line: under the line alone, the invitation sentence below
+ * the hosts sat blank until the first scroll. On screen means the line every
+ * reveal used before the story: 60px clear of the bottom edge.
+ *
+ * Only an element's first report gets the rule; after that it waits for the
+ * line like everything else. Callers see an ordinary entry list — an entry
+ * revealed this way is a plain copy of the original with `isIntersecting` set.
+ * Without the story it is exactly `new IntersectionObserver`.
+ */
+export function createShowcaseRevealObserver(
+  callback: IntersectionObserverCallback,
+): IntersectionObserver {
+  const init = showcaseRevealObserverInit()
+  if (!storyScrollActive()) return new IntersectionObserver(callback, init)
+
+  const root = init.root instanceof Element ? init.root : null
+  const reported = new WeakSet<Element>()
+
+  return new IntersectionObserver((entries, observer) => {
+    let screen: { top: number; bottom: number } | null = null
+    const adjusted = entries.map((entry) => {
+      const first = !reported.has(entry.target)
+      reported.add(entry.target)
+      if (!first || entry.isIntersecting) return entry
+
+      screen ??= root?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight }
+      const rect = entry.boundingClientRect
+      const onScreen = rect.top < screen.bottom - ON_SCREEN_LINE_PX && rect.bottom > screen.top
+      return onScreen ? revealedEntry(entry) : entry
+    })
+    callback(adjusted, observer)
+  }, init)
+}
+
+const revealedEntry = (entry: IntersectionObserverEntry): IntersectionObserverEntry => ({
+  boundingClientRect: entry.boundingClientRect,
+  intersectionRatio: entry.intersectionRatio,
+  intersectionRect: entry.intersectionRect,
+  isIntersecting: true,
+  rootBounds: entry.rootBounds,
+  target: entry.target,
+  time: entry.time,
+})
 
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3)
 

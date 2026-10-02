@@ -21,8 +21,10 @@
   <div class="pay" :style="payVars">
     <!-- ══ Heading ══════════════════════════════════════════════════════
          A sibling of the Agenda and guestbook headings: same size ladder, same
-         ornament, same face (the template's primary, bound inline). -->
-    <header v-if="paymentSectionTitle" class="pay-head">
+         ornament, same face (the template's primary, bound inline). Under the
+         scroll story (scroll-story.css) it comes into focus as it rises and
+         its ornament opens, the way every chapter title does. -->
+    <header v-if="paymentSectionTitle" class="pay-head story-title">
       <h2
         class="pay-title"
         :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
@@ -31,9 +33,9 @@
         <span class="tfx-ink">{{ paymentSectionTitle }}</span>
       </h2>
       <span class="pay-orn" aria-hidden="true">
-        <span class="pay-orn__rule"></span>
-        <span class="pay-orn__gem"></span>
-        <span class="pay-orn__rule"></span>
+        <span class="pay-orn__rule story-rule story-rule--lead"></span>
+        <span class="pay-orn__gem story-gem"></span>
+        <span class="pay-orn__rule story-rule story-rule--trail"></span>
       </span>
     </header>
 

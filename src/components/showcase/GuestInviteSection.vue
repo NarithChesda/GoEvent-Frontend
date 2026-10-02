@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useTextEffect } from '@/composables/showcase/useTextEffects'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import type { InlineEditTarget } from '@/components/showcase-preview/edit/editContext'
 import type {
@@ -197,13 +197,13 @@ onMounted(() => {
     revealed.value = true
     return
   }
-  observer = new IntersectionObserver((entries) => {
+  observer = createShowcaseRevealObserver((entries) => {
     if (entries.some((entry) => entry.isIntersecting)) {
       revealed.value = true
       observer?.disconnect()
       observer = null
     }
-  }, showcaseRevealObserverInit())
+  })
   observer.observe(root)
 })
 

@@ -50,7 +50,10 @@
 <script setup lang="ts">
 import { computed, inject, onBeforeUnmount, onMounted, ref, shallowReactive, watch } from 'vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import {
+  createShowcaseRevealObserver,
+  showcaseRevealObserverInit,
+} from '@/composables/showcase/useScrollProgress'
 import GalleryFrame from './GalleryFrame.vue'
 import {
   reelCopies,
@@ -542,12 +545,12 @@ onMounted(() => {
   )
   nearObserver.observe(root)
 
-  revealObserver = new IntersectionObserver(([entry]) => {
+  revealObserver = createShowcaseRevealObserver(([entry]) => {
     if (!entry?.isIntersecting) return
     revealObserver?.disconnect()
     revealObserver = null
     reveal()
-  }, init)
+  })
   revealObserver.observe(root)
 })
 

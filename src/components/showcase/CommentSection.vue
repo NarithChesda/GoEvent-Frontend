@@ -19,8 +19,10 @@
     <!-- ══ Heading ══════════════════════════════════════════════════════
          A sibling of the Agenda and RSVP headings: same size ladder, same
          ornament, and it keeps the template's primary face through its own
-         inline style (see the guestbook type rule in the unscoped block). -->
-    <header class="wb-head">
+         inline style (see the guestbook type rule in the unscoped block).
+         Under the scroll story (scroll-story.css) it comes into focus as it
+         rises and its ornament opens, the way every chapter title does. -->
+    <header class="wb-head story-title">
       <h2
         class="wb-title"
         :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
@@ -29,9 +31,9 @@
         <span class="tfx-ink">{{ commentHeaderText }}</span>
       </h2>
       <span class="wb-orn" aria-hidden="true">
-        <span class="wb-orn__rule"></span>
-        <span class="wb-orn__gem"></span>
-        <span class="wb-orn__rule"></span>
+        <span class="wb-orn__rule story-rule story-rule--lead"></span>
+        <span class="wb-orn__gem story-gem"></span>
+        <span class="wb-orn__rule story-rule story-rule--trail"></span>
       </span>
     </header>
 
@@ -302,7 +304,7 @@ import { commentsService, type EventComment } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import AuthModal from '../AuthModal.vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import { showcaseRevealObserverInit } from '../../composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '../../composables/showcase/useScrollProgress'
 import { useAuthModal } from '../../composables/useAuthModal'
 import { wishSurface } from './wishSurface'
 import {
@@ -1217,9 +1219,9 @@ const checkForCommentRedirect = () => {
  * off each note's own `--wish-index`, so the only thing JavaScript has to decide
  * is *when the page has been reached*.
  *
- * `showcaseRevealObserverInit()` is the showcase's shared config; its root is
- * the liquid-glass card's own scroller, which is where all scrolling actually
- * happens.
+ * `createShowcaseRevealObserver()` is the showcase's shared observer; its root
+ * is the liquid-glass card's own scroller, which is where all scrolling
+ * actually happens, and under the scroll story it reports at the reading line.
  */
 const panelRef = ref<HTMLElement | null>(null)
 const isRevealed = ref(false)
@@ -1233,13 +1235,13 @@ const setupRevealObserver = () => {
     return
   }
 
-  revealObserver = new IntersectionObserver((entries) => {
+  revealObserver = createShowcaseRevealObserver((entries) => {
     if (entries.some((entry) => entry.isIntersecting)) {
       isRevealed.value = true
       revealObserver?.disconnect()
       revealObserver = null
     }
-  }, showcaseRevealObserverInit())
+  })
 
   revealObserver.observe(panelRef.value)
 }

@@ -776,7 +776,7 @@
 <script setup lang="ts">
 import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
-import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { createShowcaseRevealObserver } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
@@ -941,17 +941,14 @@ const setupVisibilityTracking = () => {
     classObserver.observe(parent, { attributes: true, attributeFilter: ['class'] })
   } else {
     // Fallback for use outside the showcase (e.g. preview / admin)
-    const fallback = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            isVisible.value = true
-            fallback.disconnect()
-          }
-        })
-      },
-      showcaseRevealObserverInit(),
-    )
+    const fallback = createShowcaseRevealObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isVisible.value = true
+          fallback.disconnect()
+        }
+      })
+    })
     if (containerRef.value) fallback.observe(containerRef.value)
   }
 }

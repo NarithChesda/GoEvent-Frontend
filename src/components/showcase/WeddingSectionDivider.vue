@@ -2,12 +2,19 @@
   <div
     class="flex justify-center my-8 sm:my-10 laptop-sm:my-10 laptop-md:my-12 laptop-lg:my-14 desktop:my-12"
   >
+    <!-- The boundary between two chapters, and under the scroll story
+         (scroll-story.css) the moment the next one begins: as it rises past
+         the bottom of the screen the knot opens and the two lines draw
+         themselves outward from it. -->
     <div class="bow-tie-divider">
       <!-- Extended Left Line -->
-      <div class="divider-line left-line" :style="{ backgroundColor: primaryColor }"></div>
+      <div
+        class="divider-line left-line story-rule story-rule--lead"
+        :style="{ backgroundColor: primaryColor }"
+      ></div>
 
       <!-- Bow Tie Center -->
-      <div class="bow-tie-center">
+      <div class="bow-tie-center story-gem">
         <svg
           class="bow-tie-svg"
           :style="{ color: primaryColor }"
@@ -27,7 +34,10 @@
       </div>
 
       <!-- Extended Right Line -->
-      <div class="divider-line right-line" :style="{ backgroundColor: primaryColor }"></div>
+      <div
+        class="divider-line right-line story-rule story-rule--trail"
+        :style="{ backgroundColor: primaryColor }"
+      ></div>
     </div>
   </div>
 </template>
@@ -83,6 +93,9 @@ defineProps<Props>()
   justify-content: center;
   position: relative;
   z-index: 2;
+  /* The knot opens without the gem's turn: a bow on its side reads as a
+     propeller, not a flourish. */
+  --story-gem-turn: 0deg;
 }
 
 /* No idle animation. gentle-glow ran forever, on eight dividers per
