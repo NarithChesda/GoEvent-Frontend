@@ -12,6 +12,8 @@ import type {
   HostFrameStyle,
   CoupleOrnament,
   HostBreaklineStyle,
+  HostCaptionPlacement,
+  HostPhotoFrame,
   InfoCardDesignConfig,
   StageModesConfig,
 } from '@/services/api/types/template.types'
@@ -356,6 +358,16 @@ export interface HostInfoProps {
   dividerImage?: string | null
   /** Breakline width, in percent of the block. Defaults to 100 (half the block). */
   dividerScale?: number
+  /** The `arch` design's frame shape around each host's photo. Defaults to 'arch'. */
+  photoFrame?: HostPhotoFrame
+  /**
+   * The `arch` design's own frame artwork, from
+   * `template_assets.assets.host_photo_frame_image`. Present wins over
+   * `photoFrame`, for the reason `dividerImage` wins over `dividerStyle`.
+   */
+  photoFrameImage?: string | null
+  /** Where the `arch` design sets each host's title, name and parents. Defaults to 'below'. */
+  captionPlacement?: HostCaptionPlacement
   /**
    * Logo size, in percent of the breakpoint's own cap. Defaults to 100. Read by
    * every design that draws a logo — `standard`, `portrait`, `crest`.

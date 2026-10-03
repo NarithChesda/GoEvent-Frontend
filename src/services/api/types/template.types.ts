@@ -888,10 +888,12 @@ export interface EventDetailsDesignConfig {
  * - `portrait` — the standard layout with one row moved: title, then portrait,
  *                then name, so the label introduces the person, the photo shows
  *                them and the name closes.
- * - `arch`     — the showcase-v2 couple-story composition: two arch-framed
+ * - `arch`     — the showcase-v2 couple-story composition: two framed
  *                portraits staged on a diagonal with a drawn hairline between
- *                them, each host's title, name and parents stacked under their
- *                own frame instead of split across shared rows.
+ *                them, each host's title, name and parents set with their own
+ *                frame instead of split across shared rows. The frame's shape
+ *                (`photo_frame`), an uploaded frame (`host_photo_frame_image`)
+ *                and where the names sit (`caption_placement`) are its own.
  * - `crest`    — the Khmer wedding-card order, read top to bottom: the crest
  *                (logo), the two sets of parents who are inviting, the
  *                invitation sentence itself, then the couple either side of a
@@ -939,10 +941,38 @@ export type HostInfoDesignType = 'standard' | 'simple' | 'portrait' | 'arch' | '
  *              sweeping its lower half. The most ornament of the four.
  *
  * Rendered by the **grid** host layouts (`standard` and `portrait`). `arch`
- * draws its own frames and `simple` has neither a title nor an avatar, so both
- * ignore this.
+ * draws its own frames (see `HostPhotoFrame`) and `simple` has neither a title
+ * nor an avatar, so both ignore this.
  */
 export type HostFrameStyle = 'none' | 'banner' | 'plaque' | 'ribbon' | 'laurel'
+
+/**
+ * The shape of the frame each host's photograph sits in on the `arch` design.
+ *
+ * - `arch`      — the default, and what every arch template already draws: a
+ *                 round-topped window with softened feet.
+ * - `pointed`   — that window drawn to a point at its crown: two arcs meeting
+ *                 like a temple or chapel window.
+ * - `oval`      — an upright ellipse, the cameo of a framed portrait.
+ * - `circle`    — a round medallion; the one square-proportioned shape.
+ * - `rectangle` — a plain print in its mount, the most restrained.
+ *
+ * Every shape keeps the design's two hairlines, one outside the photograph and
+ * one riding on it. An uploaded `host_photo_frame_image` replaces the drawn
+ * frame outright — the precedence `host_divider_image` has over
+ * `divider_style` — which is why there is no `custom` member.
+ */
+export type HostPhotoFrame = 'arch' | 'pointed' | 'oval' | 'circle' | 'rectangle'
+
+/**
+ * Where the `arch` design sets each host's title, name and parents.
+ *
+ * - `below`  — the default: stacked under the frame, as every arch template
+ *              already draws them.
+ * - `beside` — level with the frame, the second host mirrored, so the two
+ *              portraits keep their diagonal and the names meet between them.
+ */
+export type HostCaptionPlacement = 'below' | 'beside'
 
 /**
  * The motif in the centre column between the two hosts — the empty
@@ -1037,6 +1067,19 @@ export interface HostInfoDesignConfig {
    * Stored and returned unchanged on every other design, which ignore it.
    */
   sync_cover_names?: boolean
+  /**
+   * `arch` only: the shape of the frame each host's photograph sits in.
+   * Absent is `arch`, the frame every arch template already draws, and the
+   * editor sends nothing else for it. An uploaded `host_photo_frame_image`
+   * draws in its place. Stored and returned unchanged on every other design.
+   */
+  photo_frame?: HostPhotoFrame
+  /**
+   * `arch` only: whether each host's title, name and parents sit under their
+   * frame or beside it. Absent is `below`, and the editor sends nothing else
+   * for it. Stored and returned unchanged on every other design.
+   */
+  caption_placement?: HostCaptionPlacement
 }
 
 /**
@@ -1876,6 +1919,12 @@ export interface PartnerTemplate {
    * ships, the record simply doesn't carry the key.
    */
   cover_host_separator_image?: string | null
+  /**
+   * The `arch` host design's own frame artwork, drawn in place of
+   * `host_info_design.photo_frame`. Optional because the backend field is
+   * pending (docs/backend-api-requirements/host-info-design.md).
+   */
+  host_photo_frame_image?: string | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
   basic_decoration_photo: string | null
@@ -1947,6 +1996,8 @@ export interface PartnerTemplateCreatePayload {
   host_divider_image?: TemplateFileUpload
   /** The mark between the host names on the cover. */
   cover_host_separator_image?: TemplateFileUpload
+  /** The `arch` host design's own frame artwork. */
+  host_photo_frame_image?: TemplateFileUpload
   display_liquid_glass_background?: boolean
   open_envelope_button?: TemplateFileUpload
   cover_stage_layout?: CoverStageLayout

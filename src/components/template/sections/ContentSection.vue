@@ -199,6 +199,46 @@
               <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
             </TemplateFormDisclosure>
 
+            <!-- The arch design's own: the frame each photo sits in, a frame
+                 of the partner's own that takes its place, and where the
+                 names go. The grid's title-and-avatar frames above never
+                 reached it — its portraits were never avatars. -->
+            <TemplateFormDisclosure
+              :open="form.host_info_design_type === 'arch'"
+              content-class="space-y-3 pt-2"
+            >
+              <TemplateFormChoice
+                v-model="hostPhotoFrameModel"
+                :label="t('management.partnerTemplateForm.hostInfoDesign.photoFrameLabel')"
+                :options="hostPhotoFrameOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.photoFrameHint') }}</p>
+
+              <!-- No `custom` shape above, for the breakline's reason: the
+                   upload is the switch, and removing it reveals the shape
+                   chosen underneath. Formats that carry transparency only —
+                   a frame's window is its transparent middle. -->
+              <TemplateFormImageField
+                :label="t('management.partnerTemplateForm.hostInfoDesign.photoFrameImage')"
+                :hint="t('management.partnerTemplateForm.hostInfoDesign.photoFrameImageHint')"
+                :upload-label="t('management.partnerTemplateForm.hostInfoDesign.photoFrameImageUpload')"
+                accept="image/png,image/webp,image/svg+xml"
+                :preview="hostPhotoFrameImageSrc"
+                :file-name="form.host_photo_frame_image?.name"
+                @change="handleFileChange('host_photo_frame_image', $event)"
+                @clear="clearAssetField('host_photo_frame_image')"
+              />
+
+              <TemplateFormChoice
+                v-model="hostCaptionPlacementModel"
+                :label="t('management.partnerTemplateForm.hostInfoDesign.captionLabel')"
+                :options="hostCaptionPlacementOptions"
+                variant="segmented"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.captionHint') }}</p>
+            </TemplateFormDisclosure>
+
             <!-- The crest design's own controls: the breakline that closes
                  the block, and the two sizes plus the offset that place it.
                  None of them exist on any other design. -->
@@ -600,6 +640,8 @@ import PlanRequiredNotice from '../TemplateFormPlanNotice.vue'
 import { BTN_SECONDARY_SM, FIELD_HINT, PANEL, SECTION_HEADING } from '../templateUi'
 import { enumModel } from '../formModels'
 import { CALENDAR_CARD_RADIUS_MAX } from '@/components/showcase/calendar-designs/calendarModel'
+import { HOST_PHOTO_FRAMES } from '@/components/showcase/host-layouts/wedding/archPhotoFrame'
+import { PHOTO_FRAME_ICONS } from '../photoFrameIcons'
 import { useTemplateEditor } from '../templateEditorContext'
 
 /**
@@ -618,6 +660,9 @@ const { t } = useI18n()
 
 /** The crest's breakline art, on the three states every staged asset has. */
 const hostDividerImageSrc = stagedImageSrc('host_divider_image')
+
+/** The arch's own frame art, likewise. */
+const hostPhotoFrameImageSrc = stagedImageSrc('host_photo_frame_image')
 
 const contentWidthOptions = computed(() => [
   { value: 'standard', label: t('management.partnerTemplateForm.coverLayout.contentWidthStandard'), icon: Minimize2 },
@@ -718,6 +763,22 @@ const hostBreaklineStyleOptions = computed(() => [
   { value: 'diamond', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.diamond'), icon: Diamond },
   { value: 'lotus', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.lotus'), icon: Flower2 },
   { value: 'flourish', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.flourish'), icon: Spline },
+])
+
+// The arch design's frame shapes, in the showcase's own order: the round arch
+// every arch template already draws leads, so the picker opens on no change.
+// Each option's icon is the shape itself (photoFrameIcons.ts).
+const hostPhotoFrameOptions = computed(() =>
+  HOST_PHOTO_FRAMES.map((frame) => ({
+    value: frame,
+    label: t(`management.partnerTemplateForm.hostInfoDesign.photoFrames.${frame}`),
+    icon: PHOTO_FRAME_ICONS[frame],
+  })),
+)
+
+const hostCaptionPlacementOptions = computed(() => [
+  { value: 'below', label: t('management.partnerTemplateForm.hostInfoDesign.captionPlacements.below') },
+  { value: 'beside', label: t('management.partnerTemplateForm.hostInfoDesign.captionPlacements.beside') },
 ])
 
 // Ordered by how much furniture each adds, which is also roughly how loud they
@@ -884,6 +945,8 @@ const hostInfoDesignModel = enumModel(() => form, 'host_info_design_type')
 const hostFrameStyleModel = enumModel(() => form, 'host_frame_style')
 const hostCoupleOrnamentModel = enumModel(() => form, 'host_couple_ornament')
 const hostBreaklineStyleModel = enumModel(() => form, 'host_divider_style')
+const hostPhotoFrameModel = enumModel(() => form, 'host_photo_frame')
+const hostCaptionPlacementModel = enumModel(() => form, 'host_caption_placement')
 const agendaDesignModel = enumModel(() => form, 'agenda_design_type')
 const dressCodeDesignModel = enumModel(() => form, 'dress_code_design_type')
 const galleryDesignModel = enumModel(() => form, 'gallery_design_type')

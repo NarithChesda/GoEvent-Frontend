@@ -14,6 +14,12 @@
 > the boolean `sync_cover_names`. It reads settings that already travel in
 > `cover_stage_layout`, so there is no new field and nothing to migrate —
 > store and return it like the others.
+>
+> **PENDING (added with the `arch` design's options):** two more optional keys
+> on the same object — `photo_frame` and `caption_placement`, which need no
+> migration — plus **one more new model field**, the image
+> `host_photo_frame_image` (see §7), handled exactly like
+> `host_divider_image`.
 
 ## Overview
 
@@ -35,7 +41,7 @@ Five designs exist today:
 | `standard` | **Default.** Rich layout: welcome header, parent names, logo, host titles, host names, profile photos. |
 | `simple`   | Minimal layout: the welcome header above large script host names stacked and joined by an ampersand. |
 | `portrait` | The `standard` layout with one row moved — title, then photo, then name — so the label introduces the person, the photo shows them and the name closes. |
-| `arch`     | The showcase-v2 couple-story composition: two arch-framed portraits staged on a diagonal, each host's title, name and parents stacked under their own frame. Renders no logo. |
+| `arch`     | The showcase-v2 couple-story composition: two framed portraits staged on a diagonal, each host's title, name and parents set under or beside their own frame. The frame's shape, the partner's own frame artwork and where the names sit are its own options. Renders no logo. |
 | `crest`    | The Khmer wedding-card order, read top to bottom: the crest (logo), the two sets of parents, the invitation sentence, the couple either side of the shared centre motif, and the partner's own horizontal breakline closing the block. Renders **no** profile photos, and **no** welcome header — the invitation sentence takes that slot. |
 
 When the field is absent / `null`, the frontend falls back to `standard`, so this
@@ -69,6 +75,8 @@ is fully backward compatible — existing templates need no migration.
 | `logo_scale` | number | no | 40–250 | **Percent** of the breakpoint's own logo cap. Defaults to 100. Read by `standard`, `portrait` and `crest`. |
 | `top_offset` | number | no | −4 to 16 | Where the host block starts, in **rem**. Defaults to 0. Read by **every** design. |
 | `sync_cover_names` | boolean | no | `true`, `false` | `simple` only: draw the host names the way the cover's host-names block draws them. Defaults to `false`. |
+| `photo_frame` | string | no | `"arch"`, `"pointed"`, `"oval"`, `"circle"`, `"rectangle"` | `arch` only: the shape each host's photo sits in. Defaults to `"arch"`. |
+| `caption_placement` | string | no | `"below"`, `"beside"` | `arch` only: each host's title, name and parents under their frame or beside it. Defaults to `"below"`. |
 
 The whole `host_info_design` field may also be `null` (meaning "use the default
 `standard`"). It is **not** a file and carries no images.
@@ -147,6 +155,31 @@ else: no new field, no new image, nothing to migrate.
 It is read by `simple` alone; store and return it unchanged on every other
 `type`, exactly like `divider_style`. Defaults to `false`, which is the look
 every `simple` template has today, so it **must not be backfilled**.
+
+### `photo_frame` and `caption_placement` — the arch design's own two
+
+The `arch` design draws each host's photo in a frame with two hairlines, one
+around the photo and one riding on it. `photo_frame` picks that frame's shape:
+
+| Value | Shape |
+|-------|-------|
+| `arch` | **Default.** A round-topped window — what every arch template draws today. |
+| `pointed` | That window drawn to a point at its crown, like a temple or chapel window. |
+| `oval` | An upright ellipse: a cameo. |
+| `circle` | A round medallion, the one square-proportioned shape. |
+| `rectangle` | A plain print in its mount. |
+
+`caption_placement` is where each host's title, name and parents sit: `below`
+the frame (**default**, today's look) or `beside` it, with the second host
+mirrored so the two photos keep their diagonal.
+
+Both are read by `arch` alone; store and return them unchanged on every other
+`type`, like `divider_style`. Neither needs a migration and neither may be
+backfilled. The editor sends each key **only when it differs from its default**,
+so a template that never touched them sends exactly the object it always did;
+absent means the default. A partner's own frame artwork (§7) draws in place of
+`photo_frame`, the way `host_divider_image` draws in place of `divider_style`,
+which is why there is no `custom` value.
 
 ---
 
@@ -321,6 +354,56 @@ config objects:
 
 ---
 
+### 7. `host_photo_frame_image` — the arch design's own frame
+
+The `arch` design draws each host's photo in one of the `photo_frame` shapes. A
+partner may attach their own frame artwork instead: typically a transparent PNG
+of an ornate border with a transparent window in the middle. Like §6 it is a
+**file**, so it is a new image field on the partner-template model, handled
+exactly like `host_divider_image`: the same upload rules, the same
+`''`-means-delete convention, the same place in the event's `template_assets`.
+
+```python
+# Example (Django) — mirror however host_divider_image is defined
+host_photo_frame_image = models.ImageField(upload_to='template_assets/', null=True, blank=True)
+```
+
+**Create / update** (`multipart/form-data`, same two endpoints as above):
+
+```
+host_photo_frame_image = <file>   # upload / replace
+host_photo_frame_image = ''       # delete the stored file
+# absent                          # leave the stored file alone
+```
+
+**Template read endpoints** return it as a URL beside `host_divider_image`.
+**Event showcase payload**: inside `template_assets.assets`, beside
+`host_divider_image`, not at the top level.
+
+```json
+{
+  "template_assets": {
+    "host_info_design": { "type": "arch", "photo_frame": "oval", "caption_placement": "beside" },
+    "assets": {
+      "host_photo_frame_image": "/media/template_assets/gold-frame.png"
+    }
+  }
+}
+```
+
+> **The image must be served with CORS headers** (`Access-Control-Allow-Origin`)
+> — the same requirement the cover photo frame's shape image already has. The
+> showcase reads the artwork's pixels on a canvas to find the window the photo
+> goes in. Without CORS it still draws the artwork, but laid over the chosen
+> shape instead of fitted around the photo.
+>
+> **Precedence, as in §6:** when the image is present the frontend draws it
+> instead of `photo_frame`. Store the two independently and **do not clear
+> `photo_frame` when an image is uploaded or removed** — removing the image has
+> to reveal the shape the partner chose underneath.
+
+---
+
 ## Acceptance Criteria
 
 - [ ] Partner-template create accepts `host_info_design` (JSON string in
@@ -344,6 +427,15 @@ config objects:
       `divider_style` / `divider_scale` untouched.
 - [ ] `sync_cover_names` round-trips as a boolean on every `type`, and a config
       that omits it is returned without it (not backfilled to `false`).
+- [ ] `photo_frame` and `caption_placement` round-trip unchanged on every
+      `type`, and a config that omits them is returned without them (not
+      backfilled to `arch` / `below`).
+- [ ] `host_photo_frame_image` uploads, replaces and clears (`''`) on both
+      endpoints, is returned by the template read endpoints, appears inside
+      `template_assets.assets` on the event showcase payload, and is served
+      with CORS headers.
+- [ ] Uploading or clearing `host_photo_frame_image` leaves a stored
+      `photo_frame` untouched.
 
 ---
 
@@ -352,8 +444,9 @@ config objects:
 - This is intentionally a near-clone of `event_details_design`. If you copy that
   field's model definition, serializer handling, form-data parsing, and
   `template_assets` assembly, you've covered everything here.
-- No new endpoints. One new image field (`host_divider_image`, §6) — copy
-  `sample_logo_1`'s handling for it; everything else here is JSON only.
+- No new endpoints. Two new image fields (`host_divider_image`, §6, and
+  `host_photo_frame_image`, §7) — copy `sample_logo_1`'s handling for both;
+  everything else here is JSON only.
 - Three enums to enforce now: `type`, plus the optional `frame_style` and
   `couple_ornament` (see Validation). Treat the object as
   extensible (don't hard-fail on future sibling keys unless you prefer strict

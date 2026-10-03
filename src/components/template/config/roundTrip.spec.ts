@@ -126,6 +126,8 @@ describe('partner template form config round trip', () => {
       host_logo_scale: 130,
       host_top_offset: -2,
       host_sync_cover_names: true,
+      host_photo_frame: 'pointed',
+      host_caption_placement: 'beside',
       agenda_design_type: 'thread',
       dress_code_design_type: 'atelier',
       gallery_design_type: 'booth',
@@ -354,6 +356,43 @@ describe('partner template form config round trip', () => {
 
       const tooRound = { ...card, event_details_calendar_card_radius: 400 }
       expect(buildConfigPayload(tooRound).event_details_design).toHaveProperty('calendar_card_radius', 40)
+    })
+
+    /**
+     * Absent already means round arches with the names underneath — what every
+     * arch template draws — so a template that never touched either saves the
+     * host_info_design it always did, and one that did keeps its choice.
+     */
+    it("sends the arch design's frame and name placement only when they are not the defaults", () => {
+      const untouched = buildConfigPayload({ ...defaultForm(), host_info_design_type: 'arch' })
+      expect(untouched.host_info_design).not.toHaveProperty('photo_frame')
+      expect(untouched.host_info_design).not.toHaveProperty('caption_placement')
+
+      const oval = { ...defaultForm(), host_info_design_type: 'arch' as const, host_photo_frame: 'oval' as const }
+      expect(buildConfigPayload(oval).host_info_design).toHaveProperty('photo_frame', 'oval')
+      expect(hydrateForm(savedAs(oval)).host_photo_frame).toBe('oval')
+
+      // Kept through a switch to another design, for switching back.
+      const beside = {
+        ...defaultForm(),
+        host_info_design_type: 'standard' as const,
+        host_caption_placement: 'beside' as const,
+      }
+      expect(buildConfigPayload(beside).host_info_design).toHaveProperty('caption_placement', 'beside')
+      expect(hydrateForm(savedAs(beside)).host_caption_placement).toBe('beside')
+    })
+
+    it('reads an arch frame this build does not draw as the round arch', () => {
+      const template = blankTemplate({
+        host_info_design: {
+          type: 'arch',
+          photo_frame: 'hexagon',
+          caption_placement: 'above',
+        } as unknown as PartnerTemplate['host_info_design'],
+      })
+      const hydrated = hydrateForm(template)
+      expect(hydrated.host_photo_frame).toBe('arch')
+      expect(hydrated.host_caption_placement).toBe('below')
     })
 
     it('reads a calendar style this build does not draw as classic', () => {

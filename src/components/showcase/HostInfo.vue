@@ -13,6 +13,8 @@ import type {
   HostFrameStyle,
   CoupleOrnament,
   HostBreaklineStyle,
+  HostCaptionPlacement,
+  HostPhotoFrame,
 } from '../../services/api/types/template.types'
 import type { CoverHostNamesBinding } from './cover/coverDetails'
 
@@ -65,6 +67,12 @@ interface Props {
   dividerImage?: string | null
   /** Breakline width, in percent of the block. */
   dividerScale?: number
+  /** The `arch` design's frame shape around each host's photo. */
+  photoFrame?: HostPhotoFrame
+  /** The `arch` design's own frame artwork. Present wins over `photoFrame`. */
+  photoFrameImage?: string | null
+  /** Where the `arch` design sets each host's title, name and parents. */
+  captionPlacement?: HostCaptionPlacement
   /** Logo size, in percent of the breakpoint's cap. Drawn by standard/portrait/crest. */
   logoScale?: number
   /** Where the host block starts, in rem. Read by every design. */

@@ -3536,7 +3536,7 @@
         "standard": "Standard (parents, logo, titles, photos)",
         "simple": "Simple (welcome + large names)",
         "portrait": "Portrait (title, photo, then name)",
-        "arch": "Arch (couple story, arched photos)",
+        "arch": "Arch (couple story, framed photos)",
         "crest": "Crest (crest, parents, invitation, couple)"
       },
       "frameLabel": "Title & Avatar Frame",
@@ -3577,7 +3577,25 @@
       "syncCoverNames": "Match the cover's host names",
       "syncCoverNamesHint": "Which hosts, the line under each name, the mark between them, capitals, fonts, size and colour all follow Show host names on the Cover Stage.",
       "syncCoverNamesOff": "The cover isn't showing its host names, but these still follow its settings. Switch Show host names on in Cover Stage to change them.",
-      "openCover": "Open Cover Stage"
+      "openCover": "Open Cover Stage",
+      "photoFrameLabel": "Photo Frame",
+      "photoFrameHint": "The shape each host's photo sits in. Every shape keeps the design's two hairlines - one around the photo, one riding on it.",
+      "photoFrames": {
+        "arch": "Arch (round top)",
+        "pointed": "Pointed arch (a temple window)",
+        "oval": "Oval (a cameo)",
+        "circle": "Circle (a medallion)",
+        "rectangle": "Rectangle (a mounted print)"
+      },
+      "photoFrameImage": "Custom Frame",
+      "photoFrameImageHint": "Your own frame artwork, drawn in place of the shape above as soon as it is attached - removing it brings that shape back. A transparent PNG with a closed window works best: the photo is fitted into the window. An open design, like flowers at the corners, is laid over the shape above instead.",
+      "photoFrameImageUpload": "Upload frame",
+      "captionLabel": "Names",
+      "captionPlacements": {
+        "below": "Under the photo",
+        "beside": "Beside the photo"
+      },
+      "captionHint": "Beside sets each host's title, name and parents level with their photo, the second host mirrored, so the two photos keep their diagonal. With more than two hosts, the others stay in a row with their names underneath."
     },
     "footer": {
       "cancel": "Cancel",

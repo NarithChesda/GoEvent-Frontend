@@ -33,6 +33,7 @@ const PREVIEWED_ASSET_FIELDS = [
   'cover_host_separator_image',
   'cover_photo_frame_image',
   'cover_photo_shape_image',
+  'host_photo_frame_image',
 ] as const
 
 export type PreviewedAssetField = (typeof PREVIEWED_ASSET_FIELDS)[number]

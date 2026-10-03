@@ -14,16 +14,28 @@
     <!-- The couple, staged as a diagonal: first host high-left, second
          low-right, a drawn flourish in the gap between them. Unlike V2 — which
          absolutely-positions both cards inside a pinned full-viewport stage —
-         these occupy real cells of a 2x2 grid in normal flow, so the column
-         grows with the text instead of the two cards colliding once a name or
-         a parent line wraps. -->
-    <div class="arch-stage" :class="{ 'arch-stage--solo': couple.length === 1 }" :style="stageVars">
-      <!-- The connecting flourish. It lives in the grid's own empty cell —
-           column 2, row 1, beside the first portrait — rather than being
-           stretched across the whole stage: an overlay positioned by
+         these occupy real cells of a grid in normal flow, so the column grows
+         with the text instead of the two cards colliding once a name or a
+         parent line wraps.
+
+         `caption_placement` decides what shares a row with each portrait.
+         Below (the default) it is the other portrait: a 2x2 grid, each card a
+         column. Beside, it is the portrait's own words: each card a row, the
+         second mirrored, so the portraits still hold the diagonal. -->
+    <div
+      class="arch-stage"
+      :class="[`arch-stage--${captionPlacement}`, { 'arch-stage--solo': couple.length === 1 }]"
+      :style="stageVars"
+    >
+      <!-- The connecting flourish. Under the frames it lives in the grid's own
+           empty cell — column 2, row 1, beside the first portrait — rather
+           than being stretched across the whole stage: an overlay positioned by
            percentages has to guess where each card's text ends, and lands on
            top of a photo the moment a name wraps to a second line. In a real
-           cell, grid keeps it clear no matter how long the text runs.
+           cell, grid keeps it clear no matter how long the text runs. Beside
+           the frames that cell holds the first caption, so the flourish takes
+           a row of its own between the two cards instead, spanning exactly the
+           gap from the first photo's inner corner to the second's.
 
            One stroke, following the same diagonal the portraits sit on. An
            S-curve or a curl at this size (≈55px) reads as a stray mark rather
@@ -33,25 +45,24 @@
       <svg
         v-if="couple.length === 2"
         class="arch-thread"
-        viewBox="0 0 60 90"
+        :class="{ 'is-drawing': !prefersReducedMotion }"
+        :viewBox="thread.viewBox"
+        :style="{ animationDelay: `${delays.thread}s` }"
         fill="none"
         aria-hidden="true"
       >
         <path
           class="arch-thread-path"
-          :class="{ 'is-animated': !prefersReducedMotion }"
-          d="M 7 7 C 33 29 41 55 50 82"
+          :d="thread.path"
           stroke="currentColor"
           stroke-width="1"
           stroke-linecap="round"
-          pathLength="100"
-          :style="{ animationDelay: `${delays.thread}s` }"
         />
         <circle
           class="arch-thread-dot"
           :class="{ 'is-animated': !prefersReducedMotion }"
-          cx="50"
-          cy="82"
+          :cx="thread.dot.x"
+          :cy="thread.dot.y"
           r="2.2"
           fill="currentColor"
           :style="{ animationDelay: `${delays.thread + 0.85}s` }"
@@ -67,87 +78,90 @@
         <!-- Portrait first, then the caption block. The photo is the subject
              here and the role is its caption — the reverse of the portrait
              design, where the role is a column header introducing a person the
-             reader hasn't seen yet. -->
-        <EditableRegion
-          :intent="{ kind: 'hostImage', hostId: person.key }"
-          :label="person.photo ? undefined : addPhotoLabel"
-        >
-          <div
-            class="arch-frame arch-in-photo"
-            :style="{ animationDelay: cardDelay(i, 'photo') }"
+             reader hasn't seen yet. The figure is this design's own element so
+             the grid always has the same thing to place: EditableRegion is a
+             wrapper in the editor and nothing at all on the public page. -->
+        <div class="arch-figure arch-in-photo" :style="{ animationDelay: cardDelay(i, 'photo') }">
+          <EditableRegion
+            :intent="{ kind: 'hostImage', hostId: person.key }"
+            :label="person.photo ? undefined : addPhotoLabel"
           >
-            <div class="arch-photo" :style="{ background: primaryColor }">
-              <img v-if="person.photo" :src="person.photo" :alt="person.name" loading="lazy" />
-              <span
-                v-else
-                class="arch-monogram"
-                :style="{ fontFamily: primaryFont || currentFont }"
-                >{{ person.initial }}</span
-              >
-            </div>
-          </div>
-        </EditableRegion>
+            <ArchPhotoFrame
+              :photo="person.photo"
+              :alt="person.name"
+              :initial="person.initial"
+              :shape="photoFrame"
+              :art="frameArt"
+              :ground-color="primaryColor"
+              :monogram-font="primaryFont || currentFont"
+            />
+          </EditableRegion>
+        </div>
 
-        <InlineEditableText
-          v-if="person.role"
-          :value="person.role"
-          :target="{ kind: 'host', hostId: person.key, field: 'title' }"
-          :input-style="{ fontFamily: secondaryFont || currentFont, color: accentInk }"
-        >
-          <span
-            :class="['arch-role arch-in-line', getKhmerClass(currentLanguage), fx('secondary')]"
-            :style="{
-              fontFamily: secondaryFont || currentFont,
-              animationDelay: cardDelay(i, 'role'),
-            }"
-            ><span class="tfx-ink">{{ person.role }}</span></span
-          >
-        </InlineEditableText>
-
-        <InlineEditableText
-          :value="person.name"
-          :target="{ kind: 'host', hostId: person.key, field: 'name' }"
-          :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
-        >
-          <h3
-            :class="['arch-name arch-in-name', getKhmerClass(currentLanguage), fx('primary')]"
-            :style="{
-              fontFamily: primaryFont || secondaryFont || currentFont,
-              animationDelay: cardDelay(i, 'name'),
-            }"
-          >
-            <span class="tfx-ink">{{ person.name }}</span>
-          </h3>
-        </InlineEditableText>
-
-        <!-- Each parent gets its own line. Joined on one line they wrap
-             mid-name in the narrow column, which reads as a truncation. -->
-        <p
-          v-if="person.parents.length"
-          :class="['arch-parents arch-in-line', getKhmerClass(currentLanguage)]"
-          :style="{ animationDelay: cardDelay(i, 'parents') }"
-        >
+        <div class="arch-caption">
           <InlineEditableText
-            v-for="parent in person.parents"
-            :key="parent.field"
-            :value="parent.value"
-            :target="{ kind: 'host', hostId: person.key, field: parent.field }"
-            :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+            v-if="person.role"
+            :value="person.role"
+            :target="{ kind: 'host', hostId: person.key, field: 'title' }"
+            :input-style="{ fontFamily: secondaryFont || currentFont, color: accentInk }"
           >
             <span
-              class="arch-parent"
-              :class="fx('secondary')"
-              :style="{ fontFamily: secondaryFont || currentFont }"
-              ><span class="tfx-ink">{{ parent.value }}</span></span
+              :class="['arch-role arch-in-line', getKhmerClass(currentLanguage), fx('secondary')]"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+                animationDelay: cardDelay(i, 'role'),
+              }"
+              ><span class="tfx-ink">{{ person.role }}</span></span
             >
           </InlineEditableText>
-        </p>
+
+          <InlineEditableText
+            :value="person.name"
+            :target="{ kind: 'host', hostId: person.key, field: 'name' }"
+            :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
+          >
+            <h3
+              :class="['arch-name arch-in-name', getKhmerClass(currentLanguage), fx('primary')]"
+              :style="{
+                fontFamily: primaryFont || secondaryFont || currentFont,
+                animationDelay: cardDelay(i, 'name'),
+              }"
+            >
+              <span class="tfx-ink">{{ person.name }}</span>
+            </h3>
+          </InlineEditableText>
+
+          <!-- Each parent gets its own line. Joined on one line they wrap
+               mid-name in the narrow column, which reads as a truncation. -->
+          <p
+            v-if="person.parents.length"
+            :class="['arch-parents arch-in-line', getKhmerClass(currentLanguage)]"
+            :style="{ animationDelay: cardDelay(i, 'parents') }"
+          >
+            <InlineEditableText
+              v-for="parent in person.parents"
+              :key="parent.field"
+              :value="parent.value"
+              :target="{ kind: 'host', hostId: person.key, field: parent.field }"
+              :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+            >
+              <span
+                class="arch-parent"
+                :class="fx('secondary')"
+                :style="{ fontFamily: secondaryFont || currentFont }"
+                ><span class="tfx-ink">{{ parent.value }}</span></span
+              >
+            </InlineEditableText>
+          </p>
+        </div>
       </article>
     </div>
 
     <!-- Hosts beyond the couple: the same card at two-thirds scale, centred in
          a row rather than staged on the diagonal — the diagonal is a device for
-         a pair and stops meaning anything with three or more. -->
+         a pair and stops meaning anything with three or more. They keep their
+         names underneath even when the couple's sit beside: at a third of the
+         column there is no room for words beside a frame. -->
     <div v-if="extras.length" class="arch-extras" :style="stageVars">
       <article
         v-for="(person, i) in extras"
@@ -155,19 +169,19 @@
         class="arch-card arch-card--extra"
         :style="{ '--arch-extra-base': `${delays.extras + i * 0.12}s` }"
       >
-        <EditableRegion :intent="{ kind: 'hostImage', hostId: person.key }">
-          <div class="arch-frame arch-in-photo">
-            <div class="arch-photo" :style="{ background: primaryColor }">
-              <img v-if="person.photo" :src="person.photo" :alt="person.name" loading="lazy" />
-              <span
-                v-else
-                class="arch-monogram"
-                :style="{ fontFamily: primaryFont || currentFont }"
-                >{{ person.initial }}</span
-              >
-            </div>
-          </div>
-        </EditableRegion>
+        <div class="arch-figure arch-in-photo">
+          <EditableRegion :intent="{ kind: 'hostImage', hostId: person.key }">
+            <ArchPhotoFrame
+              :photo="person.photo"
+              :alt="person.name"
+              :initial="person.initial"
+              :shape="photoFrame"
+              :art="frameArt"
+              :ground-color="primaryColor"
+              :monogram-font="primaryFont || currentFont"
+            />
+          </EditableRegion>
+        </div>
         <span
           v-if="person.role"
           :class="['arch-role arch-in-line', getKhmerClass(currentLanguage), fx('secondary')]"
@@ -203,9 +217,12 @@ import { computed, inject } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useTextEffect } from '@/composables/showcase/useTextEffects'
+import { useFrameWindow } from '@/composables/showcase/useFrameWindow'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import ArchPhotoFrame from './ArchPhotoFrame.vue'
+import { resolveCaptionPlacement, resolveFrameArt, resolvePhotoFrame } from './archPhotoFrame'
 import {
   WelcomeHeader,
   getMediaUrl,
@@ -215,6 +232,37 @@ import {
 } from '../shared'
 
 const props = defineProps<HostInfoProps>()
+
+/** The frame each photo sits in, and where the names go. Unknown values draw the defaults. */
+const photoFrame = computed(() => resolvePhotoFrame(props.photoFrame))
+const captionPlacement = computed(() => resolveCaptionPlacement(props.captionPlacement))
+
+/**
+ * The partner's own frame, measured once here and handed to every card, so an
+ * upload is read once however many hosts there are. `getMediaUrl` because
+ * template assets arrive as paths relative to the API host (see the crest's
+ * breakline art).
+ */
+const frameArtUrl = computed<string | null>(() =>
+  props.photoFrameImage ? (getMediaUrl(props.photoFrameImage) ?? null) : null,
+)
+const { frameWindow, settled: frameArtSettled } = useFrameWindow(frameArtUrl)
+const frameArt = computed(() =>
+  resolveFrameArt(frameArtUrl.value, frameArtSettled.value, frameWindow.value),
+)
+
+/**
+ * The flourish, drawn for the gap it crosses. Under the frames it has a whole
+ * empty cell beside the first portrait and falls steeply toward the second;
+ * beside them it crosses the shallow row between the two cards, so it is drawn
+ * shallow too, from the first photo's inner corner to the second's.
+ */
+const THREADS = {
+  below: { viewBox: '0 0 60 90', path: 'M 7 7 C 33 29 41 55 50 82', dot: { x: 50, y: 82 } },
+  beside: { viewBox: '0 0 60 34', path: 'M 5 5 C 22 9 38 21 54 28', dot: { x: 54, y: 28 } },
+} as const
+
+const thread = computed(() => THREADS[captionPlacement.value])
 
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the "add photo" affordance can never reach guests.
@@ -230,10 +278,10 @@ const addPhotoLabel = computed(() =>
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 /**
- * The thread draws itself with a stroke-dashoffset animation, which reduced
- * motion must not simply disable — an undrawn path at dashoffset 100 is an
- * invisible line, not a still one. Resolved once here so the template can
- * render the path already-drawn instead.
+ * The thread draws itself with a clip wipe, which reduced motion must not
+ * simply disable — a thread still clipped to nothing is an invisible line, not
+ * a still one. Resolved once here so the template can render it already drawn
+ * instead.
  */
 const prefersReducedMotion =
   typeof window !== 'undefined' &&
@@ -328,9 +376,12 @@ const delays = computed(() => {
 
 /* ============================================================
    Arch design — the V2 couple-story composition brought into the
-   V1 column: two arch-framed portraits on a diagonal, a drawn
-   hairline running between them, and each host's label, name and
-   parents stacked under their own frame.
+   V1 column: two framed portraits on a diagonal, a drawn hairline
+   running between them, and each host's label, name and parents
+   set with their own frame — under it, or beside it
+   (`caption_placement`). The frame is ArchPhotoFrame's: the round
+   arch the design is named for, another drawn shape
+   (`photo_frame`), or the partner's own artwork.
 
    What it changes versus `standard`: standard splits one person
    across four full-width rows (their parents in row 2, their
@@ -406,9 +457,12 @@ const delays = computed(() => {
 .arch-card--b {
   grid-column: 2;
   grid-row: 2;
-  /* Pulls the second portrait up beside the first card's caption so the pair
-     interlocks instead of reading as two stacked rows. Bounded and small —
-     the columns can never collide, so this only ever tightens the gap. */
+}
+
+/* Pulls the second portrait up beside the first card's caption so the pair
+   interlocks instead of reading as two stacked rows. Bounded and small —
+   the columns can never collide, so this only ever tightens the gap. */
+.arch-stage--below .arch-card--b {
   margin-top: -18%;
 }
 
@@ -550,69 +604,100 @@ const delays = computed(() => {
   }
 }
 
-/* ---------- arch photo frame ----------
-   Two hairlines and the air between them: an outer line tracing the
-   arch and an inner one riding on the photo, which is how a portrait
-   is mounted on printed stationery. */
-.arch-frame {
-  position: relative;
+/* ---------- the portrait ----------
+   Drawn by ArchPhotoFrame — every shape, and the partner's own frame. What
+   stays here is where it sits in its card. */
+.arch-figure {
   /* The outer hairline sits 6px outside the photo, so it eats most of a small
      bottom margin and closes almost against the caption. This is the gap
      measured from the line, not from the photo. */
   margin: 0 0 1rem;
 }
 
-.arch-frame::after {
-  content: '';
-  position: absolute;
-  inset: calc(-1 * var(--arch-frame-outset));
-  border: 1px solid color-mix(in srgb, var(--arch-accent) 70%, transparent);
-  border-radius: 999px 999px 14px 14px;
-  pointer-events: none;
+/* ---------- names beside the frame ----------
+   Each host is one row, portrait and words side by side, and the second row
+   is the first mirrored — so the two portraits hold the diagonal, top-left and
+   bottom-right, with the flourish crossing between them. Each caption is
+   centred on its own frame's height, so the words read as belonging to that
+   portrait rather than drifting toward the other one.
+
+   Every card shares one column split, so the frames line up with the
+   flourish's row, which spans exactly the gap between them. */
+.arch-stage--beside {
+  --arch-side-frame: 42%;
+  /* Measured from the outer hairline, not the photo: the line is the frame's
+     edge as the eye reads it, and from the photo the outset ate half the gap
+     on a phone, leaving the words almost touching it. */
+  --arch-side-gap: calc(var(--arch-frame-outset) + 5%);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto;
 }
 
-.arch-photo {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: 999px 999px 10px 10px;
-  overflow: hidden;
-  display: flex;
+.arch-stage--beside .arch-card {
+  display: grid;
+  grid-template-columns: var(--arch-side-frame) minmax(0, 1fr);
+  column-gap: var(--arch-side-gap);
+  grid-column: 1;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 12px 26px rgba(62, 58, 54, 0.16);
 }
 
-.arch-photo img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.arch-stage--beside .arch-card--a {
+  grid-row: 1;
 }
 
-.arch-photo::after {
-  content: '';
-  position: absolute;
-  inset: 7px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: inherit;
-  pointer-events: none;
+.arch-stage--beside .arch-card--b {
+  grid-row: 3;
+  grid-template-columns: minmax(0, 1fr) var(--arch-side-frame);
 }
 
-.arch-monogram {
-  font-size: clamp(30px, 9vw, 52px);
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.88);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+.arch-stage--beside .arch-card--b .arch-figure {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.arch-stage--beside .arch-card--b .arch-caption {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.arch-stage--beside .arch-figure {
+  margin: 0;
+}
+
+/* The second portrait is the last thing in the block here, where stacked it
+   is a caption, and .arch-layout clips at its own edge. Room underneath for
+   its outer hairline and the shadow it casts. Scoped to the layout so it
+   outranks the breakpoint's padding below. */
+.arch-layout .arch-stage--beside {
+  padding-bottom: 2rem;
+}
+
+/* A lone host has no diagonal to keep, so its words sit level with the middle
+   of the frame, and the pair is a little wider than a stacked card. */
+.arch-stage--solo.arch-stage--beside {
+  max-width: 440px;
+}
+
+.arch-stage--solo.arch-stage--beside .arch-card--a {
+  text-align: left;
+  align-items: center;
+}
+
+.arch-stage--solo.arch-stage--beside .arch-card--a .arch-parents {
+  align-items: flex-start;
 }
 
 /* ---------- the thread ----------
-   Same pathLength="100" + dashoffset draw the calendar's heart and the
-   engraved info card's rules use, so every drawn line in the showcase
-   reveals the same way. Solid, not dotted: a dotted stroke can't animate
-   via dashoffset without marching its dots, and the mask workaround V2
-   needs isn't worth it for a line this short. */
+   Drawn by a wipe, not by its own dash. It used the pathLength="100" +
+   dashoffset draw the calendar's heart and the engraved card's rules use,
+   and that broke here: a hairline needs vector-effect: non-scaling-stroke,
+   and with it Chromium measures the dash in the path's own units instead of
+   on screen. Any time the flourish was drawn larger than its viewBox — the
+   stacked layout from 640px up, the beside layout on most screens — the line
+   stopped short of its own dot and stayed that way. A clip opening from the
+   top-left corner reveals the stroke in the order it runs, because the
+   thread only ever travels right and down, and it never asks how the stroke
+   is measured. */
 /* Sits in the empty top-right cell, pinned to its bottom-left corner —
    the point where the diagonal between the two portraits passes through. */
 .arch-thread {
@@ -630,20 +715,31 @@ const delays = computed(() => {
   opacity: 0.6;
 }
 
+/* Beside the frames: a row of its own between the two cards, as wide as the
+   gap between the first photo's inner edge and the second's. Sized outright,
+   because an SVG is a replaced element and won't stretch to a grid area. The
+   vertical margin clears the outer hairlines, which stand 6px off each photo. */
+.arch-stage--beside .arch-thread {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+  justify-self: start;
+  width: calc(100% - 2 * var(--arch-side-frame));
+  margin: 0.5rem 0 0.5rem var(--arch-side-frame);
+}
+
 .arch-thread-path {
-  stroke-dasharray: 100;
-  stroke-dashoffset: 0;
   vector-effect: non-scaling-stroke;
 }
 
-.arch-thread-path.is-animated {
-  stroke-dashoffset: 100;
+.arch-thread.is-drawing {
+  clip-path: inset(0 100% 100% 0);
   animation: archThreadDraw 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 @keyframes archThreadDraw {
   to {
-    stroke-dashoffset: 0;
+    clip-path: inset(0 0 0 0);
   }
 }
 
@@ -791,9 +887,12 @@ const delays = computed(() => {
 
 /* ---------- breakpoints ---------- */
 @media (min-width: 640px) {
+  /* The sides keep the hairline's outset. They were zeroed here once, which
+     clipped the outer vertical of both frames at every width from this one
+     up — a cut a round arch half hides and an oval or a circle can't. */
   .arch-stage {
     gap: 0 clamp(20px, 5vw, 44px);
-    padding: 0.75rem 0 0.5rem;
+    padding: 0.75rem var(--arch-frame-outset) 0.5rem;
   }
 
   .arch-role {
@@ -842,13 +941,22 @@ const delays = computed(() => {
 
 /* Very narrow phones: the two columns plus the gap leave each card under
    130px, where a 4:5 portrait stops reading as a face. Square them up and
-   drop the diagonal offset so the pair stays side by side. */
+   drop the diagonal offset so the pair stays side by side.
+
+   Only the shapes that are still themselves square — the arch and the print.
+   An oval squared is a circle and a pointed window squared is squashed, and
+   both are defined by their height. Names beside the frame give the portrait
+   its own row, so there is no pair to keep side by side; the extras still
+   stand in their row of three. */
 @media (max-width: 359px) {
-  .arch-photo {
+  .arch-stage--below :deep(.arch-frame--arch .arch-photo),
+  .arch-stage--below :deep(.arch-frame--rectangle .arch-photo),
+  .arch-extras :deep(.arch-frame--arch .arch-photo),
+  .arch-extras :deep(.arch-frame--rectangle .arch-photo) {
     aspect-ratio: 1 / 1;
   }
 
-  .arch-card--b {
+  .arch-stage--below .arch-card--b {
     margin-top: 12%;
   }
 }
@@ -868,10 +976,10 @@ const delays = computed(() => {
   }
 
   /* Reduced motion means a still line, not a missing one. */
-  .arch-thread-path,
-  .arch-thread-path.is-animated {
+  .arch-thread,
+  .arch-thread.is-drawing {
     animation: none;
-    stroke-dashoffset: 0;
+    clip-path: none;
   }
 
   .arch-thread-dot,

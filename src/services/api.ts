@@ -125,6 +125,8 @@ export type {
   HostFrameStyle,
   CoupleOrnament,
   HostBreaklineStyle,
+  HostPhotoFrame,
+  HostCaptionPlacement,
   InfoCardDesignType,
   InfoCardDesignConfig,
   InfoCardMapStyle,

@@ -216,6 +216,9 @@
                     :divider-style="hostInfoDesign?.divider_style"
                     :divider-image="templateAssets?.host_divider_image"
                     :divider-scale="hostInfoDesign?.divider_scale"
+                    :photo-frame="hostInfoDesign?.photo_frame"
+                    :photo-frame-image="templateAssets?.host_photo_frame_image"
+                    :caption-placement="hostInfoDesign?.caption_placement"
                     :logo-scale="hostInfoDesign?.logo_scale"
                     :top-offset="hostInfoDesign?.top_offset"
                     :cover-host-names="coverHostNames"
@@ -839,6 +842,8 @@ interface TemplateAssets {
   sample_logo_2?: string | null
   /** Custom breakline art, forwarded to the `crest` host layout. */
   host_divider_image?: string | null
+  /** Custom portrait frame art, forwarded to the `arch` host layout. */
+  host_photo_frame_image?: string | null
   /** The cover's own mark between host names, for `simple` when it matches the cover. */
   cover_host_separator_image?: string | null
 }

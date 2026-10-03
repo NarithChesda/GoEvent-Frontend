@@ -208,6 +208,13 @@ export interface TemplateAssets {
      * docs/backend-api-requirements/cover-details.md.
      */
     cover_host_separator_image?: string | null
+    /**
+     * The `arch` host design's own frame artwork, drawn in place of
+     * `host_info_design.photo_frame` — the precedence host_divider_image has
+     * above. Backend field pending:
+     * docs/backend-api-requirements/host-info-design.md.
+     */
+    host_photo_frame_image?: string | null
     // The guest-name title frame pieces live in here, NOT at the top level of
     // TemplateAssets (where they're also declared, below, but never read) — the
     // templateAssets computed spreads this sub-object and hands the result to

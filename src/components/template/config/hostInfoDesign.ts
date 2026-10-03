@@ -1,20 +1,26 @@
 import type {
   CoupleOrnament,
   HostBreaklineStyle,
+  HostCaptionPlacement,
   HostFrameStyle,
   HostInfoDesignConfig,
   HostInfoDesignType,
+  HostPhotoFrame,
   PartnerTemplate,
 } from '@/services/api'
+import {
+  resolveCaptionPlacement,
+  resolvePhotoFrame,
+} from '@/components/showcase/host-layouts/wedding/archPhotoFrame'
 
 /**
- * The host block's design and all seven of its sibling settings.
+ * The host block's design and all of its sibling settings.
  *
- * One backend config that the form unpacks into eight flat fields, which is
- * exactly why it lives in a module of its own: before this, each of the eight
- * carried its own default line, its own hydrate line and its own payload line,
- * several hundred lines apart, and nothing checked that the three lists still
- * named the same fields.
+ * One backend config that the form unpacks into flat fields, which is exactly
+ * why it lives in a module of its own: before this, each field carried its own
+ * default line, its own hydrate line and its own payload line, several hundred
+ * lines apart, and nothing checked that the three lists still named the same
+ * fields.
  */
 export interface HostInfoDesignFormState {
   /** Host info block design rendered in the showcase (standard | simple). */
@@ -37,6 +43,10 @@ export interface HostInfoDesignFormState {
   host_top_offset: number
   /** `simple` only: draw the names the way the cover's host names are set up. */
   host_sync_cover_names: boolean
+  /** `arch` only: the shape each host's photo sits in. */
+  host_photo_frame: HostPhotoFrame
+  /** `arch` only: each host's title, name and parents under their frame, or beside it. */
+  host_caption_placement: HostCaptionPlacement
 }
 
 export const defaultHostInfoDesign = (): HostInfoDesignFormState => ({
@@ -48,6 +58,8 @@ export const defaultHostInfoDesign = (): HostInfoDesignFormState => ({
   host_logo_scale: 100,
   host_top_offset: 0,
   host_sync_cover_names: false,
+  host_photo_frame: 'arch',
+  host_caption_placement: 'below',
 })
 
 export function hydrateHostInfoDesign(template: PartnerTemplate | null): HostInfoDesignFormState {
@@ -68,13 +80,23 @@ export function hydrateHostInfoDesign(template: PartnerTemplate | null): HostInf
     // Absent is `false`: the simple design's own two names, as every template
     // saved before the option existed renders them.
     host_sync_cover_names: design?.sync_cover_names ?? false,
+    // The arch design's own two. Absent is the look every arch template
+    // already has — round arches, names underneath — and a value this build
+    // doesn't draw reads as that look too, which is what the showcase draws.
+    host_photo_frame: resolvePhotoFrame(design?.photo_frame),
+    host_caption_placement: resolveCaptionPlacement(design?.caption_placement),
   }
 }
 
 /**
- * The eight host-info choices travel as one config object, because they are one
- * on the wire: `frame_style` and `couple_ornament` are sibling keys on
+ * The host-info choices travel as one config object, because they are one on
+ * the wire: `frame_style` and `couple_ornament` are sibling keys on
  * `host_info_design` rather than fields of their own.
+ *
+ * The arch design's two are sent only when they say something, on any design:
+ * absent already means round arches with the names underneath, so a template
+ * that never touched them saves exactly the payload it always did, while one
+ * that did keeps its choice through a switch to another design and back.
  */
 export const buildHostInfoDesignPayload = (
   state: HostInfoDesignFormState,
@@ -87,4 +109,8 @@ export const buildHostInfoDesignPayload = (
   logo_scale: state.host_logo_scale,
   top_offset: state.host_top_offset,
   sync_cover_names: state.host_sync_cover_names,
+  ...(state.host_photo_frame !== 'arch' && { photo_frame: state.host_photo_frame }),
+  ...(state.host_caption_placement !== 'below' && {
+    caption_placement: state.host_caption_placement,
+  }),
 })
